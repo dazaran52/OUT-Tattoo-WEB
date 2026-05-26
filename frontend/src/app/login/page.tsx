@@ -47,7 +47,12 @@ export default function LoginPage() {
         if (signInError) throw signInError
 
         if (data.session) {
-          console.log('Session received, redirecting...')
+          console.log('Session received, setting cookie...')
+          // Manually set cookie for middleware detection
+          const token = data.session.access_token
+          const maxAge = 60 * 60 * 24 * 7 // 7 days
+          document.cookie = `sb-access-token=${token};path=/;max-age=${maxAge};SameSite=Lax${window.location.protocol === 'https:' ? ';Secure' : ''}`
+          console.log('Cookie set, redirecting...')
           window.location.href = '/dashboard'
         } else {
           throw new Error('No session returned')
