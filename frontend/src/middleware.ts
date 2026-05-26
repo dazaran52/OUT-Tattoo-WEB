@@ -1,80 +1,34 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
 
 const protectedRoutes = ['/dashboard', '/profile', '/settings']
 
-export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
-  })
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value
-        },
-        set(name: string, value: string, options: CookieOptions) {
-          request.cookies.set({
-            name,
-            value,
-            ...options,
-          })
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          })
-          response.cookies.set({
-            name,
-            value,
-            ...options,
-          })
-        },
-        remove(name: string, options: CookieOptions) {
-          request.cookies.set({
-            name,
-            value: '',
-            ...options,
-          })
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          })
-          response.cookies.set({
-            name,
-            value: '',
-            ...options,
-          })
-        },
-      },
-    }
-  )
-
-  const { data: { session } } = await supabase.auth.getSession()
-
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+
+  // Check for Supabase auth cookie - try all possible names
+  const hasAuthCookie = 
+    request.cookies.get('sb-access-token')?.value ||
+    request.cookies.get('sb-refresh-token')?.value ||
+    request.cookies.get('supabase-auth-token')?.value ||
+    request.cookies.get(`sb-${process.env.NEXT_PUBLIC_SUPABASE_URL?.split('.')[0]?.split('//')[1]}-auth-token`)?.value
+
   const isProtectedRoute = protectedRoutes.some(route => 
     pathname.startsWith(route)
   )
 
-  if (isProtectedRoute && !session) {
+  // Redirect to login if accessing protected route without auth
+  if (isProtectedRoute && !hasAuthCookie) {
     const loginUrl = new URL('/login', request.url)
     return NextResponse.redirect(loginUrl)
   }
 
-  // Redirect logged-in users away from login page
-  if (pathname === '/login' && session) {
+  // Redirect logged-in users away from login page to dashboard
+  if (pathname === '/login' && hasAuthCookie) {
     const dashboardUrl = new URL('/dashboard', request.url)
     return NextResponse.redirect(dashboardUrl)
   }
 
-  return response
+  return NextResponse.next()
 }
 
 export const config = {
