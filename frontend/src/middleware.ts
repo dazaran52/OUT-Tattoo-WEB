@@ -1,30 +1,38 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 
-// Protected routes that require authentication
 const protectedRoutes = ['/dashboard', '/profile', '/settings']
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Check if the current route is protected
   const isProtectedRoute = protectedRoutes.some(route => 
     pathname.startsWith(route)
   )
 
   if (isProtectedRoute) {
-    // Check for Supabase auth cookie
-    const authCookie = request.cookies.get('sb-access-token') || 
-                      request.cookies.get('sb-refresh-token')
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+        }
+      }
+    )
 
-    if (!authCookie) {
-      // Redirect to login if no auth cookie found
+    // Get session from cookies
+    const accessToken = request.cookies.get('sb-access-token')?.value
+    const refreshToken = request.cookies.get('sb-refresh-token')?.value
+
+    if (!accessToken && !refreshToken) {
       const loginUrl = new URL('/login', request.url)
       return NextResponse.redirect(loginUrl)
     }
   }
 
-  // Allow the request to proceed
   return NextResponse.next()
 }
 
