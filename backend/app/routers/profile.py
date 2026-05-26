@@ -35,7 +35,7 @@ async def get_profile(
     """
     try:
         # Try to fetch existing profile
-        response = supabase.table("masters") \
+        response = supabase.table("users") \
             .select("*") \
             .eq("id", current_user.user_id) \
             .single() \
@@ -63,7 +63,7 @@ async def get_profile(
             "credits": 0
         }
         
-        response = supabase.table("masters") \
+        response = supabase.table("users") \
             .insert(new_profile) \
             .execute()
         
