@@ -17,38 +17,44 @@ export default function LoginPage() {
     e.preventDefault()
     setIsLoading(true)
     setError('')
+    
+    console.log('Login attempt:', { isSignUp, email })
 
     try {
       if (isSignUp) {
         // Sign up
+        console.log('Calling signUp...')
         const { data, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
         })
+        console.log('SignUp response:', { data, error: signUpError })
 
         if (signUpError) throw signUpError
 
         if (data.user) {
-          // Force redirect to dashboard
           window.location.href = '/dashboard'
         }
       } else {
         // Sign in
+        console.log('Calling signInWithPassword...')
         const { data, error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password,
         })
+        console.log('SignIn response:', { data, error: signInError })
 
         if (signInError) throw signInError
 
         if (data.session) {
-          // Force redirect to dashboard
+          console.log('Session received, redirecting...')
           window.location.href = '/dashboard'
         } else {
           throw new Error('No session returned')
         }
       }
     } catch (err: any) {
+      console.error('Login error:', err)
       setError(err.message || 'An error occurred')
     } finally {
       setIsLoading(false)
