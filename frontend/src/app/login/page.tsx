@@ -29,7 +29,8 @@ export default function LoginPage() {
         if (signUpError) throw signUpError
 
         if (data.user) {
-          router.push('/dashboard')
+          // Force redirect to dashboard
+          window.location.href = '/dashboard'
         }
       } else {
         // Sign in
@@ -40,8 +41,11 @@ export default function LoginPage() {
 
         if (signInError) throw signInError
 
-        if (data.user) {
-          router.push('/dashboard')
+        if (data.session) {
+          // Force redirect to dashboard
+          window.location.href = '/dashboard'
+        } else {
+          throw new Error('No session returned')
         }
       }
     } catch (err: any) {
