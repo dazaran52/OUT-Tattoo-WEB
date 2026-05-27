@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS public.leads (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+
 COMMENT ON TABLE public.leads IS 'Tattoo client requests available for purchase';
 COMMENT ON COLUMN public.leads.contacts IS 'Hidden by backend until unlocked by the user';
 COMMENT ON COLUMN public.leads.price_credits IS 'Cost to unlock this lead in Credits';
