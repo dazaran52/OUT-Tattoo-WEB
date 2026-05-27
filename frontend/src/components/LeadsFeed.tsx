@@ -8,9 +8,9 @@ export interface Lead {
   title: string
   description: string
   contacts: string
-  price_credits: int
+  price_credits: number
   is_unlocked: boolean
-  created_at?: str
+  created_at?: string
 }
 
 interface LeadsFeedProps {
