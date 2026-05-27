@@ -39,10 +39,11 @@ def get_current_user(
     
     try:
         # Decode and verify JWT token
+        # Supabase uses ES256 (ECDSA) algorithm, not HS256
         payload = jwt.decode(
             token,
             settings.SUPABASE_JWT_SECRET,
-            algorithms=["HS256"]
+            algorithms=["ES256"]
         )
         
         # Extract user data from token
