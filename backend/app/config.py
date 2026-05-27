@@ -28,12 +28,12 @@ class Settings(BaseSettings):
     APP_ENV: str = "development"
     DONATELLO_X_KEY: str = "OUT_TATTOO_SECRET_123"
     
-    # CORS Origins
+    # CORS Origins - explicit list for credentials support
     ALLOWED_ORIGINS: list[str] = [
         "http://localhost:3000",
         "https://localhost:3000",
         "https://out-tattoo-web.vercel.app",
-        "https://*.vercel.app",
+        "https://out-tattoo-leads.vercel.app",
     ]
     
     class Config:
