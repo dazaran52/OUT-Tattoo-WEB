@@ -38,7 +38,7 @@ def create_application() -> FastAPI:
     if settings.APP_ENV == "production":
         origins.extend([
             "https://out-tattoo-leads.vercel.app",
-            "https://*.vercel.app"
+            "https://out-tattoo-web.vercel.app"
         ])
     
     app.add_middleware(
