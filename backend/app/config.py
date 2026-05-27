@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     APP_HOST: str = "0.0.0.0"
     APP_PORT: int = 8000
     APP_ENV: str = "development"
+    DONATELLO_X_KEY: str = "OUT_TATTOO_SECRET_123"
     
     # CORS Origins
     ALLOWED_ORIGINS: list[str] = [

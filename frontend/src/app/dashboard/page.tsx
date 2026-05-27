@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Header } from '@/components/Header'
 import { SkeletonCard } from '@/components/SkeletonCard'
 import { supabase, Profile } from '@/lib/supabase'
+import { LeadsFeed } from '@/components/LeadsFeed'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -54,6 +55,12 @@ export default function DashboardPage() {
     router.push('/login')
   }
 
+  const handleUnlockSuccess = (newCredits: number) => {
+    if (profile) {
+      setProfile({ ...profile, credits: newCredits })
+    }
+  }
+
   if (isLoading || !profile) {
     return (
       <div className="min-h-screen bg-neutral-950">
@@ -75,28 +82,24 @@ export default function DashboardPage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-neutral-50">
-            Добро пожаловать, {profile.email.split('@')[0]}
-          </h2>
-          <p className="mt-1 text-neutral-400">
-            Доступные тату-лиды появятся здесь
-          </p>
+        <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center">
+          <div>
+            <h2 className="text-2xl font-bold text-neutral-50">
+              Добро пожаловать, {profile.email.split('@')[0]}
+            </h2>
+            <p className="mt-1 text-neutral-400">
+              Доступные тату-лиды для покупки
+            </p>
+          </div>
+          
+          <div className="mt-4 md:mt-0 bg-neutral-900 border border-neutral-800 px-4 py-2 rounded-lg flex items-center gap-3">
+            <span className="text-neutral-400 text-sm">Váš zůstatek:</span>
+            <span className="text-xl font-mono font-bold text-white">{profile.credits} Kč</span>
+          </div>
         </div>
 
-        {/* Skeleton Grid - Future Leads Area */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
-            <SkeletonCard key={i} />
-          ))}
-        </div>
-
-        {/* Empty State Message */}
-        <div className="mt-12 text-center">
-          <p className="text-neutral-500 text-sm">
-            Новые лиды появятся здесь. Пополните баланс кредитов, чтобы начать работу.
-          </p>
-        </div>
+        {/* Leads Feed */}
+        <LeadsFeed onUnlockSuccess={handleUnlockSuccess} />
       </main>
     </div>
   )

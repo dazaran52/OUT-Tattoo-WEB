@@ -5,7 +5,8 @@ from contextlib import asynccontextmanager
 
 from app.config import get_settings
 from app.routers.profile import router as profile_router
-
+from app.routers.leads import router as leads_router
+from app.routers.webhooks import router as webhooks_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -52,6 +53,8 @@ def create_application() -> FastAPI:
     
     # Include routers
     app.include_router(profile_router)
+    app.include_router(leads_router)
+    app.include_router(webhooks_router)
     
     @app.get("/health")
     async def health_check():
