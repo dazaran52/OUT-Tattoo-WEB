@@ -33,6 +33,10 @@ def get_current_user(
     token = credentials.credentials
     settings = get_settings()
     
+    # Debug logging
+    print(f"DEBUG: Received token (first 50 chars): {token[:50]}...")
+    print(f"DEBUG: JWT_SECRET configured: {bool(settings.SUPABASE_JWT_SECRET)}")
+    
     try:
         # Decode and verify JWT token
         payload = jwt.decode(
@@ -45,6 +49,8 @@ def get_current_user(
         user_id = payload.get("sub")
         email = payload.get("email")
         
+        print(f"DEBUG: Token decoded successfully, user_id={user_id}, email={email}")
+        
         if not user_id or not email:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -53,8 +59,15 @@ def get_current_user(
         
         return AuthUser(user_id=user_id, email=email)
         
-    except JWTError:
+    except JWTError as e:
+        print(f"DEBUG: JWT decode error: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token"
+            detail=f"Invalid or expired token: {str(e)}"
+        )
+    except Exception as e:
+        print(f"DEBUG: Unexpected error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Token validation error: {str(e)}"
         )
