@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import { SkeletonCard } from '@/components/SkeletonCard'
+import { RefreshCw, Search } from 'lucide-react'
 
 export interface Lead {
   id: string
@@ -22,6 +24,7 @@ export function LeadsFeed({ onUnlockSuccess }: LeadsFeedProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [unlockingId, setUnlockingId] = useState<string | null>(null)
+  const [filterText, setFilterText] = useState('')
 
   useEffect(() => {
     fetchLeads()
@@ -102,27 +105,67 @@ export function LeadsFeed({ onUnlockSuccess }: LeadsFeedProps) {
   }
 
   if (isLoading) {
-    return <div className="text-neutral-400">Načítání leadů... / Loading leads...</div>
-  }
-
-  if (leads.length === 0) {
     return (
-      <div className="text-center p-8 bg-neutral-900 rounded-xl border border-neutral-800">
-        <p className="text-neutral-400">Zatím nejsou k dispozici žádné poptávky.</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[...Array(6)].map((_, i) => (
+          <SkeletonCard key={i} />
+        ))}
       </div>
     )
   }
 
+  if (leads.length === 0) {
+    return (
+      <div className="text-center p-12 bg-neutral-900 rounded-xl border border-neutral-800">
+        <div className="w-16 h-16 bg-neutral-800 rounded-full mx-auto mb-4 flex items-center justify-center">
+          <Search className="w-8 h-8 text-neutral-500" />
+        </div>
+        <p className="text-neutral-300 text-lg mb-2">Zatím nejsou k dispozici žádné poptávky</p>
+        <p className="text-neutral-500 text-sm">Zkuste to prosím později</p>
+      </div>
+    )
+  }
+
+  const filteredLeads = filterText 
+    ? leads.filter(l => l.title.toLowerCase().includes(filterText.toLowerCase()) || 
+                       l.description.toLowerCase().includes(filterText.toLowerCase()))
+    : leads
+
   return (
     <div className="space-y-6">
+      {/* Toolbar */}
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="relative flex-1 sm:flex-none">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
+            <input
+              type="text"
+              placeholder="Filtrovat poptávky..."
+              value={filterText}
+              onChange={(e) => setFilterText(e.target.value)}
+              className="w-full sm:w-64 bg-neutral-900 border border-neutral-800 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-600"
+            />
+          </div>
+        </div>
+        <button
+          onClick={fetchLeads}
+          disabled={isLoading}
+          className="flex items-center gap-2 px-4 py-2 bg-neutral-900 border border-neutral-800 rounded-lg text-sm text-neutral-300 hover:text-white hover:border-neutral-600 transition-colors disabled:opacity-50"
+        >
+          <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+          Obnovit
+        </button>
+      </div>
+
       {error && (
         <div className="bg-red-900/50 border border-red-500 text-red-200 p-4 rounded-lg">
           {error}
+          <button onClick={fetchLeads} className="ml-4 text-sm underline">Zkusit znovu</button>
         </div>
       )}
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {leads.map((lead) => (
+        {filteredLeads.map((lead) => (
           <div key={lead.id} className="bg-neutral-900 rounded-xl border border-neutral-800 overflow-hidden flex flex-col">
             <div className="p-6 flex-1">
               <div className="flex justify-between items-start mb-4">
