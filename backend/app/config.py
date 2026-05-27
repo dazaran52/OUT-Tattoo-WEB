@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings
 from functools import lru_cache
+import base64
 
 
 class Settings(BaseSettings):
@@ -8,7 +9,18 @@ class Settings(BaseSettings):
     # Supabase Configuration
     SUPABASE_URL: str
     SUPABASE_KEY: str
-    SUPABASE_JWT_SECRET: str
+    _jwt_secret_raw: str  # Store raw base64
+    
+    @property
+    def SUPABASE_JWT_SECRET(self) -> str:
+        """Decode base64 JWT secret to PEM format."""
+        try:
+            # Try to decode base64
+            decoded = base64.b64decode(self._jwt_secret_raw).decode('utf-8')
+            return decoded
+        except Exception:
+            # If not base64, return as-is
+            return self._jwt_secret_raw
     
     # App Configuration
     APP_HOST: str = "0.0.0.0"
