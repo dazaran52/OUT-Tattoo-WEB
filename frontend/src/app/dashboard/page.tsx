@@ -6,11 +6,24 @@ import { Header } from '@/components/Header'
 import { SkeletonCard } from '@/components/SkeletonCard'
 import { supabase, Profile } from '@/lib/supabase'
 import { LeadsFeed } from '@/components/LeadsFeed'
+import { getTranslation, Language } from '@/lib/i18n'
 
 export default function DashboardPage() {
   const router = useRouter()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [language, setLanguage] = useState<string>('cs')
+
+  // Load language from localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedLang = localStorage.getItem('language') || 'cs'
+      setLanguage(savedLang)
+    }
+  }, [])
+
+  // Translation helper
+  const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language as Language, key)
 
   useEffect(() => {
     fetchProfile()
@@ -85,15 +98,15 @@ export default function DashboardPage() {
         <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center">
           <div>
             <h2 className="text-2xl font-bold text-neutral-50">
-              Добро пожаловать, {profile.email.split('@')[0]}
+              {t('welcome')}, {profile.email.split('@')[0]}
             </h2>
             <p className="mt-1 text-neutral-400">
-              Доступные тату-лиды для покупки
+              {t('availableLeads')}
             </p>
           </div>
           
           <div className="mt-4 md:mt-0 bg-neutral-900 border border-neutral-800 px-4 py-2 rounded-lg flex items-center gap-3">
-            <span className="text-neutral-400 text-sm">Váš zůstatek:</span>
+            <span className="text-neutral-400 text-sm">{t('yourBalance')}:</span>
             <span className="text-xl font-mono font-bold text-white">{profile.credits} Kč</span>
           </div>
         </div>

@@ -55,6 +55,10 @@ type Translations = {
     dashboard: string;
     logout: string;
     
+    // Welcome
+    welcome: string;
+    availableLeads: string;
+    
     // Dashboard
     yourBalance: string;
     noLeads: string;

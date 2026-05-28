@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { SkeletonCard } from '@/components/SkeletonCard'
 import { RefreshCw, Search } from 'lucide-react'
+import { getTranslation, Language } from '@/lib/i18n'
 
 export interface Lead {
   id: string
@@ -25,6 +26,16 @@ export function LeadsFeed({ onUnlockSuccess }: LeadsFeedProps) {
   const [error, setError] = useState<string | null>(null)
   const [unlockingId, setUnlockingId] = useState<string | null>(null)
   const [filterText, setFilterText] = useState('')
+  const [language, setLanguage] = useState<string>('cs')
+  
+  const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language as Language, key)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedLang = localStorage.getItem('language') || 'cs'
+      setLanguage(savedLang)
+    }
+  }, [])
 
   useEffect(() => {
     fetchLeads()
