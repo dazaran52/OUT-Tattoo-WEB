@@ -131,8 +131,8 @@ export function LeadsFeed({ onUnlockSuccess }: LeadsFeedProps) {
         <div className="w-16 h-16 bg-neutral-800 rounded-full mx-auto mb-4 flex items-center justify-center">
           <Search className="w-8 h-8 text-neutral-500" />
         </div>
-        <p className="text-neutral-300 text-lg mb-2">Zatím nejsou k dispozici žádné poptávky</p>
-        <p className="text-neutral-500 text-sm">Zkuste to prosím později</p>
+        <p className="text-neutral-300 text-lg mb-2">{t('noLeads')}</p>
+        <p className="text-neutral-500 text-sm">{t('noLeadsDescription')}</p>
       </div>
     )
   }
@@ -151,7 +151,7 @@ export function LeadsFeed({ onUnlockSuccess }: LeadsFeedProps) {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
             <input
               type="text"
-              placeholder="Filtrovat poptávky..."
+              placeholder={t('filterLeads')}
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
               className="w-full sm:w-64 bg-neutral-900 border border-neutral-800 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-600"
@@ -164,14 +164,14 @@ export function LeadsFeed({ onUnlockSuccess }: LeadsFeedProps) {
           className="flex items-center gap-2 px-4 py-2 bg-neutral-900 border border-neutral-800 rounded-lg text-sm text-neutral-300 hover:text-white hover:border-neutral-600 transition-colors disabled:opacity-50"
         >
           <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-          Obnovit
+          {t('refresh')}
         </button>
       </div>
 
       {error && (
         <div className="bg-red-900/50 border border-red-500 text-red-200 p-4 rounded-lg">
           {error}
-          <button onClick={fetchLeads} className="ml-4 text-sm underline">Zkusit znovu</button>
+          <button onClick={fetchLeads} className="ml-4 text-sm underline">{t('tryAgain')}</button>
         </div>
       )}
       
@@ -188,7 +188,7 @@ export function LeadsFeed({ onUnlockSuccess }: LeadsFeedProps) {
               <p className="text-neutral-400 text-sm mb-6">{lead.description}</p>
               
               <div className="bg-neutral-950 p-3 rounded border border-neutral-800">
-                <p className="text-xs text-neutral-500 mb-1">Kontakty:</p>
+                <p className="text-xs text-neutral-500 mb-1">{t('contacts')}:</p>
                 <p className={`font-mono text-sm ${lead.is_unlocked ? 'text-green-400' : 'text-neutral-600 blur-sm select-none'}`}>
                   {lead.contacts}
                 </p>
@@ -201,7 +201,7 @@ export function LeadsFeed({ onUnlockSuccess }: LeadsFeedProps) {
                   disabled
                   className="w-full py-2 px-4 bg-green-900/30 text-green-400 border border-green-900/50 rounded-lg text-sm font-medium"
                 >
-                  Odemčeno
+                  {t('unlocked')}
                 </button>
               ) : (
                 <button 
@@ -209,7 +209,7 @@ export function LeadsFeed({ onUnlockSuccess }: LeadsFeedProps) {
                   disabled={unlockingId === lead.id}
                   className="w-full py-2 px-4 bg-white text-black hover:bg-neutral-200 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
                 >
-                  {unlockingId === lead.id ? 'Zpracování...' : `Odemknout za ${lead.price_credits} kreditů`}
+                  {unlockingId === lead.id ? t('processing') : `${t('unlock')} - ${lead.price_credits} ${t('credit_plural')}`}
                 </button>
               )}
             </div>

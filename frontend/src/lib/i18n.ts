@@ -73,10 +73,14 @@ type Translations = {
     // Leads
     leadDetails: string;
     unlock: string;
+    processing: string;
     location: string;
     services: string;
     description: string;
     created: string;
+    contacts: string;
+    filterLeads: string;
+    tryAgain: string;
     
     // Errors
     failedToUpdate: string;
@@ -149,10 +153,14 @@ const translations: Translations = {
     
     leadDetails: 'Detaily poptávky',
     unlock: 'Odemknout',
+    processing: 'Zpracování...',
     location: 'Lokalita',
     services: 'Služby',
     description: 'Popis',
     created: 'Vytvořeno',
+    contacts: 'Kontakty',
+    filterLeads: 'Filtrovat poptávky...',
+    tryAgain: 'Zkusit znovu',
     
     failedToUpdate: 'Nepodařilo se aktualizovat profil',
     failedToLoad: 'Nepodařilo se načíst profil',
@@ -221,10 +229,14 @@ const translations: Translations = {
     
     leadDetails: 'Детали заявки',
     unlock: 'Разблокировать',
+    processing: 'Обработка...',
     location: 'Локация',
     services: 'Услуги',
     description: 'Описание',
     created: 'Создано',
+    contacts: 'Контакты',
+    filterLeads: 'Фильтровать заявки...',
+    tryAgain: 'Попробовать снова',
     
     failedToUpdate: 'Не удалось обновить профиль',
     failedToLoad: 'Не удалось загрузить профиль',
@@ -293,10 +305,14 @@ const translations: Translations = {
     
     leadDetails: 'Lead Details',
     unlock: 'Unlock',
+    processing: 'Processing...',
     location: 'Location',
     services: 'Services',
     description: 'Description',
     created: 'Created',
+    contacts: 'Contacts',
+    filterLeads: 'Filter leads...',
+    tryAgain: 'Try again',
     
     failedToUpdate: 'Failed to update profile',
     failedToLoad: 'Failed to load profile',
