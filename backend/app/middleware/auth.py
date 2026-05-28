@@ -20,29 +20,43 @@ def get_current_user(
     """
     Validate JWT token and extract user information.
     """
+    print(f"DEBUG: Authorization header received: {bool(credentials)}")
+    
+    if not credentials:
+        print("DEBUG: No credentials provided")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="No authorization header"
+        )
+    
     token = credentials.credentials
+    print(f"DEBUG: Token received (first 50 chars): {token[:50]}...")
     
     # For now, just decode without verification (get user info from payload)
     # The token is already validated by Supabase on the frontend
     try:
-        # Decode without verification to extract user info
-        # In production, you should verify the signature properly
+        # Try to decode JWT payload without verification
         payload = jwt.get_unverified_claims(token)
+        print(f"DEBUG: Payload decoded successfully: {payload}")
         
         user_id = payload.get("sub")
         email = payload.get("email")
         
+        print(f"DEBUG: user_id={user_id}, email={email}")
+        
         if not user_id or not email:
+            print(f"DEBUG: Missing user_id or email in token")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid token: missing user data"
             )
         
+        print(f"DEBUG: Auth successful for {email}")
         return AuthUser(user_id=user_id, email=email)
         
     except Exception as e:
-        print(f"DEBUG: Token decode error: {e}")
+        print(f"DEBUG: Token decode error: {type(e).__name__}: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token"
+            detail=f"Invalid token: {str(e)}"
         )
