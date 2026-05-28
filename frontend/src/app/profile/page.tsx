@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Header } from '@/components/Header'
 import { supabase } from '@/lib/supabase'
 import { api, Profile } from '@/lib/api'
+import { getTranslation, Language } from '@/lib/i18n'
 import { 
   User, Mail, Coins, Calendar, Phone, FileText, Save, X, Edit2, 
   Unlock, CreditCard, Settings, Bell, Lock, Globe, Moon, Sun,
@@ -108,17 +109,26 @@ export default function ProfilePage() {
   const applyTheme = (themeValue: string) => {
     if (typeof window !== 'undefined') {
       const root = document.documentElement
+      const body = document.body
+      
       if (themeValue === 'light') {
         root.classList.remove('dark')
-        root.style.backgroundColor = '#ffffff'
-        root.style.color = '#171717'
+        body.classList.remove('bg-neutral-950')
+        body.classList.add('bg-white')
+        body.style.backgroundColor = '#ffffff'
+        body.style.color = '#171717'
       } else {
         root.classList.add('dark')
-        root.style.backgroundColor = '#0a0a0a'
-        root.style.color = '#ffffff'
+        body.classList.remove('bg-white')
+        body.classList.add('bg-neutral-950')
+        body.style.backgroundColor = '#0a0a0a'
+        body.style.color = '#ffffff'
       }
     }
   }
+
+  // Translation helper
+  const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language as Language, key)
 
   const saveSetting = (key: string, value: string | boolean) => {
     if (typeof window !== 'undefined') {
@@ -208,7 +218,7 @@ export default function ProfilePage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
-        <div className="text-neutral-400">Načítání...</div>
+        <div className="text-neutral-400">{t('loading')}</div>
       </div>
     )
   }
@@ -216,7 +226,7 @@ export default function ProfilePage() {
   if (!profile) {
     return (
       <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
-        <div className="text-red-400">Nepodařilo se načíst profil</div>
+        <div className="text-red-400">{t('failedToLoad')}</div>
       </div>
     )
   }
@@ -232,9 +242,9 @@ export default function ProfilePage() {
             className="flex items-center gap-2 text-neutral-400 hover:text-white transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
-            Zpět
+            {t('back')}
           </button>
-          <h1 className="text-2xl font-bold text-white">Profil a nastavení</h1>
+          <h1 className="text-2xl font-bold text-white">{t('profileAndSettings')}</h1>
         </div>
 
         {error && (
@@ -253,13 +263,13 @@ export default function ProfilePage() {
                   <User className="w-12 h-12 text-neutral-400" />
                 </div>
                 <h2 className="text-lg font-semibold text-white mb-1">
-                  {profile.display_name || 'Uživatel'}
+                  {profile.display_name || t('user')}
                 </h2>
                 <p className="text-neutral-400 text-sm mb-2">{profile.email}</p>
                 <div className="flex items-center justify-center md:justify-start gap-2 text-amber-400">
                   <Coins className="w-5 h-5" />
                   <span className="font-bold text-lg">{profile.credits}</span>
-                  <span className="text-sm text-neutral-400">kreditů</span>
+                  <span className="text-sm text-neutral-400">{t('credits')}</span>
                 </div>
               </div>
 
@@ -268,19 +278,19 @@ export default function ProfilePage() {
                 <div className="bg-neutral-800 rounded-lg p-4 text-center">
                   <Unlock className="w-5 h-5 text-neutral-400 mx-auto mb-2" />
                   <p className="text-white font-medium">{profile.unlocked_leads_count || 0}</p>
-                  <p className="text-neutral-400 text-xs">Odemčených</p>
+                  <p className="text-neutral-400 text-xs">{t('unlocked')}</p>
                 </div>
                 <div className="bg-neutral-800 rounded-lg p-4 text-center">
                   <CreditCard className="w-5 h-5 text-neutral-400 mx-auto mb-2" />
                   <p className="text-white font-medium">{profile.total_spent || 0}</p>
-                  <p className="text-neutral-400 text-xs">Utopených</p>
+                  <p className="text-neutral-400 text-xs">{t('spent')}</p>
                 </div>
                 <div className="bg-neutral-800 rounded-lg p-4 text-center">
                   <Calendar className="w-5 h-5 text-neutral-400 mx-auto mb-2" />
                   <p className="text-white font-medium text-sm">
                     {new Date(profile.created_at).toLocaleDateString('cs-CZ')}
                   </p>
-                  <p className="text-neutral-400 text-xs">Členem od</p>
+                  <p className="text-neutral-400 text-xs">{t('memberSince')}</p>
                 </div>
               </div>
             </div>
@@ -291,7 +301,7 @@ export default function ProfilePage() {
                 className="mt-6 flex items-center gap-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg transition-colors"
               >
                 <Edit2 className="w-4 h-4" />
-                Upravit profil
+                {t('editProfile')}
               </button>
             )}
           </div>
@@ -299,12 +309,12 @@ export default function ProfilePage() {
           {/* Edit Form */}
           {isEditing && (
             <div className="bg-neutral-900 rounded-xl border border-neutral-800 p-6">
-              <h3 className="text-lg font-semibold text-white mb-6">Upravit profil</h3>
+              <h3 className="text-lg font-semibold text-white mb-6">{t('editProfile')}</h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div>
                   <label className="block text-sm font-medium text-neutral-400 mb-2">
-                    Zobrazované jméno
+                    {t('displayName')}
                   </label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
@@ -312,7 +322,7 @@ export default function ProfilePage() {
                       type="text"
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
-                      placeholder="Vaše jméno"
+                      placeholder={t('displayName')}
                       className="w-full bg-neutral-800 border border-neutral-700 rounded-lg pl-10 pr-4 py-2.5 text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-600"
                     />
                   </div>
@@ -320,7 +330,7 @@ export default function ProfilePage() {
 
                 <div>
                   <label className="block text-sm font-medium text-neutral-400 mb-2">
-                    Telefon
+                    {t('phone')}
                   </label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
@@ -336,14 +346,14 @@ export default function ProfilePage() {
 
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-neutral-400 mb-2">
-                    O mně
+                    {t('bio')}
                   </label>
                   <div className="relative">
                     <FileText className="absolute left-3 top-3 w-5 h-5 text-neutral-500" />
                     <textarea
                       value={bio}
                       onChange={(e) => setBio(e.target.value)}
-                      placeholder="Krátký popis o sobě..."
+                      placeholder={t('aboutMe')}
                       rows={3}
                       className="w-full bg-neutral-800 border border-neutral-700 rounded-lg pl-10 pr-4 py-2.5 text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-600 resize-none"
                     />
@@ -358,7 +368,7 @@ export default function ProfilePage() {
                   className="flex items-center gap-2 px-4 py-2 bg-neutral-50 text-neutral-950 rounded-lg font-medium hover:bg-neutral-200 transition-colors disabled:opacity-50"
                 >
                   <Save className="w-4 h-4" />
-                  {isSaving ? 'Ukládání...' : 'Uložit změny'}
+                  {isSaving ? t('loading') : t('saveChanges')}
                 </button>
                 <button
                   onClick={handleCancel}
@@ -377,7 +387,7 @@ export default function ProfilePage() {
             <div className="p-6 border-b border-neutral-800">
               <h2 className="text-lg font-semibold text-white flex items-center gap-2">
                 <Settings className="w-5 h-5 text-neutral-400" />
-                Nastavení
+                {t('settings')}
               </h2>
             </div>
 
@@ -387,8 +397,8 @@ export default function ProfilePage() {
                 <div className="flex items-center gap-3">
                   <Globe className="w-5 h-5 text-neutral-400" />
                   <div>
-                    <p className="text-white font-medium">Jazyk</p>
-                    <p className="text-neutral-400 text-sm">Vyberte preferovaný jazyk</p>
+                    <p className="text-white font-medium">{t('language')}</p>
+                    <p className="text-neutral-400 text-sm">{t('languageDescription')}</p>
                   </div>
                 </div>
                 <select
@@ -409,8 +419,8 @@ export default function ProfilePage() {
                 <div className="flex items-center gap-3">
                   {theme === 'dark' ? <Moon className="w-5 h-5 text-neutral-400" /> : <Sun className="w-5 h-5 text-neutral-400" />}
                   <div>
-                    <p className="text-white font-medium">Vzhled</p>
-                    <p className="text-neutral-400 text-sm">Světlý nebo tmavý režim</p>
+                    <p className="text-white font-medium">{t('theme')}</p>
+                    <p className="text-neutral-400 text-sm">{t('themeDescription')}</p>
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -419,14 +429,14 @@ export default function ProfilePage() {
                     className={`px-4 py-2 rounded-lg transition-colors ${theme === 'dark' ? 'bg-neutral-50 text-neutral-950' : 'bg-neutral-800 text-white hover:bg-neutral-700'}`}
                   >
                     <Moon className="w-4 h-4 inline mr-2" />
-                    Tmavý
+                    {t('dark')}
                   </button>
                   <button
                     onClick={() => handleThemeChange('light')}
                     className={`px-4 py-2 rounded-lg transition-colors ${theme === 'light' ? 'bg-neutral-50 text-neutral-950' : 'bg-neutral-800 text-white hover:bg-neutral-700'}`}
                   >
                     <Sun className="w-4 h-4 inline mr-2" />
-                    Světlý
+                    {t('light')}
                   </button>
                 </div>
               </div>
@@ -436,12 +446,12 @@ export default function ProfilePage() {
             <div className="p-6 border-b border-neutral-800">
               <div className="flex items-center gap-2 mb-4">
                 <Bell className="w-5 h-5 text-neutral-400" />
-                <p className="text-white font-medium">Notifikace</p>
+                <p className="text-white font-medium">{t('notifications')}</p>
               </div>
 
               <div className="space-y-4 pl-7">
                 <div className="flex items-center justify-between">
-                  <p className="text-neutral-300">Emailové notifikace</p>
+                  <p className="text-neutral-300">{t('emailNotifications')}</p>
                   <Toggle 
                     checked={emailNotifications} 
                     onChange={() => {
@@ -452,7 +462,7 @@ export default function ProfilePage() {
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <p className="text-neutral-300">Nové poptávky</p>
+                  <p className="text-neutral-300">{t('newLeadAlerts')}</p>
                   <Toggle 
                     checked={newLeadAlerts} 
                     onChange={() => {
@@ -464,7 +474,7 @@ export default function ProfilePage() {
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <p className="text-neutral-300">Nízký zůstatek kreditů</p>
+                  <p className="text-neutral-300">{t('lowCreditAlerts')}</p>
                   <Toggle 
                     checked={lowCreditAlerts} 
                     onChange={() => {
@@ -482,13 +492,13 @@ export default function ProfilePage() {
             <div className="p-6 border-b border-neutral-800">
               <div className="flex items-center gap-2 mb-4">
                 <Lock className="w-5 h-5 text-neutral-400" />
-                <p className="text-white font-medium">Změna hesla</p>
+                <p className="text-white font-medium">{t('changePassword')}</p>
               </div>
 
               {passwordSuccess && (
                 <div className="bg-green-900/50 border border-green-500 text-green-200 p-3 rounded-lg mb-4 flex items-center gap-2">
                   <Check className="w-4 h-4" />
-                  Heslo bylo úspěšně změněno
+                  {t('passwordSuccess')}
                 </div>
               )}
 
@@ -503,7 +513,7 @@ export default function ProfilePage() {
                   onClick={() => setShowPasswordForm(true)}
                   className="text-neutral-300 hover:text-white transition-colors text-sm"
                 >
-                  Změnit heslo →
+                  {t('changePassword')} →
                 </button>
               ) : (
                 <div className="space-y-3 pl-7">
@@ -512,7 +522,7 @@ export default function ProfilePage() {
                       type={showNewPassword ? 'text' : 'password'}
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder="Nové heslo (min. 6 znaků)"
+                      placeholder={t('newPassword')}
                       className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2 text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-600"
                     />
                   </div>
@@ -521,7 +531,7 @@ export default function ProfilePage() {
                       type={showNewPassword ? 'text' : 'password'}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="Potvrzení hesla"
+                      placeholder={t('confirmPassword')}
                       className="w-full bg-neutral-800 border border-neutral-700 rounded-lg pr-12 pl-4 py-2 text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-600"
                     />
                     <button
@@ -537,7 +547,7 @@ export default function ProfilePage() {
                       disabled={isChangingPassword || !newPassword || !confirmPassword}
                       className="px-4 py-2 bg-neutral-50 text-neutral-950 rounded-lg font-medium hover:bg-neutral-200 transition-colors disabled:opacity-50 text-sm"
                     >
-                      {isChangingPassword ? 'Ukládání...' : 'Změnit heslo'}
+                      {isChangingPassword ? t('loading') : t('changePassword')}
                     </button>
                     <button
                       onClick={() => {
@@ -559,7 +569,7 @@ export default function ProfilePage() {
             <div className="p-6">
               <div className="flex items-center gap-2 mb-4">
                 <AlertTriangle className="w-5 h-5 text-red-400" />
-                <p className="text-red-400 font-medium">Nebezpečná zóna</p>
+                <p className="text-red-400 font-medium">{t('dangerZone')}</p>
               </div>
 
               {!showDeleteConfirm ? (
@@ -568,27 +578,27 @@ export default function ProfilePage() {
                   className="flex items-center gap-2 text-red-400 hover:text-red-300 transition-colors text-sm pl-7"
                 >
                   <Trash2 className="w-4 h-4" />
-                  Smazat účet
+                  {t('deleteAccount')}
                 </button>
               ) : (
                 <div className="pl-7 space-y-3">
                   <p className="text-neutral-300 text-sm">
-                    Pro potvrzení napište <strong>SMazat</strong>:
+                    {t('typeToConfirm')}:
                   </p>
                   <input
                     type="text"
                     value={deleteConfirmText}
                     onChange={(e) => setDeleteConfirmText(e.target.value)}
-                    placeholder="SMazat"
+                    placeholder={language === 'ru' ? 'УДАЛИТЬ' : language === 'cs' ? 'SMAZAT' : 'DELETE'}
                     className="w-full bg-neutral-800 border border-red-900/50 rounded-lg px-4 py-2 text-white placeholder-neutral-500 focus:outline-none focus:border-red-500"
                   />
                   <div className="flex gap-2">
                     <button
-                      disabled={deleteConfirmText !== 'SMazat'}
+                      disabled={deleteConfirmText !== (language === 'ru' ? 'УДАЛИТЬ' : language === 'cs' ? 'SMAZAT' : 'DELETE')}
                       className="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-500 transition-colors disabled:opacity-50 text-sm"
                     >
                       <Trash2 className="w-4 h-4 inline mr-1" />
-                      Smazat účet
+                      {t('deleteAccount')}
                     </button>
                     <button
                       onClick={() => {
@@ -597,7 +607,7 @@ export default function ProfilePage() {
                       }}
                       className="px-4 py-2 bg-neutral-800 text-white rounded-lg hover:bg-neutral-700 transition-colors text-sm"
                     >
-                      Zrušit
+                      {t('cancel')}
                     </button>
                   </div>
                 </div>
