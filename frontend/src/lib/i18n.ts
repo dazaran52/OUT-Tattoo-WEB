@@ -55,6 +55,25 @@ type Translations = {
     dashboard: string;
     logout: string;
     
+    // Dashboard
+    yourBalance: string;
+    noLeads: string;
+    noLeadsDescription: string;
+    refresh: string;
+    refreshError: string;
+    lastRefresh: string;
+    justNow: string;
+    credit: string;
+    credit_plural: string;
+    
+    // Leads
+    leadDetails: string;
+    unlock: string;
+    location: string;
+    services: string;
+    description: string;
+    created: string;
+    
     // Errors
     failedToUpdate: string;
     failedToLoad: string;

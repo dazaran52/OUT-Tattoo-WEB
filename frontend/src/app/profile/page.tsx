@@ -109,21 +109,15 @@ export default function ProfilePage() {
   const applyTheme = (themeValue: string) => {
     if (typeof window !== 'undefined') {
       const root = document.documentElement
-      const body = document.body
       
       if (themeValue === 'light') {
         root.classList.remove('dark')
-        body.classList.remove('bg-neutral-950')
-        body.classList.add('bg-white')
-        body.style.backgroundColor = '#ffffff'
-        body.style.color = '#171717'
       } else {
         root.classList.add('dark')
-        body.classList.remove('bg-white')
-        body.classList.add('bg-neutral-950')
-        body.style.backgroundColor = '#0a0a0a'
-        body.style.color = '#ffffff'
       }
+      
+      // Also update localStorage immediately
+      localStorage.setItem('theme', themeValue)
     }
   }
 
