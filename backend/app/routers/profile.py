@@ -15,12 +15,22 @@ class ProfileResponse(BaseModel):
     email: str
     credits: int
     created_at: str | None = None
+    display_name: str | None = None
+    phone: str | None = None
+    bio: str | None = None
 
 
 class ProfileCreate(BaseModel):
     """Profile creation data."""
     id: str
     email: str
+
+
+class ProfileUpdate(BaseModel):
+    """Profile update data."""
+    display_name: str | None = None
+    phone: str | None = None
+    bio: str | None = None
 
 
 @router.get("/profile", response_model=ProfileResponse)
@@ -48,7 +58,10 @@ async def get_profile(
                 id=data["id"],
                 email=data["email"],
                 credits=data["credits"],
-                created_at=data.get("created_at")
+                created_at=data.get("created_at"),
+                display_name=data.get("display_name"),
+                phone=data.get("phone"),
+                bio=data.get("bio")
             )
         
     except Exception:
@@ -73,7 +86,10 @@ async def get_profile(
                 id=data["id"],
                 email=data["email"],
                 credits=data["credits"],
-                created_at=data.get("created_at")
+                created_at=data.get("created_at"),
+                display_name=data.get("display_name"),
+                phone=data.get("phone"),
+                bio=data.get("bio")
             )
         else:
             raise HTTPException(
@@ -87,4 +103,64 @@ async def get_profile(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error creating profile: {str(e)}"
+        )
+
+
+@router.put("/profile", response_model=ProfileResponse)
+async def update_profile(
+    update_data: ProfileUpdate,
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase_client)
+) -> ProfileResponse:
+    """
+    Update current user profile.
+    """
+    try:
+        # Build update dict with only provided fields
+        update_dict = {}
+        if update_data.display_name is not None:
+            update_dict["display_name"] = update_data.display_name
+        if update_data.phone is not None:
+            update_dict["phone"] = update_data.phone
+        if update_data.bio is not None:
+            update_dict["bio"] = update_data.bio
+        
+        if not update_dict:
+            # No fields to update, return current profile
+            response = supabase.table("users") \
+                .select("*") \
+                .eq("id", current_user.user_id) \
+                .single() \
+                .execute()
+            data = response.data
+        else:
+            # Update profile
+            response = supabase.table("users") \
+                .update(update_dict) \
+                .eq("id", current_user.user_id) \
+                .execute()
+            data = response.data[0] if response.data else None
+        
+        if not data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Profile not found"
+            )
+        
+        return ProfileResponse(
+            id=data["id"],
+            email=data["email"],
+            credits=data["credits"],
+            created_at=data.get("created_at"),
+            display_name=data.get("display_name"),
+            phone=data.get("phone"),
+            bio=data.get("bio")
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error updating profile: {str(e)}"
         )
