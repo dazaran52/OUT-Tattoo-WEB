@@ -1,12 +1,7 @@
 // Centralized API client for OUT Tattoo Leads
-import { createClient } from '@supabase/supabase-js'
+import { supabase } from './supabase'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
 
 export interface Profile {
   id: string
@@ -23,8 +18,13 @@ export interface Profile {
 
 async function getAuthHeaders() {
   const { data: { session } } = await supabase.auth.getSession()
+  
+  if (!session?.access_token) {
+    throw new Error('No active session')
+  }
+  
   return {
-    'Authorization': `Bearer ${session?.access_token}`,
+    'Authorization': `Bearer ${session.access_token}`,
     'Content-Type': 'application/json'
   }
 }
@@ -81,5 +81,3 @@ export const api = {
     return res.json()
   }
 }
-
-export { supabase }
