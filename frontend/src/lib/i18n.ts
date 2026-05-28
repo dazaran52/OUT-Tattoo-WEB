@@ -134,6 +134,26 @@ const translations: Translations = {
     dashboard: 'Dashboard',
     logout: 'Odhlásit se',
     
+    welcome: 'Vítejte',
+    availableLeads: 'Dostupné poptávky k zakoupení',
+    
+    yourBalance: 'Váš zůstatek',
+    noLeads: 'Zatím nejsou k dispozici žádné poptávky',
+    noLeadsDescription: 'Vraťte se později pro nové poptávky',
+    refresh: 'Aktualizovat',
+    refreshError: 'Chyba při načítání',
+    lastRefresh: 'Poslední aktualizace',
+    justNow: 'právě teď',
+    credit: 'kredit',
+    credit_plural: 'kreditů',
+    
+    leadDetails: 'Detaily poptávky',
+    unlock: 'Odemknout',
+    location: 'Lokalita',
+    services: 'Služby',
+    description: 'Popis',
+    created: 'Vytvořeno',
+    
     failedToUpdate: 'Nepodařilo se aktualizovat profil',
     failedToLoad: 'Nepodařilo se načíst profil',
     passwordMismatch: 'Hesla se neshodují',
@@ -186,6 +206,26 @@ const translations: Translations = {
     dashboard: 'Главная',
     logout: 'Выйти',
     
+    welcome: 'Добро пожаловать',
+    availableLeads: 'Доступные тату-лиды для покупки',
+    
+    yourBalance: 'Ваш баланс',
+    noLeads: 'Пока нет доступных заявок',
+    noLeadsDescription: 'Возвращайтесь позже за новыми заявками',
+    refresh: 'Обновить',
+    refreshError: 'Ошибка при загрузке',
+    lastRefresh: 'Последнее обновление',
+    justNow: 'только что',
+    credit: 'кредит',
+    credit_plural: 'кредитов',
+    
+    leadDetails: 'Детали заявки',
+    unlock: 'Разблокировать',
+    location: 'Локация',
+    services: 'Услуги',
+    description: 'Описание',
+    created: 'Создано',
+    
     failedToUpdate: 'Не удалось обновить профиль',
     failedToLoad: 'Не удалось загрузить профиль',
     passwordMismatch: 'Пароли не совпадают',
@@ -237,6 +277,26 @@ const translations: Translations = {
     
     dashboard: 'Dashboard',
     logout: 'Logout',
+    
+    welcome: 'Welcome',
+    availableLeads: 'Available tattoo leads for purchase',
+    
+    yourBalance: 'Your Balance',
+    noLeads: 'No leads available yet',
+    noLeadsDescription: 'Come back later for new leads',
+    refresh: 'Refresh',
+    refreshError: 'Error loading',
+    lastRefresh: 'Last refresh',
+    justNow: 'just now',
+    credit: 'credit',
+    credit_plural: 'credits',
+    
+    leadDetails: 'Lead Details',
+    unlock: 'Unlock',
+    location: 'Location',
+    services: 'Services',
+    description: 'Description',
+    created: 'Created',
     
     failedToUpdate: 'Failed to update profile',
     failedToLoad: 'Failed to load profile',
