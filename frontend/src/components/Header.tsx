@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { LogOut, Coins, Menu, X, LayoutDashboard, Settings } from 'lucide-react'
 import { Profile } from '@/lib/supabase'
 
@@ -11,19 +12,24 @@ interface HeaderProps {
 
 export function Header({ profile, onLogout }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const router = useRouter()
+  
   return (
     <header className="bg-neutral-900 border-b border-neutral-800 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center gap-3">
+          <button 
+            onClick={() => router.push('/dashboard')}
+            className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer"
+          >
             <div className="w-8 h-8 bg-gradient-to-br from-neutral-100 to-neutral-400 rounded-lg flex items-center justify-center">
               <span className="text-neutral-950 font-bold text-sm">OUT</span>
             </div>
             <h1 className="text-lg font-semibold text-neutral-50 tracking-tight">
               OUT Tattoo Leads
             </h1>
-          </div>
+          </button>
 
           {/* Right Section */}
           <div className="flex items-center gap-6">

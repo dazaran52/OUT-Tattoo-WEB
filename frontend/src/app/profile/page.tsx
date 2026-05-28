@@ -7,8 +7,8 @@ import { supabase } from '@/lib/supabase'
 import { api, Profile } from '@/lib/api'
 import { 
   User, Mail, Coins, Calendar, Phone, FileText, Save, X, Edit2, 
-  Unlock, CreditCard, Settings, Bell, Lock, 
-  Trash2, AlertTriangle, Eye, EyeOff, Check 
+  Unlock, CreditCard, Settings, Bell, Lock, Globe, Moon, Sun,
+  Trash2, AlertTriangle, Eye, EyeOff, Check, ArrowLeft
 } from 'lucide-react'
 
 // Toggle Switch Component
@@ -44,6 +44,8 @@ export default function ProfilePage() {
   const [bio, setBio] = useState('')
 
   // Settings state
+  const [language, setLanguage] = useState('cs')
+  const [theme, setTheme] = useState('dark')
   const [emailNotifications, setEmailNotifications] = useState(true)
   const [newLeadAlerts, setNewLeadAlerts] = useState(true)
   const [lowCreditAlerts, setLowCreditAlerts] = useState(true)
@@ -90,9 +92,31 @@ export default function ProfilePage() {
 
   const loadSettings = () => {
     if (typeof window !== 'undefined') {
+      const savedLang = localStorage.getItem('language') || 'cs'
+      const savedTheme = localStorage.getItem('theme') || 'dark'
+      setLanguage(savedLang)
+      setTheme(savedTheme)
       setEmailNotifications(localStorage.getItem('emailNotifications') !== 'false')
       setNewLeadAlerts(localStorage.getItem('newLeadAlerts') !== 'false')
       setLowCreditAlerts(localStorage.getItem('lowCreditAlerts') !== 'false')
+      
+      // Apply theme immediately
+      applyTheme(savedTheme)
+    }
+  }
+
+  const applyTheme = (themeValue: string) => {
+    if (typeof window !== 'undefined') {
+      const root = document.documentElement
+      if (themeValue === 'light') {
+        root.classList.remove('dark')
+        root.style.backgroundColor = '#ffffff'
+        root.style.color = '#171717'
+      } else {
+        root.classList.add('dark')
+        root.style.backgroundColor = '#0a0a0a'
+        root.style.color = '#ffffff'
+      }
     }
   }
 
@@ -100,6 +124,19 @@ export default function ProfilePage() {
     if (typeof window !== 'undefined') {
       localStorage.setItem(key, value.toString())
     }
+  }
+
+  const handleThemeChange = (newTheme: string) => {
+    setTheme(newTheme)
+    saveSetting('theme', newTheme)
+    applyTheme(newTheme)
+  }
+
+  const handleLanguageChange = (newLang: string) => {
+    setLanguage(newLang)
+    saveSetting('language', newLang)
+    // Force reload to apply language
+    window.location.reload()
   }
 
   const handleSave = async () => {
@@ -189,7 +226,16 @@ export default function ProfilePage() {
       <Header profile={profile} onLogout={handleLogout} />
       
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-2xl font-bold text-white mb-8">Profil a nastavení</h1>
+        <div className="flex items-center gap-4 mb-8">
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="flex items-center gap-2 text-neutral-400 hover:text-white transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            Zpět
+          </button>
+          <h1 className="text-2xl font-bold text-white">Profil a nastavení</h1>
+        </div>
 
         {error && (
           <div className="bg-red-900/50 border border-red-500 text-red-200 p-4 rounded-lg mb-6">
@@ -333,6 +379,57 @@ export default function ProfilePage() {
                 <Settings className="w-5 h-5 text-neutral-400" />
                 Nastavení
               </h2>
+            </div>
+
+            {/* Language */}
+            <div className="p-6 border-b border-neutral-800">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Globe className="w-5 h-5 text-neutral-400" />
+                  <div>
+                    <p className="text-white font-medium">Jazyk</p>
+                    <p className="text-neutral-400 text-sm">Vyberte preferovaný jazyk</p>
+                  </div>
+                </div>
+                <select
+                  value={language}
+                  onChange={(e) => handleLanguageChange(e.target.value)}
+                  className="bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-neutral-600"
+                >
+                  <option value="cs">Čeština</option>
+                  <option value="ru">Русский</option>
+                  <option value="en">English</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Theme */}
+            <div className="p-6 border-b border-neutral-800">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {theme === 'dark' ? <Moon className="w-5 h-5 text-neutral-400" /> : <Sun className="w-5 h-5 text-neutral-400" />}
+                  <div>
+                    <p className="text-white font-medium">Vzhled</p>
+                    <p className="text-neutral-400 text-sm">Světlý nebo tmavý režim</p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleThemeChange('dark')}
+                    className={`px-4 py-2 rounded-lg transition-colors ${theme === 'dark' ? 'bg-neutral-50 text-neutral-950' : 'bg-neutral-800 text-white hover:bg-neutral-700'}`}
+                  >
+                    <Moon className="w-4 h-4 inline mr-2" />
+                    Tmavý
+                  </button>
+                  <button
+                    onClick={() => handleThemeChange('light')}
+                    className={`px-4 py-2 rounded-lg transition-colors ${theme === 'light' ? 'bg-neutral-50 text-neutral-950' : 'bg-neutral-800 text-white hover:bg-neutral-700'}`}
+                  >
+                    <Sun className="w-4 h-4 inline mr-2" />
+                    Světlý
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* Notifications */}
