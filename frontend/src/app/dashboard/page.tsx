@@ -105,10 +105,6 @@ export default function DashboardPage() {
             </p>
           </div>
           
-          <div className="mt-4 md:mt-0 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 px-4 py-2 rounded-lg flex items-center gap-3">
-            <span className="text-neutral-500 dark:text-neutral-400 text-sm">{t('yourBalance')}:</span>
-            <span className="text-xl font-mono font-bold text-black dark:text-white">{profile.credits} Kč</span>
-          </div>
         </div>
 
         {/* Leads Feed */}

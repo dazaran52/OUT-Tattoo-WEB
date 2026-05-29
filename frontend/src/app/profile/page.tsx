@@ -216,7 +216,7 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-neutral-900 dark:bg-neutral-50 dark:bg-neutral-900 dark:bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center transition-colors duration-200">
+      <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center transition-colors duration-200">
         <div className="text-neutral-600 dark:text-neutral-400">{t('loading')}</div>
       </div>
     )
@@ -224,14 +224,14 @@ export default function ProfilePage() {
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-neutral-900 dark:bg-neutral-50 dark:bg-neutral-900 dark:bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center transition-colors duration-200">
+      <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center transition-colors duration-200">
         <div className="text-red-400">{t('failedToLoad')}</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-neutral-900 dark:bg-neutral-50 dark:bg-neutral-900 dark:bg-neutral-50 dark:bg-neutral-950 transition-colors duration-200">
+    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 transition-colors duration-200">
       <Header profile={profile} onLogout={handleLogout} />
       
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

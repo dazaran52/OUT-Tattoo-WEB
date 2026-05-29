@@ -182,7 +182,7 @@ export function LeadsFeed({ onUnlockSuccess }: LeadsFeedProps) {
               <div className="flex justify-between items-start mb-4">
                 <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">{lead.title}</h3>
                 <span className="bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs px-2 py-1 rounded font-mono">
-                  {lead.price_credits} Kč
+                  {lead.price_credits} {t('credits')}
                 </span>
               </div>
               <p className="text-neutral-600 dark:text-neutral-400 text-sm mb-6">{lead.description}</p>
