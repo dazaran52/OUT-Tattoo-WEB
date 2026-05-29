@@ -14,9 +14,6 @@ class DonatelloWebhookPayload(BaseModel):
     amount: str
     actualAmount: str
 
-class SandboxPayload(BaseModel):
-    email: str
-    amount: float
 
 @router.post("/webhooks/donatello")
 async def donatello_webhook(
@@ -73,31 +70,4 @@ async def donatello_webhook(
         "newBalance": new_balance
     }
 
-@router.post("/sandbox/simulate-payment")
-async def simulate_payment(
-    payload: SandboxPayload,
-    supabase: Client = Depends(get_supabase_client)
-):
-    """
-    Sandbox endpoint to simulate a payment for an email.
-    """
-    matched_email = payload.email.lower()
-    user_res = supabase.table("users").select("*").eq("email", matched_email).execute()
-    
-    if not user_res.data or len(user_res.data) == 0:
-        raise HTTPException(status_code=404, detail=f"Chyba simulace: Tatér s emailem {matched_email} nebyl nalezen.")
-        
-    master = user_res.data[0]
-    
-    actual_amount = payload.amount * 0.95
-    credits_to_deposit = round(actual_amount * (500 / 830))
-    new_balance = master["credits"] + credits_to_deposit
-    
-    supabase.table("users").update({"credits": new_balance}).eq("id", master["id"]).execute()
 
-    return {
-        "success": True,
-        "message": "Simulace úspěšná! Kredity byly doručeny.",
-        "creditsAdded": credits_to_deposit,
-        "newBalance": new_balance
-    }
