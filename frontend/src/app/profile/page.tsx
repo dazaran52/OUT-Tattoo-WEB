@@ -110,11 +110,16 @@ export default function ProfilePage() {
     if (typeof window !== 'undefined') {
       const root = document.documentElement
       
+      console.log('applyTheme called with:', themeValue)
+      console.log('Current classes before:', root.className)
+      
       if (themeValue === 'light') {
         root.classList.remove('dark')
       } else {
         root.classList.add('dark')
       }
+      
+      console.log('Current classes after:', root.className)
       
       // Also update localStorage immediately
       localStorage.setItem('theme', themeValue)
