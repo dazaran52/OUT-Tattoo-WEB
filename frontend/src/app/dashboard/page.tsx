@@ -76,8 +76,8 @@ export default function DashboardPage() {
 
   if (isLoading || !profile) {
     return (
-      <div className="min-h-screen bg-neutral-950">
-        <div className="bg-neutral-900 border-b border-neutral-800 h-16 animate-pulse" />
+      <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 transition-colors duration-200">
+        <div className="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 h-16 animate-pulse" />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
@@ -90,24 +90,24 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950">
+    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 transition-colors duration-200">
       <Header profile={profile} onLogout={handleLogout} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
         <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center">
           <div>
-            <h2 className="text-2xl font-bold text-neutral-50">
+            <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-50">
               {t('welcome')}, {profile.email.split('@')[0]}
             </h2>
-            <p className="mt-1 text-neutral-400">
+            <p className="mt-1 text-neutral-500 dark:text-neutral-400">
               {t('availableLeads')}
             </p>
           </div>
           
-          <div className="mt-4 md:mt-0 bg-neutral-900 border border-neutral-800 px-4 py-2 rounded-lg flex items-center gap-3">
-            <span className="text-neutral-400 text-sm">{t('yourBalance')}:</span>
-            <span className="text-xl font-mono font-bold text-white">{profile.credits} Kč</span>
+          <div className="mt-4 md:mt-0 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 px-4 py-2 rounded-lg flex items-center gap-3">
+            <span className="text-neutral-500 dark:text-neutral-400 text-sm">{t('yourBalance')}:</span>
+            <span className="text-xl font-mono font-bold text-black dark:text-white">{profile.credits} Kč</span>
           </div>
         </div>
 

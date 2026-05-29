@@ -7,19 +7,14 @@
     @apply border-neutral-800;
   }
   
-  /* Default dark theme (before JS loads) */
+  /* Default light theme (before JS loads) */
   body {
-    @apply bg-neutral-950 text-neutral-50 antialiased;
+    @apply bg-white text-neutral-900 antialiased transition-colors duration-200;
   }
   
-  /* Dark theme - when dark class IS present (same as default) */
+  /* Dark theme */
   html.dark body {
     @apply bg-neutral-950 text-neutral-50;
-  }
-  
-  /* Light theme - when dark class is NOT present */
-  html:not(.dark) body {
-    @apply bg-white text-neutral-900;
   }
 }
 

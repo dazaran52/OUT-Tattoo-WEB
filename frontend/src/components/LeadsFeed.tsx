@@ -127,12 +127,12 @@ export function LeadsFeed({ onUnlockSuccess }: LeadsFeedProps) {
 
   if (leads.length === 0) {
     return (
-      <div className="text-center p-12 bg-neutral-900 rounded-xl border border-neutral-800">
-        <div className="w-16 h-16 bg-neutral-800 rounded-full mx-auto mb-4 flex items-center justify-center">
-          <Search className="w-8 h-8 text-neutral-500" />
+      <div className="text-center p-12 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800">
+        <div className="w-16 h-16 bg-neutral-100 dark:bg-neutral-800 rounded-full mx-auto mb-4 flex items-center justify-center">
+          <Search className="w-8 h-8 text-neutral-500 dark:text-neutral-400" />
         </div>
-        <p className="text-neutral-300 text-lg mb-2">{t('noLeads')}</p>
-        <p className="text-neutral-500 text-sm">{t('noLeadsDescription')}</p>
+        <p className="text-neutral-700 dark:text-neutral-300 text-lg mb-2">{t('noLeads')}</p>
+        <p className="text-neutral-500 dark:text-neutral-400 text-sm">{t('noLeadsDescription')}</p>
       </div>
     )
   }
@@ -148,20 +148,20 @@ export function LeadsFeed({ onUnlockSuccess }: LeadsFeedProps) {
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <div className="relative flex-1 sm:flex-none">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 dark:text-neutral-400" />
             <input
               type="text"
               placeholder={t('filterLeads')}
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
-              className="w-full sm:w-64 bg-neutral-900 border border-neutral-800 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-600"
+              className="w-full sm:w-64 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg pl-9 pr-4 py-2 text-sm text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-600"
             />
           </div>
         </div>
         <button
           onClick={fetchLeads}
           disabled={isLoading}
-          className="flex items-center gap-2 px-4 py-2 bg-neutral-900 border border-neutral-800 rounded-lg text-sm text-neutral-300 hover:text-white hover:border-neutral-600 transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:text-white hover:border-neutral-600 transition-colors disabled:opacity-50"
         >
           <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
           {t('refresh')}
@@ -177,25 +177,25 @@ export function LeadsFeed({ onUnlockSuccess }: LeadsFeedProps) {
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredLeads.map((lead) => (
-          <div key={lead.id} className="bg-neutral-900 rounded-xl border border-neutral-800 overflow-hidden flex flex-col">
+          <div key={lead.id} className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden flex flex-col">
             <div className="p-6 flex-1">
               <div className="flex justify-between items-start mb-4">
-                <h3 className="text-lg font-semibold text-white">{lead.title}</h3>
-                <span className="bg-neutral-800 text-neutral-300 text-xs px-2 py-1 rounded font-mono">
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">{lead.title}</h3>
+                <span className="bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs px-2 py-1 rounded font-mono">
                   {lead.price_credits} Kč
                 </span>
               </div>
-              <p className="text-neutral-400 text-sm mb-6">{lead.description}</p>
+              <p className="text-neutral-600 dark:text-neutral-400 text-sm mb-6">{lead.description}</p>
               
-              <div className="bg-neutral-950 p-3 rounded border border-neutral-800">
-                <p className="text-xs text-neutral-500 mb-1">{t('contacts')}:</p>
+              <div className="bg-neutral-900 dark:bg-neutral-50 dark:bg-neutral-950 p-3 rounded border border-neutral-200 dark:border-neutral-800">
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">{t('contacts')}:</p>
                 <p className={`font-mono text-sm ${lead.is_unlocked ? 'text-green-400' : 'text-neutral-600 blur-sm select-none'}`}>
                   {lead.contacts}
                 </p>
               </div>
             </div>
             
-            <div className="p-4 border-t border-neutral-800 bg-neutral-950/50">
+            <div className="p-4 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-900 dark:bg-neutral-50 dark:bg-neutral-950/50">
               {lead.is_unlocked ? (
                 <button 
                   disabled
@@ -207,7 +207,7 @@ export function LeadsFeed({ onUnlockSuccess }: LeadsFeedProps) {
                 <button 
                   onClick={() => handleUnlock(lead.id)}
                   disabled={unlockingId === lead.id}
-                  className="w-full py-2 px-4 bg-white text-black hover:bg-neutral-200 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                  className="w-full py-2 px-4 bg-white text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
                 >
                   {unlockingId === lead.id ? t('processing') : `${t('unlock')} - ${lead.price_credits} ${t('credit_plural')}`}
                 </button>

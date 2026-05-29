@@ -216,34 +216,34 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
-        <div className="text-neutral-400">{t('loading')}</div>
+      <div className="min-h-screen bg-neutral-900 dark:bg-neutral-50 dark:bg-neutral-900 dark:bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center transition-colors duration-200">
+        <div className="text-neutral-600 dark:text-neutral-400">{t('loading')}</div>
       </div>
     )
   }
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
+      <div className="min-h-screen bg-neutral-900 dark:bg-neutral-50 dark:bg-neutral-900 dark:bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center transition-colors duration-200">
         <div className="text-red-400">{t('failedToLoad')}</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950">
+    <div className="min-h-screen bg-neutral-900 dark:bg-neutral-50 dark:bg-neutral-900 dark:bg-neutral-50 dark:bg-neutral-950 transition-colors duration-200">
       <Header profile={profile} onLogout={handleLogout} />
       
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center gap-4 mb-8">
           <button
             onClick={() => router.push('/dashboard')}
-            className="flex items-center gap-2 text-neutral-400 hover:text-white transition-colors"
+            className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:text-white transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
             {t('back')}
           </button>
-          <h1 className="text-2xl font-bold text-white">{t('profileAndSettings')}</h1>
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">{t('profileAndSettings')}</h1>
         </div>
 
         {error && (
@@ -254,42 +254,42 @@ export default function ProfilePage() {
 
         <div className="space-y-6">
           {/* Profile Card */}
-          <div className="bg-neutral-900 rounded-xl border border-neutral-800 p-6">
+          <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-6">
             <div className="flex flex-col md:flex-row gap-6">
               {/* Avatar and main info */}
               <div className="flex-shrink-0 text-center md:text-left">
-                <div className="w-24 h-24 bg-gradient-to-br from-neutral-700 to-neutral-600 rounded-full mx-auto md:mx-0 mb-4 flex items-center justify-center">
-                  <User className="w-12 h-12 text-neutral-400" />
+                <div className="w-24 h-24 bg-gradient-to-br from-neutral-300 dark:from-neutral-700 to-neutral-400 dark:to-neutral-600 rounded-full mx-auto md:mx-0 mb-4 flex items-center justify-center">
+                  <User className="w-12 h-12 text-neutral-600 dark:text-neutral-400" />
                 </div>
-                <h2 className="text-lg font-semibold text-white mb-1">
+                <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-1">
                   {profile.display_name || t('user')}
                 </h2>
-                <p className="text-neutral-400 text-sm mb-2">{profile.email}</p>
+                <p className="text-neutral-600 dark:text-neutral-400 text-sm mb-2">{profile.email}</p>
                 <div className="flex items-center justify-center md:justify-start gap-2 text-amber-400">
                   <Coins className="w-5 h-5" />
                   <span className="font-bold text-lg">{profile.credits}</span>
-                  <span className="text-sm text-neutral-400">{t('credits')}</span>
+                  <span className="text-sm text-neutral-600 dark:text-neutral-400">{t('credits')}</span>
                 </div>
               </div>
 
               {/* Stats */}
               <div className="flex-1 grid grid-cols-3 gap-4">
-                <div className="bg-neutral-800 rounded-lg p-4 text-center">
-                  <Unlock className="w-5 h-5 text-neutral-400 mx-auto mb-2" />
-                  <p className="text-white font-medium">{profile.unlocked_leads_count || 0}</p>
-                  <p className="text-neutral-400 text-xs">{t('unlocked')}</p>
+                <div className="bg-neutral-100 dark:bg-neutral-800 rounded-lg p-4 text-center">
+                  <Unlock className="w-5 h-5 text-neutral-600 dark:text-neutral-400 mx-auto mb-2" />
+                  <p className="text-neutral-900 dark:text-white font-medium">{profile.unlocked_leads_count || 0}</p>
+                  <p className="text-neutral-600 dark:text-neutral-400 text-xs">{t('unlocked')}</p>
                 </div>
-                <div className="bg-neutral-800 rounded-lg p-4 text-center">
-                  <CreditCard className="w-5 h-5 text-neutral-400 mx-auto mb-2" />
-                  <p className="text-white font-medium">{profile.total_spent || 0}</p>
-                  <p className="text-neutral-400 text-xs">{t('spent')}</p>
+                <div className="bg-neutral-100 dark:bg-neutral-800 rounded-lg p-4 text-center">
+                  <CreditCard className="w-5 h-5 text-neutral-600 dark:text-neutral-400 mx-auto mb-2" />
+                  <p className="text-neutral-900 dark:text-white font-medium">{profile.total_spent || 0}</p>
+                  <p className="text-neutral-600 dark:text-neutral-400 text-xs">{t('spent')}</p>
                 </div>
-                <div className="bg-neutral-800 rounded-lg p-4 text-center">
-                  <Calendar className="w-5 h-5 text-neutral-400 mx-auto mb-2" />
-                  <p className="text-white font-medium text-sm">
+                <div className="bg-neutral-100 dark:bg-neutral-800 rounded-lg p-4 text-center">
+                  <Calendar className="w-5 h-5 text-neutral-600 dark:text-neutral-400 mx-auto mb-2" />
+                  <p className="text-neutral-900 dark:text-white font-medium text-sm">
                     {new Date(profile.created_at).toLocaleDateString('cs-CZ')}
                   </p>
-                  <p className="text-neutral-400 text-xs">{t('memberSince')}</p>
+                  <p className="text-neutral-600 dark:text-neutral-400 text-xs">{t('memberSince')}</p>
                 </div>
               </div>
             </div>
@@ -297,7 +297,7 @@ export default function ProfilePage() {
             {!isEditing && (
               <button
                 onClick={() => setIsEditing(true)}
-                className="mt-6 flex items-center gap-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg transition-colors"
+                className="mt-6 flex items-center gap-2 px-4 py-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700 text-neutral-900 dark:text-white rounded-lg transition-colors"
               >
                 <Edit2 className="w-4 h-4" />
                 {t('editProfile')}
@@ -307,54 +307,54 @@ export default function ProfilePage() {
 
           {/* Edit Form */}
           {isEditing && (
-            <div className="bg-neutral-900 rounded-xl border border-neutral-800 p-6">
-              <h3 className="text-lg font-semibold text-white mb-6">{t('editProfile')}</h3>
+            <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-6">
+              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-6">{t('editProfile')}</h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-400 mb-2">
+                  <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">
                     {t('displayName')}
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 dark:text-neutral-400" />
                     <input
                       type="text"
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
                       placeholder={t('displayName')}
-                      className="w-full bg-neutral-800 border border-neutral-700 rounded-lg pl-10 pr-4 py-2.5 text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-600"
+                      className="w-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-lg pl-10 pr-4 py-2.5 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-600"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-400 mb-2">
+                  <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">
                     {t('phone')}
                   </label>
                   <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 dark:text-neutral-400" />
                     <input
                       type="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="+420 123 456 789"
-                      className="w-full bg-neutral-800 border border-neutral-700 rounded-lg pl-10 pr-4 py-2.5 text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-600"
+                      className="w-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-lg pl-10 pr-4 py-2.5 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-600"
                     />
                   </div>
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-neutral-400 mb-2">
+                  <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">
                     {t('bio')}
                   </label>
                   <div className="relative">
-                    <FileText className="absolute left-3 top-3 w-5 h-5 text-neutral-500" />
+                    <FileText className="absolute left-3 top-3 w-5 h-5 text-neutral-500 dark:text-neutral-400" />
                     <textarea
                       value={bio}
                       onChange={(e) => setBio(e.target.value)}
                       placeholder={t('aboutMe')}
                       rows={3}
-                      className="w-full bg-neutral-800 border border-neutral-700 rounded-lg pl-10 pr-4 py-2.5 text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-600 resize-none"
+                      className="w-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-lg pl-10 pr-4 py-2.5 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-600 resize-none"
                     />
                   </div>
                 </div>
@@ -364,7 +364,7 @@ export default function ProfilePage() {
                 <button
                   onClick={handleSave}
                   disabled={isSaving}
-                  className="flex items-center gap-2 px-4 py-2 bg-neutral-50 text-neutral-950 rounded-lg font-medium hover:bg-neutral-200 transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2 bg-neutral-900 dark:bg-neutral-50 text-white dark:text-neutral-950 rounded-lg font-medium hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors disabled:opacity-50"
                 >
                   <Save className="w-4 h-4" />
                   {isSaving ? t('loading') : t('saveChanges')}
@@ -372,7 +372,7 @@ export default function ProfilePage() {
                 <button
                   onClick={handleCancel}
                   disabled={isSaving}
-                  className="flex items-center gap-2 px-4 py-2 bg-neutral-800 text-white rounded-lg hover:bg-neutral-700 transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-lg hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50"
                 >
                   <X className="w-4 h-4" />
                   Zrušit
@@ -382,28 +382,28 @@ export default function ProfilePage() {
           )}
 
           {/* Settings */}
-          <div className="bg-neutral-900 rounded-xl border border-neutral-800">
-            <div className="p-6 border-b border-neutral-800">
-              <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-                <Settings className="w-5 h-5 text-neutral-400" />
+          <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800">
+            <div className="p-6 border-b border-neutral-200 dark:border-neutral-800">
+              <h2 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
+                <Settings className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
                 {t('settings')}
               </h2>
             </div>
 
             {/* Language */}
-            <div className="p-6 border-b border-neutral-800">
+            <div className="p-6 border-b border-neutral-200 dark:border-neutral-800">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Globe className="w-5 h-5 text-neutral-400" />
+                  <Globe className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
                   <div>
-                    <p className="text-white font-medium">{t('language')}</p>
-                    <p className="text-neutral-400 text-sm">{t('languageDescription')}</p>
+                    <p className="text-neutral-900 dark:text-white font-medium">{t('language')}</p>
+                    <p className="text-neutral-600 dark:text-neutral-400 text-sm">{t('languageDescription')}</p>
                   </div>
                 </div>
                 <select
                   value={language}
                   onChange={(e) => handleLanguageChange(e.target.value)}
-                  className="bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-neutral-600"
+                  className="bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-lg px-4 py-2 text-neutral-900 dark:text-white focus:outline-none focus:border-neutral-600"
                 >
                   <option value="cs">Čeština</option>
                   <option value="ru">Русский</option>
@@ -413,26 +413,26 @@ export default function ProfilePage() {
             </div>
 
             {/* Theme */}
-            <div className="p-6 border-b border-neutral-800">
+            <div className="p-6 border-b border-neutral-200 dark:border-neutral-800">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  {theme === 'dark' ? <Moon className="w-5 h-5 text-neutral-400" /> : <Sun className="w-5 h-5 text-neutral-400" />}
+                  {theme === 'dark' ? <Moon className="w-5 h-5 text-neutral-600 dark:text-neutral-400" /> : <Sun className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />}
                   <div>
-                    <p className="text-white font-medium">{t('theme')}</p>
-                    <p className="text-neutral-400 text-sm">{t('themeDescription')}</p>
+                    <p className="text-neutral-900 dark:text-white font-medium">{t('theme')}</p>
+                    <p className="text-neutral-600 dark:text-neutral-400 text-sm">{t('themeDescription')}</p>
                   </div>
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleThemeChange('dark')}
-                    className={`px-4 py-2 rounded-lg transition-colors ${theme === 'dark' ? 'bg-neutral-50 text-neutral-950' : 'bg-neutral-800 text-white hover:bg-neutral-700'}`}
+                    className={`px-4 py-2 rounded-lg transition-colors ${theme === 'dark' ? 'bg-neutral-900 dark:bg-neutral-50 text-white dark:text-neutral-950' : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white hover:bg-neutral-300 dark:hover:bg-neutral-700'}`}
                   >
                     <Moon className="w-4 h-4 inline mr-2" />
                     {t('dark')}
                   </button>
                   <button
                     onClick={() => handleThemeChange('light')}
-                    className={`px-4 py-2 rounded-lg transition-colors ${theme === 'light' ? 'bg-neutral-50 text-neutral-950' : 'bg-neutral-800 text-white hover:bg-neutral-700'}`}
+                    className={`px-4 py-2 rounded-lg transition-colors ${theme === 'light' ? 'bg-neutral-900 dark:bg-neutral-50 text-white dark:text-neutral-950' : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white hover:bg-neutral-300 dark:hover:bg-neutral-700'}`}
                   >
                     <Sun className="w-4 h-4 inline mr-2" />
                     {t('light')}
@@ -442,15 +442,15 @@ export default function ProfilePage() {
             </div>
 
             {/* Notifications */}
-            <div className="p-6 border-b border-neutral-800">
+            <div className="p-6 border-b border-neutral-200 dark:border-neutral-800">
               <div className="flex items-center gap-2 mb-4">
-                <Bell className="w-5 h-5 text-neutral-400" />
-                <p className="text-white font-medium">{t('notifications')}</p>
+                <Bell className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
+                <p className="text-neutral-900 dark:text-white font-medium">{t('notifications')}</p>
               </div>
 
               <div className="space-y-4 pl-7">
                 <div className="flex items-center justify-between">
-                  <p className="text-neutral-300">{t('emailNotifications')}</p>
+                  <p className="text-neutral-700 dark:text-neutral-300">{t('emailNotifications')}</p>
                   <Toggle 
                     checked={emailNotifications} 
                     onChange={() => {
@@ -461,7 +461,7 @@ export default function ProfilePage() {
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <p className="text-neutral-300">{t('newLeadAlerts')}</p>
+                  <p className="text-neutral-700 dark:text-neutral-300">{t('newLeadAlerts')}</p>
                   <Toggle 
                     checked={newLeadAlerts} 
                     onChange={() => {
@@ -473,7 +473,7 @@ export default function ProfilePage() {
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <p className="text-neutral-300">{t('lowCreditAlerts')}</p>
+                  <p className="text-neutral-700 dark:text-neutral-300">{t('lowCreditAlerts')}</p>
                   <Toggle 
                     checked={lowCreditAlerts} 
                     onChange={() => {
@@ -488,10 +488,10 @@ export default function ProfilePage() {
             </div>
 
             {/* Password Change */}
-            <div className="p-6 border-b border-neutral-800">
+            <div className="p-6 border-b border-neutral-200 dark:border-neutral-800">
               <div className="flex items-center gap-2 mb-4">
-                <Lock className="w-5 h-5 text-neutral-400" />
-                <p className="text-white font-medium">{t('changePassword')}</p>
+                <Lock className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
+                <p className="text-neutral-900 dark:text-white font-medium">{t('changePassword')}</p>
               </div>
 
               {passwordSuccess && (
@@ -510,7 +510,7 @@ export default function ProfilePage() {
               {!showPasswordForm ? (
                 <button
                   onClick={() => setShowPasswordForm(true)}
-                  className="text-neutral-300 hover:text-white transition-colors text-sm"
+                  className="text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:text-white transition-colors text-sm"
                 >
                   {t('changePassword')} →
                 </button>
@@ -522,7 +522,7 @@ export default function ProfilePage() {
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder={t('newPassword')}
-                      className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2 text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-600"
+                      className="w-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-lg px-4 py-2 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-600"
                     />
                   </div>
                   <div className="relative">
@@ -531,11 +531,11 @@ export default function ProfilePage() {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder={t('confirmPassword')}
-                      className="w-full bg-neutral-800 border border-neutral-700 rounded-lg pr-12 pl-4 py-2 text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-600"
+                      className="w-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-lg pr-12 pl-4 py-2 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-600"
                     />
                     <button
                       onClick={() => setShowNewPassword(!showNewPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-300"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:text-neutral-300"
                     >
                       {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -544,7 +544,7 @@ export default function ProfilePage() {
                     <button
                       onClick={handlePasswordChange}
                       disabled={isChangingPassword || !newPassword || !confirmPassword}
-                      className="px-4 py-2 bg-neutral-50 text-neutral-950 rounded-lg font-medium hover:bg-neutral-200 transition-colors disabled:opacity-50 text-sm"
+                      className="px-4 py-2 bg-neutral-900 dark:bg-neutral-50 text-white dark:text-neutral-950 rounded-lg font-medium hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors disabled:opacity-50 text-sm"
                     >
                       {isChangingPassword ? t('loading') : t('changePassword')}
                     </button>
@@ -555,7 +555,7 @@ export default function ProfilePage() {
                         setConfirmPassword('')
                         setPasswordError(null)
                       }}
-                      className="px-4 py-2 bg-neutral-800 text-white rounded-lg hover:bg-neutral-700 transition-colors text-sm"
+                      className="px-4 py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-lg hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-colors text-sm"
                     >
                       Zrušit
                     </button>
@@ -581,7 +581,7 @@ export default function ProfilePage() {
                 </button>
               ) : (
                 <div className="pl-7 space-y-3">
-                  <p className="text-neutral-300 text-sm">
+                  <p className="text-neutral-700 dark:text-neutral-300 text-sm">
                     {t('typeToConfirm')}:
                   </p>
                   <input
@@ -589,12 +589,12 @@ export default function ProfilePage() {
                     value={deleteConfirmText}
                     onChange={(e) => setDeleteConfirmText(e.target.value)}
                     placeholder={language === 'ru' ? 'УДАЛИТЬ' : language === 'cs' ? 'SMAZAT' : 'DELETE'}
-                    className="w-full bg-neutral-800 border border-red-900/50 rounded-lg px-4 py-2 text-white placeholder-neutral-500 focus:outline-none focus:border-red-500"
+                    className="w-full bg-neutral-100 dark:bg-neutral-800 border border-red-900/50 rounded-lg px-4 py-2 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:border-red-500"
                   />
                   <div className="flex gap-2">
                     <button
                       disabled={deleteConfirmText !== (language === 'ru' ? 'УДАЛИТЬ' : language === 'cs' ? 'SMAZAT' : 'DELETE')}
-                      className="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-500 transition-colors disabled:opacity-50 text-sm"
+                      className="px-4 py-2 bg-red-600 text-neutral-900 dark:text-white rounded-lg font-medium hover:bg-red-500 transition-colors disabled:opacity-50 text-sm"
                     >
                       <Trash2 className="w-4 h-4 inline mr-1" />
                       {t('deleteAccount')}
@@ -604,7 +604,7 @@ export default function ProfilePage() {
                         setShowDeleteConfirm(false)
                         setDeleteConfirmText('')
                       }}
-                      className="px-4 py-2 bg-neutral-800 text-white rounded-lg hover:bg-neutral-700 transition-colors text-sm"
+                      className="px-4 py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-lg hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-colors text-sm"
                     >
                       {t('cancel')}
                     </button>
