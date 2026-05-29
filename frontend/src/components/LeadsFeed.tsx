@@ -44,7 +44,11 @@ export function LeadsFeed({ onUnlockSuccess }: LeadsFeedProps) {
   const fetchLeads = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
+      if (!session) {
+        setIsLoading(false)
+        window.location.href = '/login'
+        return
+      }
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads`,
