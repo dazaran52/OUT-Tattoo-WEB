@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { SkeletonCard } from '@/components/SkeletonCard'
-import { RefreshCw, Search } from 'lucide-react'
+import { RefreshCw, Search, Loader2 } from 'lucide-react'
 import { getTranslation, Language } from '@/lib/i18n'
 
 export interface Lead {
@@ -176,40 +176,56 @@ export function LeadsFeed({ onUnlockSuccess }: LeadsFeedProps) {
       )}
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredLeads.map((lead) => (
-          <div key={lead.id} className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden flex flex-col">
-            <div className="p-6 flex-1">
+        {filteredLeads.map((lead, index) => (
+          <div 
+            key={lead.id} 
+            className="group relative bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden flex flex-col transition-all duration-300 hover:shadow-2xl hover:border-neutral-300 dark:hover:border-neutral-600 hover:-translate-y-1 animate-fade-in-up"
+            style={{ animationDelay: `${index * 100}ms` }}
+          >
+            {/* Glow Effect behind the card */}
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+            
+            <div className="p-6 flex-1 relative z-10">
               <div className="flex justify-between items-start mb-4">
-                <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">{lead.title}</h3>
-                <span className="bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs px-2 py-1 rounded font-mono">
-                  {lead.price_credits} {t('credits')}
+                <h3 className="text-xl font-bold text-neutral-900 dark:text-white leading-tight">{lead.title}</h3>
+                <span className="bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-sm whitespace-nowrap border border-neutral-200 dark:border-neutral-700 flex items-center gap-1">
+                  💎 {lead.price_credits} {t('credits')}
                 </span>
               </div>
-              <p className="text-neutral-600 dark:text-neutral-400 text-sm mb-6">{lead.description}</p>
+              <p className="text-neutral-600 dark:text-neutral-400 text-sm mb-6 leading-relaxed line-clamp-3 group-hover:line-clamp-none transition-all">{lead.description}</p>
               
-              <div className="bg-neutral-900 dark:bg-neutral-50 dark:bg-neutral-950 p-3 rounded border border-neutral-200 dark:border-neutral-800">
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">{t('contacts')}:</p>
-                <p className={`font-mono text-sm ${lead.is_unlocked ? 'text-green-400' : 'text-neutral-600 blur-sm select-none'}`}>
-                  {lead.contacts}
+              <div className="bg-neutral-50 dark:bg-neutral-950 p-4 rounded-xl border border-neutral-200/50 dark:border-neutral-800/50 relative overflow-hidden">
+                {/* Decorative accent */}
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-neutral-300 to-neutral-400 dark:from-neutral-700 dark:to-neutral-600"></div>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1 ml-2 font-medium">{t('contacts')}:</p>
+                <p className={`font-mono text-sm ml-2 ${lead.is_unlocked ? 'text-green-600 dark:text-green-400 font-bold' : 'text-neutral-400 dark:text-neutral-600 blur-sm select-none'}`}>
+                  {lead.is_unlocked ? lead.contacts : 'HIDDEN_CONTACT_DATA'}
                 </p>
               </div>
             </div>
             
-            <div className="p-4 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-900 dark:bg-neutral-50 dark:bg-neutral-950/50">
+            <div className="p-5 border-t border-neutral-100 dark:border-neutral-800/80 bg-neutral-50/50 dark:bg-neutral-900/50 backdrop-blur-sm">
               {lead.is_unlocked ? (
                 <button 
                   disabled
-                  className="w-full py-2 px-4 bg-green-900/30 text-green-400 border border-green-900/50 rounded-lg text-sm font-medium"
+                  className="w-full py-3 px-4 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-900/50 rounded-xl text-sm font-bold transition-all shadow-inner flex items-center justify-center gap-2"
                 >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                   {t('unlocked')}
                 </button>
               ) : (
                 <button 
                   onClick={() => handleUnlock(lead.id)}
                   disabled={unlockingId === lead.id}
-                  className="w-full py-2 px-4 bg-white text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                  className="w-full py-3 px-4 bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 hover:bg-neutral-800 dark:hover:bg-neutral-200 rounded-xl text-sm font-bold transition-all shadow-md hover:shadow-lg disabled:opacity-50 flex items-center justify-center gap-2 group-hover:scale-[1.02]"
                 >
-                  {unlockingId === lead.id ? t('processing') : `${t('unlock')} - ${lead.price_credits} ${t('credit_plural')}`}
+                  {unlockingId === lead.id ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <>
+                      🔓 {t('unlock')} - {lead.price_credits}
+                    </>
+                  )}
                 </button>
               )}
             </div>
