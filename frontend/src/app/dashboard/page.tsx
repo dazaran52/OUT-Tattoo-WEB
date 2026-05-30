@@ -35,7 +35,8 @@ export default function DashboardPage() {
       const { data: { session } } = await supabase.auth.getSession()
       
       if (!session) {
-        router.push('/login')
+        document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+        window.location.href = '/login'
         return
       }
 

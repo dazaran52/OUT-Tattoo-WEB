@@ -46,6 +46,7 @@ export function LeadsFeed({ onUnlockSuccess }: LeadsFeedProps) {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
         setIsLoading(false)
+        document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
         window.location.href = '/login'
         return
       }
