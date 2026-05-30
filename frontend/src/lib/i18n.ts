@@ -86,6 +86,27 @@ type Translations = {
     failedToUpdate: string;
     failedToLoad: string;
     passwordMismatch: string;
+    // Admin & Dashboard States
+    pendingReviewTitle: string;
+    pendingReviewDesc: string;
+    accessDeniedTitle: string;
+    accessDeniedDesc: string;
+    
+    // Admin Leads Management
+    usersManagement: string;
+    leadsManagement: string;
+    createLead: string;
+    editLead: string;
+    deleteLead: string;
+    title: string;
+    price: string;
+    priceCredits: string;
+    actions: string;
+    leadCreated: string;
+    leadUpdated: string;
+    leadDeleted: string;
+    confirmDeleteLead: string;
+    noLeadsAdmin: string;
   };
 };
 
@@ -165,6 +186,26 @@ const translations: Translations = {
     failedToUpdate: 'Nepodařilo se aktualizovat profil',
     failedToLoad: 'Nepodařilo se načíst profil',
     passwordMismatch: 'Hesla se neshodují',
+    
+    pendingReviewTitle: 'Žádost se vyřizuje',
+    pendingReviewDesc: 'Váš profil tatéra je v procesu ručního schvalování. Jakmile administrátor žádost schválí, získáte přístup k databázi poptávek.',
+    accessDeniedTitle: 'Přístup odepřen',
+    accessDeniedDesc: 'Vaše žádost byla administrátorem zamítnuta. Nemůžete prohlížet ani kupovat poptávky.',
+    
+    usersManagement: 'Uživatelé',
+    leadsManagement: 'Poptávky',
+    createLead: 'Vytvořit poptávku',
+    editLead: 'Upravit poptávku',
+    deleteLead: 'Smazat poptávku',
+    title: 'Název',
+    price: 'Cena',
+    priceCredits: 'Cena (kredity)',
+    actions: 'Akce',
+    leadCreated: 'Poptávka byla úspěšně vytvořena',
+    leadUpdated: 'Poptávka byla úspěšně upravenena',
+    leadDeleted: 'Poptávka byla úspěšně smazána',
+    confirmDeleteLead: 'Opravdu chcete smazat tuto poptávku? Tato akce je nevratná.',
+    noLeadsAdmin: 'Nenalezeny žádné poptávky',
   },
   ru: {
     back: 'Назад',
@@ -241,6 +282,26 @@ const translations: Translations = {
     failedToUpdate: 'Не удалось обновить профиль',
     failedToLoad: 'Не удалось загрузить профиль',
     passwordMismatch: 'Пароли не совпадают',
+    
+    pendingReviewTitle: 'Заявка на рассмотрении',
+    pendingReviewDesc: 'Ваш профиль мастера находится на ручной модерации. Как только администратор одобрит заявку, вы получите доступ к базе лидов.',
+    accessDeniedTitle: 'Доступ запрещен',
+    accessDeniedDesc: 'Ваша заявка была отклонена администратором. Вы не можете просматривать или покупать лиды.',
+    
+    usersManagement: 'Пользователи',
+    leadsManagement: 'Лиды',
+    createLead: 'Создать лид',
+    editLead: 'Редактировать лид',
+    deleteLead: 'Удалить лид',
+    title: 'Название',
+    price: 'Цена',
+    priceCredits: 'Цена (кредиты)',
+    actions: 'Действия',
+    leadCreated: 'Лид успешно создан',
+    leadUpdated: 'Лид успешно обновлен',
+    leadDeleted: 'Лид успешно удален',
+    confirmDeleteLead: 'Вы уверены, что хотите удалить этот лид? Это действие нельзя отменить.',
+    noLeadsAdmin: 'Лиды не найдены',
   },
   en: {
     back: 'Back',
@@ -317,6 +378,26 @@ const translations: Translations = {
     failedToUpdate: 'Failed to update profile',
     failedToLoad: 'Failed to load profile',
     passwordMismatch: 'Passwords do not match',
+    
+    pendingReviewTitle: 'Application Pending',
+    pendingReviewDesc: 'Your artist profile is currently under manual review. Once approved by an administrator, you will gain access to the leads database.',
+    accessDeniedTitle: 'Access Denied',
+    accessDeniedDesc: 'Your application has been rejected by an administrator. You cannot view or purchase leads.',
+    
+    usersManagement: 'Users',
+    leadsManagement: 'Leads',
+    createLead: 'Create Lead',
+    editLead: 'Edit Lead',
+    deleteLead: 'Delete Lead',
+    title: 'Title',
+    price: 'Price',
+    priceCredits: 'Price (credits)',
+    actions: 'Actions',
+    leadCreated: 'Lead created successfully',
+    leadUpdated: 'Lead updated successfully',
+    leadDeleted: 'Lead deleted successfully',
+    confirmDeleteLead: 'Are you sure you want to delete this lead? This action cannot be undone.',
+    noLeadsAdmin: 'No leads found',
   },
 };
 

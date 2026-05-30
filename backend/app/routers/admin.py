@@ -20,6 +20,18 @@ class AdminUserResponse(BaseModel):
     credits: int
     created_at: str
 
+class LeadCreate(BaseModel):
+    title: str
+    description: str
+    contacts: str
+    price_credits: int
+
+class LeadUpdate(BaseModel):
+    title: str | None = None
+    description: str | None = None
+    contacts: str | None = None
+    price_credits: int | None = None
+
 async def get_admin_user(
     current_user: AuthUser = Depends(get_current_user),
     supabase: Client = Depends(get_supabase_client)
@@ -116,4 +128,84 @@ async def update_user_status(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error updating user status: {str(e)}"
+        )
+
+@router.get("/leads")
+async def get_admin_leads(
+    admin_user: AuthUser = Depends(get_admin_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    """Get all leads with unmasked contacts for admin."""
+    try:
+        response = supabase.table("leads").select("*").order("created_at", desc=True).execute()
+        return response.data or []
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching leads: {str(e)}"
+        )
+
+@router.post("/leads")
+async def create_lead(
+    lead_data: LeadCreate,
+    admin_user: AuthUser = Depends(get_admin_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    """Create a new lead."""
+    try:
+        response = supabase.table("leads").insert(lead_data.model_dump()).execute()
+        if not response.data:
+            raise HTTPException(status_code=400, detail="Failed to create lead")
+        return response.data[0]
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error creating lead: {str(e)}"
+        )
+
+@router.put("/leads/{lead_id}")
+async def update_lead(
+    lead_id: str,
+    lead_data: LeadUpdate,
+    admin_user: AuthUser = Depends(get_admin_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    """Update an existing lead."""
+    try:
+        update_dict = {k: v for k, v in lead_data.model_dump().items() if v is not None}
+        if not update_dict:
+            raise HTTPException(status_code=400, detail="No fields to update")
+            
+        response = supabase.table("leads").update(update_dict).eq("id", lead_id).execute()
+        if not response.data:
+            raise HTTPException(status_code=404, detail="Lead not found")
+        return response.data[0]
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error updating lead: {str(e)}"
+        )
+
+@router.delete("/leads/{lead_id}")
+async def delete_lead(
+    lead_id: str,
+    admin_user: AuthUser = Depends(get_admin_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    """Delete a lead."""
+    try:
+        response = supabase.table("leads").delete().eq("id", lead_id).execute()
+        if not response.data:
+            raise HTTPException(status_code=404, detail="Lead not found")
+        return {"message": "Lead deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error deleting lead: {str(e)}"
         )
