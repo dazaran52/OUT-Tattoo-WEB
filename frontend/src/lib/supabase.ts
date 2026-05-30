@@ -17,6 +17,9 @@ export type Profile = {
   display_name?: string | null
   phone?: string | null
   bio?: string | null
+  portfolio_url?: string | null
+  own_referral_code?: string | null
+  referred_by?: string | null
 }
 
 // Server-side helper (for server components)

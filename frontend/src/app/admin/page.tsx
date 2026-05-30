@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Header } from '@/components/Header'
 import { supabase, Profile } from '@/lib/supabase'
-import { CheckCircle, XCircle, Clock, Loader2, Plus, Edit2, Trash2 } from 'lucide-react'
+import { CheckCircle, XCircle, Clock, Loader2, Plus, Edit2, Trash2, Link as LinkIcon } from 'lucide-react'
 import { getTranslation, Language } from '@/lib/i18n'
 
 interface AdminUserResponse {
@@ -16,6 +16,9 @@ interface AdminUserResponse {
   status: string
   credits: number
   created_at: string
+  portfolio_url?: string
+  own_referral_code?: string
+  referred_by?: string
 }
 
 
@@ -196,7 +199,17 @@ export default function AdminPage() {
                         <div className="text-neutral-500 dark:text-neutral-400 text-xs mt-1">
                           {user.display_name ? `${user.display_name}` : 'No Name'} 
                           {user.phone && ` • ${user.phone}`}
+                          {user.portfolio_url && (
+                            <a href={user.portfolio_url} target="_blank" rel="noopener noreferrer" className="ml-2 inline-flex items-center text-purple-600 dark:text-purple-400 hover:underline">
+                              <LinkIcon className="w-3 h-3 mr-1" /> Портфолио
+                            </a>
+                          )}
                         </div>
+                        {user.referred_by && (
+                          <div className="text-xs text-neutral-400 mt-1">
+                            Приглашен(а): <span className="font-mono">{user.referred_by}</span>
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-neutral-600 dark:text-neutral-400">
                         {new Date(user.created_at).toLocaleDateString()}

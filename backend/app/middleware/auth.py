@@ -12,6 +12,7 @@ class AuthUser(BaseModel):
     """Authenticated user data."""
     user_id: str
     email: str
+    user_metadata: dict = {}
 
 
 def get_current_user(
@@ -51,8 +52,9 @@ def get_current_user(
                 detail="Invalid token: missing user data"
             )
         
-        print(f"DEBUG: Auth successful for {email}")
-        return AuthUser(user_id=user_id, email=email)
+        user_metadata = payload.get("user_metadata", {})
+        print(f"DEBUG: Auth successful for {email}, metadata: {user_metadata}")
+        return AuthUser(user_id=user_id, email=email, user_metadata=user_metadata)
         
     except Exception as e:
         print(f"DEBUG: Token decode error: {type(e).__name__}: {e}")

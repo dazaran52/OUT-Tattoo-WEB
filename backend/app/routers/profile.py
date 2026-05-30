@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from app.middleware.auth import get_current_user, AuthUser
 from app.database import get_supabase_client
 from supabase import Client
+import uuid
 
 
 router = APIRouter(prefix="/api", tags=["profile"])
@@ -20,6 +21,9 @@ class ProfileResponse(BaseModel):
     bio: str | None = None
     status: str = "pending"
     is_admin: bool = False
+    portfolio_url: str | None = None
+    own_referral_code: str | None = None
+    referred_by: str | None = None
 
 
 class ProfileCreate(BaseModel):
@@ -65,19 +69,28 @@ async def get_profile(
                 phone=data.get("phone"),
                 bio=data.get("bio"),
                 status=data.get("status", "pending"),
-                is_admin=data.get("is_admin", False)
+                is_admin=data.get("is_admin", False),
+                portfolio_url=data.get("portfolio_url"),
+                own_referral_code=data.get("own_referral_code"),
+                referred_by=data.get("referred_by")
             )
         
     except Exception:
         # Profile not found, will create below
         pass
     
-    # Create new profile with 0 credits
+    # Create new profile with 0 credits and a generated referral code
     try:
+        portfolio_url = current_user.user_metadata.get("portfolio_url")
+        referred_by = current_user.user_metadata.get("referred_by")
+        
         new_profile = {
             "id": current_user.user_id,
             "email": current_user.email,
-            "credits": 0
+            "credits": 0,
+            "own_referral_code": str(uuid.uuid4())[:8].upper(),
+            "portfolio_url": portfolio_url,
+            "referred_by": referred_by
         }
         
         response = supabase.table("users") \
@@ -95,7 +108,10 @@ async def get_profile(
                 phone=data.get("phone"),
                 bio=data.get("bio"),
                 status=data.get("status", "pending"),
-                is_admin=data.get("is_admin", False)
+                is_admin=data.get("is_admin", False),
+                portfolio_url=data.get("portfolio_url"),
+                own_referral_code=data.get("own_referral_code"),
+                referred_by=data.get("referred_by")
             )
         else:
             raise HTTPException(

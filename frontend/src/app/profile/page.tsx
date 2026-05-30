@@ -9,7 +9,7 @@ import { getTranslation, Language } from '@/lib/i18n'
 import { 
   User, Mail, Coins, Calendar, Phone, FileText, Save, X, Edit2, 
   Unlock, CreditCard, Settings, Bell, Lock, Globe, Moon, Sun,
-  Trash2, AlertTriangle, Eye, EyeOff, Check, ArrowLeft
+  Trash2, AlertTriangle, Eye, EyeOff, Check, ArrowLeft, Gem, Tag, Copy
 } from 'lucide-react'
 
 // Toggle Switch Component
@@ -278,8 +278,23 @@ export default function ProfilePage() {
                   {profile.display_name || t('user')}
                 </h2>
                 <p className="text-neutral-600 dark:text-neutral-400 text-sm mb-2">{profile.email}</p>
-                <div className="flex items-center justify-center md:justify-start gap-2 text-amber-400">
-                  <Coins className="w-5 h-5" />
+                
+                {profile.own_referral_code && (
+                  <div className="mb-4 inline-flex items-center gap-2 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800 px-3 py-1.5 rounded-lg text-sm">
+                    <Tag className="w-4 h-4" />
+                    <span className="font-semibold">Код: {profile.own_referral_code}</span>
+                    <button 
+                      onClick={() => navigator.clipboard.writeText(profile.own_referral_code || '')}
+                      className="ml-1 hover:text-purple-900 dark:hover:text-purple-200 transition-colors"
+                      title="Скопировать"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+                
+                <div className="flex items-center justify-center md:justify-start gap-2 text-cyan-500">
+                  <Gem className="w-5 h-5" />
                   <span className="font-bold text-lg">{profile.credits}</span>
                   <span className="text-sm text-neutral-600 dark:text-neutral-400">{t('credits')}</span>
                 </div>

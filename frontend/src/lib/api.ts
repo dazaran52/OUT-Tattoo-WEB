@@ -15,6 +15,9 @@ export interface Profile {
   bio?: string
   unlocked_leads_count?: number
   total_spent?: number
+  portfolio_url?: string
+  own_referral_code?: string
+  referred_by?: string
 }
 
 async function getAuthHeaders() {
