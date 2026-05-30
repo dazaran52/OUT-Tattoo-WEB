@@ -25,12 +25,14 @@ class LeadCreate(BaseModel):
     description: str
     contacts: str
     price_credits: int
+    image_urls: List[str] = []
 
 class LeadUpdate(BaseModel):
     title: str | None = None
     description: str | None = None
     contacts: str | None = None
     price_credits: int | None = None
+    image_urls: List[str] | None = None
 
 async def get_admin_user(
     current_user: AuthUser = Depends(get_current_user),

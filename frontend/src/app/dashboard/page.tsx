@@ -151,7 +151,7 @@ export default function DashboardPage() {
             </p>
           </div>
         ) : (
-          <LeadsFeed onUnlockSuccess={handleUnlockSuccess} />
+          <LeadsFeed onUnlockSuccess={handleUnlockSuccess} isAdmin={profile.is_admin} />
         )}
       </main>
     </div>

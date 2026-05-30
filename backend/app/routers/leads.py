@@ -15,6 +15,7 @@ class LeadResponse(BaseModel):
     contacts: str
     price_credits: int
     is_unlocked: bool
+    image_urls: List[str] = []
     created_at: str | None = None
 
 class UnlockResponse(BaseModel):
@@ -53,6 +54,7 @@ async def get_leads(
                 contacts=lead["contacts"] if is_unlocked else "******** [Skryto. Odemkněte za credits]",
                 price_credits=lead["price_credits"],
                 is_unlocked=is_unlocked,
+                image_urls=lead.get("image_urls", []),
                 created_at=lead.get("created_at")
             ))
             
@@ -107,7 +109,7 @@ async def unlock_lead(
         if user["credits"] < lead["price_credits"]:
             raise HTTPException(
                 status_code=400,
-                detail=f"Nedostatek kreditů! K odemčení kontaktů potřebujete {lead['price_credits']} Kč (Credits), váš aktuální zůstatek je {user['credits']} Kč."
+                detail=f"Nedostatek kreditů! K odemčení kontaktů potřebujete {lead['price_credits']} kreditů, váš aktuální zůstatek je {user['credits']} kreditů."
             )
 
         # Deduct credits
