@@ -13,7 +13,7 @@ interface AdminUserResponse {
   phone: string | null
   bio: string | null
   status: string
-  credits: int
+  credits: number
   created_at: string
 }
 
