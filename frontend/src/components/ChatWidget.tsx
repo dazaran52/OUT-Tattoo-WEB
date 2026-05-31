@@ -210,25 +210,27 @@ export function ChatWidget() {
               const isMine = msg.sender_id === session.user.id
               return (
                 <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`flex flex-col ${isMine ? 'items-end' : 'items-start'}`}>
+                  <div className={`flex flex-col ${isMine ? 'items-end' : 'items-start'} max-w-[85%]`}>
                     {!isMine && (
-                      <span className="text-[10px] text-neutral-500 font-medium mb-1 ml-1 flex items-center gap-1">
+                      <span className="text-[10px] text-neutral-500 font-medium mb-1 pl-1 flex items-center gap-1">
                         <MessageCircle className="w-3 h-3" />
                         Служба поддержки
                       </span>
                     )}
                     <div 
-                      className={`max-w-[80%] rounded-2xl px-4 py-2 text-sm ${
+                      className={`relative min-w-[70px] rounded-2xl px-3.5 py-2 text-sm shadow-sm ${
                         isMine 
                           ? 'bg-cyan-500 text-white rounded-br-sm' 
                           : 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 rounded-bl-sm'
                       }`}
                     >
-                      {msg.message}
-                      <div className={`text-[10px] mt-1 text-right flex items-center justify-end gap-1 ${isMine ? 'text-cyan-100' : 'text-neutral-400'}`}>
-                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      <div className="break-words mb-1">
+                        {msg.message}
+                      </div>
+                      <div className={`text-[10px] leading-none flex items-center justify-end gap-0.5 whitespace-nowrap ${isMine ? 'text-cyan-100' : 'text-neutral-400'}`}>
+                        <span>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         {isMine && (
-                          <span className="ml-1 opacity-80 tracking-tighter text-[11px]">
+                          <span className="opacity-80 tracking-tighter text-[11px]">
                             {msg.is_read ? '✓✓' : '✓'}
                           </span>
                         )}

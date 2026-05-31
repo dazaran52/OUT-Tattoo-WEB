@@ -332,21 +332,25 @@ export function AdminChat() {
                   const isAdmin = msg.sender_id === session?.user?.id
                   return (
                     <div key={msg.id} className={`flex ${isAdmin ? 'justify-end' : 'justify-start'}`}>
-                      <div 
-                        className={`max-w-[70%] rounded-2xl px-4 py-2 text-sm shadow-sm ${
-                          isAdmin 
-                            ? 'bg-cyan-500 text-white rounded-br-sm' 
-                            : 'bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white rounded-bl-sm'
-                        }`}
-                      >
-                        {msg.message}
-                        <div className={`text-[10px] mt-1 text-right flex items-center justify-end gap-1 ${isAdmin ? 'text-cyan-100' : 'text-neutral-400'}`}>
-                          {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          {isAdmin && (
-                            <span className="ml-1 opacity-80 tracking-tighter text-[11px]">
-                              {msg.is_read ? '✓✓' : '✓'}
-                            </span>
-                          )}
+                      <div className={`flex flex-col ${isAdmin ? 'items-end' : 'items-start'} max-w-[70%]`}>
+                        <div 
+                          className={`relative min-w-[70px] rounded-2xl px-3.5 py-2 text-sm shadow-sm ${
+                            isAdmin 
+                              ? 'bg-cyan-500 text-white rounded-br-sm' 
+                              : 'bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white rounded-bl-sm'
+                          }`}
+                        >
+                          <div className="break-words mb-1">
+                            {msg.message}
+                          </div>
+                          <div className={`text-[10px] leading-none flex items-center justify-end gap-0.5 whitespace-nowrap ${isAdmin ? 'text-cyan-100' : 'text-neutral-400'}`}>
+                            <span>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            {isAdmin && (
+                              <span className="opacity-80 tracking-tighter text-[11px]">
+                                {msg.is_read ? '✓✓' : '✓'}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
