@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { SkeletonCard } from '@/components/SkeletonCard'
 import { RefreshCw, Search, Loader2, Plus, Edit2, Trash2, XCircle, ChevronLeft, ChevronRight, Image as ImageIcon } from 'lucide-react'
 import { getTranslation, Language } from '@/lib/i18n'
+import { LowBalanceModal } from '@/components/LowBalanceModal'
 import toast from 'react-hot-toast'
 
 export interface Lead {
@@ -34,6 +35,8 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false }: LeadsFeedProps) 
   
   // Modal & Admin State
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isLowBalanceModalOpen, setIsLowBalanceModalOpen] = useState(false)
+  const [lowBalanceRequiredCredits, setLowBalanceRequiredCredits] = useState(50)
   const [editingLead, setEditingLead] = useState<Lead | null>(null)
   const [formData, setFormData] = useState({ title: '', description: '', contacts: '', price_credits: 50, image_urls: [] as string[] })
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -65,9 +68,6 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false }: LeadsFeedProps) 
         return
       }
 
-      // If admin, we fetch from admin endpoint to see ALL leads, even locked ones with contacts shown.
-      // Wait, normal users fetch from `/api/leads` and contacts are masked if not unlocked.
-      // Admins need to see everything.
       const endpoint = isAdmin 
         ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/leads`
         : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads`
@@ -130,13 +130,20 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false }: LeadsFeedProps) 
       }
 
     } catch (err: any) {
-      toast.error(err.message || 'Error unlocking lead')
+      if (err.message === 'INSUFFICIENT_CREDITS') {
+        const lead = leads.find(l => l.id === leadId)
+        if (lead) {
+          setLowBalanceRequiredCredits(lead.price_credits)
+          setIsLowBalanceModalOpen(true)
+        }
+      } else {
+        toast.error(err.message || 'Error unlocking lead')
+      }
     } finally {
       setUnlockingId(null)
     }
   }
 
-  // --- ADMIN METHODS ---
   const openLeadModal = (lead?: Lead) => {
     if (lead) {
       setEditingLead(lead)
@@ -295,6 +302,12 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false }: LeadsFeedProps) 
 
   return (
     <div className="space-y-6">
+      <LowBalanceModal 
+        isOpen={isLowBalanceModalOpen} 
+        onClose={() => setIsLowBalanceModalOpen(false)} 
+        requiredCredits={lowBalanceRequiredCredits} 
+      />
+
       {/* Lightbox */}
       {lightboxImage && (
         <div 

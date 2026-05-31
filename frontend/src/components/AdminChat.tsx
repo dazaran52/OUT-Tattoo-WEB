@@ -29,12 +29,19 @@ export function AdminChat() {
     const fetchChatUsers = async () => {
       setIsLoadingChats(true)
       
-      // 1. Fetch all users (since we're admin) to build a map
-      const { data: usersData } = await supabase.from('users').select('id, email, display_name, credits, status')
-      const uMap: Record<string, any> = {}
-      if (usersData) {
-        usersData.forEach(u => uMap[u.id] = u)
-        setUsersMap(uMap)
+      // 1. Fetch all users via backend API (bypassing RLS)
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/users`, {
+          headers: { 'Authorization': `Bearer ${session.access_token}` }
+        })
+        if (res.ok) {
+          const usersData = await res.json()
+          const uMap: Record<string, any> = {}
+          usersData.forEach((u: any) => uMap[u.id] = u)
+          setUsersMap(uMap)
+        }
+      } catch (err) {
+        console.error('Failed to fetch users for chat map', err)
       }
 
       // 2. Fetch all messages
@@ -260,7 +267,7 @@ export function AdminChat() {
       </div>
 
       {/* Main Chat Area */}
-      <div className="w-2/3 flex flex-col bg-white dark:bg-neutral-950">
+      <div className="w-2/3 flex flex-col bg-neutral-50 dark:bg-neutral-950">
         {!selectedUserId ? (
           <div className="flex-1 flex flex-col items-center justify-center text-neutral-400">
             <MessageCircle className="w-16 h-16 mb-4 opacity-20" />
@@ -326,17 +333,17 @@ export function AdminChat() {
                   return (
                     <div key={msg.id} className={`flex ${isAdmin ? 'justify-end' : 'justify-start'}`}>
                       <div 
-                        className={`max-w-[70%] rounded-2xl px-4 py-2 text-sm ${
+                        className={`max-w-[70%] rounded-2xl px-4 py-2 text-sm shadow-sm ${
                           isAdmin 
                             ? 'bg-cyan-500 text-white rounded-br-sm' 
-                            : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-bl-sm'
+                            : 'bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white rounded-bl-sm'
                         }`}
                       >
                         {msg.message}
                         <div className={`text-[10px] mt-1 text-right flex items-center justify-end gap-1 ${isAdmin ? 'text-cyan-100' : 'text-neutral-400'}`}>
                           {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           {isAdmin && (
-                            <span className="ml-1 opacity-80">
+                            <span className="ml-1 opacity-80 tracking-tighter text-[11px]">
                               {msg.is_read ? '✓✓' : '✓'}
                             </span>
                           )}

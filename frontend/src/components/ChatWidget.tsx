@@ -228,7 +228,7 @@ export function ChatWidget() {
                       <div className={`text-[10px] mt-1 text-right flex items-center justify-end gap-1 ${isMine ? 'text-cyan-100' : 'text-neutral-400'}`}>
                         {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         {isMine && (
-                          <span className="ml-1 opacity-80">
+                          <span className="ml-1 opacity-80 tracking-tighter text-[11px]">
                             {msg.is_read ? '✓✓' : '✓'}
                           </span>
                         )}

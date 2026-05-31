@@ -109,7 +109,7 @@ async def unlock_lead(
         if user["credits"] < lead["price_credits"]:
             raise HTTPException(
                 status_code=400,
-                detail=f"Nedostatek kreditů! K odemčení kontaktů potřebujete {lead['price_credits']} kreditů, váš aktuální zůstatek je {user['credits']} kreditů."
+                detail="INSUFFICIENT_CREDITS"
             )
 
         # Deduct credits
