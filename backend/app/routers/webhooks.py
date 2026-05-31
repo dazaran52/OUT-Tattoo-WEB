@@ -50,12 +50,12 @@ async def donatello_webhook(
         
     master = user_res.data[0]
     
-    # Calculate credits (Proportional: 500 Credits for 830 UAH)
+    # Calculate credits (Rate: 40 UAH = 1 EUR = 10 Credits => 0.25 credits per 1 UAH)
     try:
-        raw_amt = float(payload.actualAmount or payload.amount or "830")
-        credits_to_deposit = round(raw_amt * (500 / 830))
+        raw_amt = float(payload.actualAmount or payload.amount or "0")
+        credits_to_deposit = round(raw_amt * 0.25)
     except ValueError:
-        credits_to_deposit = 500
+        credits_to_deposit = 0
 
     new_balance = master["credits"] + credits_to_deposit
     
