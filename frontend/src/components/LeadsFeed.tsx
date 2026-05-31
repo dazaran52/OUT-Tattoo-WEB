@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { SkeletonCard } from '@/components/SkeletonCard'
 import { RefreshCw, Search, Loader2, Plus, Edit2, Trash2, XCircle, ChevronLeft, ChevronRight, Image as ImageIcon } from 'lucide-react'
 import { getTranslation, Language } from '@/lib/i18n'
+import toast from 'react-hot-toast'
 
 export interface Lead {
   id: string
@@ -129,7 +130,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false }: LeadsFeedProps) 
       }
 
     } catch (err: any) {
-      alert(err.message || 'Error unlocking lead')
+      toast.error(err.message || 'Error unlocking lead')
     } finally {
       setUnlockingId(null)
     }
@@ -184,7 +185,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false }: LeadsFeedProps) 
         image_urls: [...prev.image_urls, ...uploadedUrls]
       }))
     } catch (err: any) {
-      alert(`Image upload failed: ${err.message}. Make sure 'lead_images' bucket exists and is public.`)
+      toast.error(`Image upload failed: ${err.message}. Make sure 'lead_images' bucket exists and is public.`)
     } finally {
       setUploadingImages(false)
     }
@@ -220,8 +221,9 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false }: LeadsFeedProps) 
       }
       
       setIsModalOpen(false)
+      toast.success(isEditing ? 'Lead updated!' : 'Lead created!')
     } catch (err: any) {
-      alert(err.message)
+      toast.error(err.message)
     } finally {
       setIsSubmitting(false)
     }
@@ -245,8 +247,9 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false }: LeadsFeedProps) 
       if (!res.ok) throw new Error('Failed to delete lead')
 
       setLeads(leads.filter(l => l.id !== leadId))
+      toast.success('Lead deleted')
     } catch (err: any) {
-      alert(err.message)
+      toast.error(err.message)
     } finally {
       setActionLoadingId(null)
     }

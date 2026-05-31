@@ -2,11 +2,13 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { supabase, SupportMessage } from '@/lib/supabase'
-import { MessageCircle, Send, Loader2, User } from 'lucide-react'
+import { MessageCircle, Send, Loader2, User, Trash2, Ban, CheckCircle2, Coins } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 export function AdminChat() {
   const [session, setSession] = useState<any>(null)
-  const [usersWithChats, setUsersWithChats] = useState<{ id: string, email: string, last_msg: string }[]>([])
+  const [usersMap, setUsersMap] = useState<Record<string, any>>({})
+  const [chatList, setChatList] = useState<{ id: string, email: string, last_msg: string, unread: number }[]>([])
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
   const [messages, setMessages] = useState<SupportMessage[]>([])
   const [newMessage, setNewMessage] = useState('')
@@ -23,33 +25,39 @@ export function AdminChat() {
   useEffect(() => {
     if (!session) return
 
-    // Fetch list of users who have support messages
+    // Fetch users and chats
     const fetchChatUsers = async () => {
       setIsLoadingChats(true)
       
-      // Get unique users who sent or received messages
-      // We can query support_messages and group by user_id, but supabase js doesn't support GROUP BY directly easily.
-      // So we query all messages ordered by time descending, and extract unique users.
-      // Or we just query users, then query messages. 
-      // Let's do a simple join or two queries.
-      
-      const { data: messagesData, error: msgError } = await supabase
+      // 1. Fetch all users (since we're admin) to build a map
+      const { data: usersData } = await supabase.from('users').select('id, email, display_name, credits, status')
+      const uMap: Record<string, any> = {}
+      if (usersData) {
+        usersData.forEach(u => uMap[u.id] = u)
+        setUsersMap(uMap)
+      }
+
+      // 2. Fetch all messages
+      const { data: messagesData } = await supabase
         .from('support_messages')
-        .select('user_id, created_at, message, users!user_id(email)')
+        .select('*')
         .order('created_at', { ascending: false })
 
-      if (!msgError && messagesData) {
+      if (messagesData) {
         const uniqueUsers = new Map()
         for (const msg of messagesData) {
           if (!uniqueUsers.has(msg.user_id)) {
             uniqueUsers.set(msg.user_id, {
               id: msg.user_id,
-              email: (msg as any).users?.email || 'Unknown',
-              last_msg: new Date(msg.created_at).toLocaleString()
+              email: uMap[msg.user_id]?.email || 'Unknown User',
+              last_msg: new Date(msg.created_at).toLocaleString(),
+              unread: msg.is_read === false && msg.sender_id !== session.user.id ? 1 : 0
             })
+          } else if (msg.is_read === false && msg.sender_id !== session.user.id) {
+            uniqueUsers.get(msg.user_id).unread += 1
           }
         }
-        setUsersWithChats(Array.from(uniqueUsers.values()))
+        setChatList(Array.from(uniqueUsers.values()))
       }
       setIsLoadingChats(false)
     }
@@ -86,8 +94,18 @@ export function AdminChat() {
   useEffect(() => {
     if (!selectedUserId) return
 
-    const fetchMessages = async () => {
+    const fetchMessagesAndMarkRead = async () => {
       setIsLoadingMessages(true)
+      
+      // Mark as read
+      await supabase
+        .from('support_messages')
+        .update({ is_read: true })
+        .eq('user_id', selectedUserId)
+        .neq('sender_id', session.user.id)
+        .eq('is_read', false)
+
+      // Fetch messages
       const { data, error } = await supabase
         .from('support_messages')
         .select('*')
@@ -98,10 +116,13 @@ export function AdminChat() {
         setMessages(data as SupportMessage[])
         scrollToBottom()
       }
+      
+      // Update local unread count
+      setChatList(prev => prev.map(c => c.id === selectedUserId ? { ...c, unread: 0 } : c))
       setIsLoadingMessages(false)
     }
 
-    fetchMessages()
+    fetchMessagesAndMarkRead()
   }, [selectedUserId])
 
   const scrollToBottom = () => {
@@ -129,6 +150,74 @@ export function AdminChat() {
     setIsSending(false)
   }
 
+  const handleUpdateBalance = async (userId: string) => {
+    const amount = prompt('Введите новый баланс для пользователя:')
+    if (amount === null) return
+    const num = parseInt(amount)
+    if (isNaN(num) || num < 0) {
+      toast.error('Неверная сумма')
+      return
+    }
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/users/${userId}/credits`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ credits: num })
+      })
+      if (!res.ok) throw new Error('Failed to update credits')
+      toast.success('Баланс обновлен')
+      setUsersMap(prev => ({ ...prev, [userId]: { ...prev[userId], credits: num } }))
+    } catch (err: any) {
+      toast.error(err.message)
+    }
+  }
+
+  const handleToggleBan = async (userId: string) => {
+    const isBanned = usersMap[userId]?.status === 'rejected'
+    const newStatus = isBanned ? 'approved' : 'rejected'
+    if (!confirm(`Вы уверены, что хотите ${isBanned ? 'разблокировать' : 'заблокировать'} пользователя?`)) return
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/users/${userId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status: newStatus })
+      })
+      if (!res.ok) throw new Error('Failed to update status')
+      toast.success(isBanned ? 'Пользователь разблокирован' : 'Пользователь заблокирован')
+      setUsersMap(prev => ({ ...prev, [userId]: { ...prev[userId], status: newStatus } }))
+    } catch (err: any) {
+      toast.error(err.message)
+    }
+  }
+
+  const handleClearChat = async (userId: string) => {
+    if (!confirm('Вы уверены, что хотите полностью очистить историю этого чата? Действие необратимо.')) return
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/chat/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      })
+      if (!res.ok) throw new Error('Failed to clear chat')
+      toast.success('Чат очищен')
+      setMessages([])
+      setChatList(prev => prev.filter(c => c.id !== userId))
+      setSelectedUserId(null)
+    } catch (err: any) {
+      toast.error(err.message)
+    }
+  }
+
   return (
     <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-sm flex h-[600px] animate-fade-in-up">
       {/* Sidebar: Users List */}
@@ -142,19 +231,28 @@ export function AdminChat() {
             <div className="flex justify-center p-8">
               <Loader2 className="w-6 h-6 animate-spin text-neutral-400" />
             </div>
-          ) : usersWithChats.length === 0 ? (
+          ) : chatList.length === 0 ? (
             <div className="text-center p-8 text-neutral-500 text-sm">
               Нет активных чатов
             </div>
           ) : (
-            usersWithChats.map(u => (
+            chatList.map(c => (
               <button
-                key={u.id}
-                onClick={() => setSelectedUserId(u.id)}
-                className={`w-full text-left p-4 border-b border-neutral-100 dark:border-neutral-800/50 hover:bg-white dark:hover:bg-neutral-800 transition-colors ${selectedUserId === u.id ? 'bg-white dark:bg-neutral-800 border-l-4 border-l-cyan-500' : ''}`}
+                key={c.id}
+                onClick={() => setSelectedUserId(c.id)}
+                className={`w-full text-left p-4 border-b border-neutral-100 dark:border-neutral-800/50 hover:bg-white dark:hover:bg-neutral-800 transition-colors ${selectedUserId === c.id ? 'bg-white dark:bg-neutral-800 border-l-4 border-l-cyan-500' : ''} ${c.unread > 0 && selectedUserId !== c.id ? 'bg-cyan-50/50 dark:bg-cyan-900/10' : ''}`}
               >
-                <div className="font-medium text-neutral-900 dark:text-white truncate">{u.email}</div>
-                <div className="text-xs text-neutral-500 mt-1">{u.last_msg}</div>
+                <div className="flex justify-between items-center mb-1">
+                  <div className={`font-medium truncate ${c.unread > 0 && selectedUserId !== c.id ? 'text-neutral-900 dark:text-white font-bold' : 'text-neutral-700 dark:text-neutral-300'}`}>
+                    {c.email}
+                  </div>
+                  {c.unread > 0 && selectedUserId !== c.id && (
+                    <div className="w-5 h-5 bg-cyan-500 text-white rounded-full flex items-center justify-center text-[10px] font-bold">
+                      {c.unread}
+                    </div>
+                  )}
+                </div>
+                <div className="text-xs text-neutral-500">{c.last_msg}</div>
               </button>
             ))
           )}
@@ -170,9 +268,51 @@ export function AdminChat() {
           </div>
         ) : (
           <>
-            <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 font-medium text-neutral-900 dark:text-white flex items-center gap-2 shadow-sm z-10">
-              <User className="w-5 h-5 text-neutral-400" />
-              {usersWithChats.find(u => u.id === selectedUserId)?.email}
+            <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between shadow-sm z-10 bg-white dark:bg-neutral-900">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center">
+                  <User className="w-5 h-5 text-neutral-500" />
+                </div>
+                <div>
+                  <div className="font-bold text-neutral-900 dark:text-white leading-tight">
+                    {usersMap[selectedUserId]?.email || 'Загрузка...'}
+                  </div>
+                  <div className="text-xs text-neutral-500 flex items-center gap-2 mt-0.5">
+                    <span className="text-cyan-600 dark:text-cyan-400 font-medium">{usersMap[selectedUserId]?.credits || 0} кредитов</span>
+                    •
+                    <span className={usersMap[selectedUserId]?.status === 'approved' ? 'text-green-500' : 'text-amber-500'}>
+                      {usersMap[selectedUserId]?.status}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleUpdateBalance(selectedUserId)}
+                  className="p-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 rounded-lg transition-colors"
+                  title="Изменить баланс"
+                >
+                  <Coins className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleToggleBan(selectedUserId)}
+                  className={`p-2 rounded-lg transition-colors ${
+                    usersMap[selectedUserId]?.status === 'rejected' 
+                      ? 'bg-green-100 text-green-600 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-900/50' 
+                      : 'bg-amber-100 text-amber-600 hover:bg-amber-200 dark:bg-amber-900/30 dark:hover:bg-amber-900/50'
+                  }`}
+                  title={usersMap[selectedUserId]?.status === 'rejected' ? 'Разблокировать' : 'Заблокировать'}
+                >
+                  {usersMap[selectedUserId]?.status === 'rejected' ? <CheckCircle2 className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
+                </button>
+                <button
+                  onClick={() => handleClearChat(selectedUserId)}
+                  className="p-2 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-600 rounded-lg transition-colors"
+                  title="Очистить чат"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -193,8 +333,13 @@ export function AdminChat() {
                         }`}
                       >
                         {msg.message}
-                        <div className={`text-[10px] mt-1 text-right ${isAdmin ? 'text-cyan-100' : 'text-neutral-400'}`}>
+                        <div className={`text-[10px] mt-1 text-right flex items-center justify-end gap-1 ${isAdmin ? 'text-cyan-100' : 'text-neutral-400'}`}>
                           {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {isAdmin && (
+                            <span className="ml-1 opacity-80">
+                              {msg.is_read ? '✓✓' : '✓'}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>

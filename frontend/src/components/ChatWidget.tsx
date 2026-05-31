@@ -11,6 +11,7 @@ export function ChatWidget() {
   const [newMessage, setNewMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isSending, setIsSending] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -30,8 +31,17 @@ export function ChatWidget() {
   useEffect(() => {
     if (!isOpen || !session?.user) return
 
-    const fetchMessages = async () => {
+    const fetchMessagesAndMarkRead = async () => {
       setIsLoading(true)
+      
+      // Mark admin messages as read since we are viewing them
+      await supabase
+        .from('support_messages')
+        .update({ is_read: true })
+        .eq('user_id', session.user.id)
+        .neq('sender_id', session.user.id)
+        .eq('is_read', false)
+
       const { data, error } = await supabase
         .from('support_messages')
         .select('*')
@@ -40,11 +50,12 @@ export function ChatWidget() {
       if (!error && data) {
         setMessages(data as SupportMessage[])
       }
+      setUnreadCount(0)
       setIsLoading(false)
       scrollToBottom()
     }
 
-    fetchMessages()
+    fetchMessagesAndMarkRead()
 
     const channel = supabase
       .channel('public:support_messages')
@@ -57,11 +68,43 @@ export function ChatWidget() {
           filter: `user_id=eq.${session.user.id}`,
         },
         (payload) => {
-          setMessages((prev) => [...prev, payload.new as SupportMessage])
+          const newMsg = payload.new as SupportMessage
+          setMessages((prev) => [...prev, newMsg])
+          if (!isOpen && newMsg.sender_id !== session.user.id) {
+            setUnreadCount(c => c + 1)
+          } else if (isOpen && newMsg.sender_id !== session.user.id) {
+            // Mark immediately read if open
+            supabase.from('support_messages').update({ is_read: true }).eq('id', newMsg.id)
+          }
           scrollToBottom()
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'support_messages',
+          filter: `user_id=eq.${session.user.id}`,
+        },
+        (payload) => {
+          const updatedMsg = payload.new as SupportMessage
+          setMessages((prev) => prev.map(m => m.id === updatedMsg.id ? updatedMsg : m))
+        }
+      )
       .subscribe()
+
+    // Also fetch initial unread count
+    const fetchUnread = async () => {
+      const { count } = await supabase
+        .from('support_messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', session.user.id)
+        .neq('sender_id', session.user.id)
+        .eq('is_read', false)
+      if (count) setUnreadCount(count)
+    }
+    fetchUnread()
 
     return () => {
       supabase.removeChannel(channel)
@@ -167,14 +210,30 @@ export function ChatWidget() {
               const isMine = msg.sender_id === session.user.id
               return (
                 <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
-                  <div 
-                    className={`max-w-[80%] rounded-2xl px-4 py-2 text-sm ${
-                      isMine 
-                        ? 'bg-cyan-500 text-white rounded-br-sm' 
-                        : 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 rounded-bl-sm'
-                    }`}
-                  >
-                    {msg.message}
+                  <div className={`flex flex-col ${isMine ? 'items-end' : 'items-start'}`}>
+                    {!isMine && (
+                      <span className="text-[10px] text-neutral-500 font-medium mb-1 ml-1 flex items-center gap-1">
+                        <MessageCircle className="w-3 h-3" />
+                        Служба поддержки
+                      </span>
+                    )}
+                    <div 
+                      className={`max-w-[80%] rounded-2xl px-4 py-2 text-sm ${
+                        isMine 
+                          ? 'bg-cyan-500 text-white rounded-br-sm' 
+                          : 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 rounded-bl-sm'
+                      }`}
+                    >
+                      {msg.message}
+                      <div className={`text-[10px] mt-1 text-right flex items-center justify-end gap-1 ${isMine ? 'text-cyan-100' : 'text-neutral-400'}`}>
+                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {isMine && (
+                          <span className="ml-1 opacity-80">
+                            {msg.is_read ? '✓✓' : '✓'}
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               )
@@ -203,9 +262,14 @@ export function ChatWidget() {
 
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-14 h-14 bg-cyan-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-cyan-500/30 hover:scale-105 transition-transform border-4 border-white dark:border-neutral-950"
+        className="relative w-14 h-14 bg-cyan-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-cyan-500/30 hover:scale-105 transition-transform border-4 border-white dark:border-neutral-950"
       >
         {isOpen ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
+        {!isOpen && unreadCount > 0 && (
+          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white dark:border-neutral-950">
+            {unreadCount}
+          </span>
+        )}
       </button>
     </div>
   )

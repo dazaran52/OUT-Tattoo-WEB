@@ -10,6 +10,9 @@ router = APIRouter(prefix="/api/admin", tags=["admin"])
 class UserStatusUpdate(BaseModel):
     status: str
 
+class UserCreditsUpdate(BaseModel):
+    credits: int
+
 class AdminUserResponse(BaseModel):
     id: str
     email: str
@@ -131,6 +134,50 @@ async def update_user_status(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error updating user status: {str(e)}"
         )
+
+@router.put("/users/{user_id}/credits")
+async def update_user_credits(
+    user_id: str,
+    update_data: UserCreditsUpdate,
+    admin_user: AuthUser = Depends(get_admin_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    """Update a user's credit balance."""
+    if update_data.credits < 0:
+        raise HTTPException(status_code=400, detail="Credits cannot be negative")
+        
+    try:
+        response = supabase.table("users") \
+            .update({"credits": update_data.credits}) \
+            .eq("id", user_id) \
+            .execute()
+            
+        if not response.data:
+            raise HTTPException(status_code=404, detail="User not found")
+            
+        return {"message": f"User credits updated to {update_data.credits}"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error updating credits: {str(e)}")
+
+@router.delete("/chat/{user_id}")
+async def clear_user_chat(
+    user_id: str,
+    admin_user: AuthUser = Depends(get_admin_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    """Delete all support messages for a specific user."""
+    try:
+        response = supabase.table("support_messages") \
+            .delete() \
+            .eq("user_id", user_id) \
+            .execute()
+            
+        return {"message": "Chat history cleared successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error clearing chat: {str(e)}")
+
 
 @router.get("/leads")
 async def get_admin_leads(
