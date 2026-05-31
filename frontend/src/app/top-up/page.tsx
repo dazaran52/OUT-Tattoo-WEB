@@ -7,6 +7,19 @@ import { api } from '@/lib/api'
 import { supabase } from '@/lib/supabase'
 import toast from 'react-hot-toast'
 
+interface TopUpMethod {
+  id: string
+  name: string
+  description: string
+  icon: React.ReactNode
+  color: string
+  border: string
+  actionText: string
+  isDynamic?: boolean
+  onClick?: () => void
+  link?: string
+}
+
 export default function TopUpPage() {
   const router = useRouter()
 
@@ -73,7 +86,7 @@ export default function TopUpPage() {
     }
   }
 
-  const topUpMethods = [
+  const topUpMethods: TopUpMethod[] = [
     {
       id: 'donatello',
       name: 'Donatello',
