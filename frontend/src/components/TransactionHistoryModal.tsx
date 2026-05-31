@@ -60,7 +60,7 @@ export function TransactionHistoryModal({ isOpen, onClose }: Props) {
 
       const combined: Transaction[] = []
       if (txData) {
-        combined.push(...txData.map((t: any) => ({ ...t, type: 'transaction' })))
+        combined.push(...txData.map((t: any) => ({ ...t, type: 'transaction' as const })))
       }
       if (prData) {
         combined.push(...prData.map((p: any) => ({
@@ -71,7 +71,7 @@ export function TransactionHistoryModal({ isOpen, onClose }: Props) {
           provider: p.provider,
           status: p.status,
           created_at: p.created_at,
-          type: 'request',
+          type: 'request' as const,
           admin_message: p.admin_message
         })))
       }
