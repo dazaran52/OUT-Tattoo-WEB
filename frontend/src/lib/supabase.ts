@@ -22,6 +22,15 @@ export type Profile = {
   referred_by?: string | null
 }
 
+export type SupportMessage = {
+  id: string
+  user_id: string
+  sender_id: string
+  message: string
+  is_read: boolean
+  created_at: string
+}
+
 // Server-side helper (for server components)
 export function createSupabaseServerClient(cookieStore: any) {
   return createServerClient(supabaseUrl, supabaseKey, {
