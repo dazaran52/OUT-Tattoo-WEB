@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Gem, Sparkles, AlertCircle, CreditCard, Wallet, HeartHandshake, ExternalLink, Loader2, X, Copy, Check } from 'lucide-react'
 import { api } from '@/lib/api'
@@ -30,15 +30,13 @@ export default function TopUpPage() {
   const [isCopied, setIsCopied] = useState(false)
   const [isCreatingRequest, setIsCreatingRequest] = useState(false)
 
-  import('react').then(React => {
-    React.useEffect(() => {
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session?.user?.email) {
-          setUserEmail(session.user.email)
-        }
-      })
-    }, [])
-  })
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user?.email) {
+        setUserEmail(session.user.email)
+      }
+    })
+  }, [])
 
   const copyEmail = () => {
     navigator.clipboard.writeText(userEmail)
