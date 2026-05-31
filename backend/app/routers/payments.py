@@ -5,7 +5,7 @@ import httpx
 from fastapi import APIRouter, Header, Request, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
-from app.database import get_supabase
+from app.database import get_supabase_client
 import uuid
 
 router = APIRouter(prefix="/api/payments", tags=["payments"])
