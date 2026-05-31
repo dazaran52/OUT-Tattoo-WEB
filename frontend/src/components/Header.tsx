@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { LogOut, Gem, Menu, X, LayoutDashboard, Settings, Plus } from 'lucide-react'
 import { Profile } from '@/lib/supabase'
 import { getTranslation, Language } from '@/lib/i18n'
+import { TransactionHistoryModal } from '@/components/TransactionHistoryModal'
 
 interface HeaderProps {
   profile: Profile
@@ -15,6 +16,7 @@ export function Header({ profile, onLogout }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const router = useRouter()
   const [language, setLanguage] = useState<string>('cs')
+  const [showHistory, setShowHistory] = useState(false)
   
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -51,11 +53,15 @@ export function Header({ profile, onLogout }: HeaderProps) {
 
             {/* Credits Counter & Top-up */}
             <div className="flex items-center gap-1">
-              <div className="flex items-center gap-2 bg-neutral-100 dark:bg-neutral-800/50 pl-4 pr-3 py-2 rounded-l-lg border border-neutral-200 dark:border-neutral-700">
+              <button 
+                onClick={() => setShowHistory(true)}
+                title="История пополнений"
+                className="flex items-center gap-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800/50 dark:hover:bg-neutral-800 transition-colors pl-4 pr-3 py-2 rounded-l-lg border border-neutral-200 dark:border-neutral-700 cursor-pointer"
+              >
                 <Gem className="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
                 <span className="font-bold text-neutral-900 dark:text-white">{profile.credits}</span>
                 <span className="text-sm text-neutral-600 dark:text-neutral-300 pr-1">{t('credit_plural')}</span>
-              </div>
+              </button>
               <button
                 onClick={() => router.push('/top-up')}
                 className="flex items-center justify-center bg-cyan-500 hover:bg-cyan-600 dark:bg-cyan-600 dark:hover:bg-cyan-500 text-white px-2 py-2 rounded-r-lg transition-colors border border-cyan-500 dark:border-cyan-600"
@@ -104,6 +110,11 @@ export function Header({ profile, onLogout }: HeaderProps) {
           </div>
         </div>
       </div>
+
+      <TransactionHistoryModal 
+        isOpen={showHistory} 
+        onClose={() => setShowHistory(false)} 
+      />
     </header>
   )
 }
