@@ -30,13 +30,13 @@ export function AdminChat() {
       setIsLoadingChats(true)
       
       // 1. Fetch all users via backend API (bypassing RLS)
+      let uMap: Record<string, any> = {}
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/users`, {
           headers: { 'Authorization': `Bearer ${session.access_token}` }
         })
         if (res.ok) {
           const usersData = await res.json()
-          const uMap: Record<string, any> = {}
           usersData.forEach((u: any) => uMap[u.id] = u)
           setUsersMap(uMap)
         }
