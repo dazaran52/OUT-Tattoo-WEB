@@ -116,15 +116,10 @@ export default function TopUpPage() {
                   {method.isDynamic ? (
                     <button 
                       onClick={method.onClick}
-                      disabled={method.isLoading}
-                      className="w-full py-3 px-4 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-semibold rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="w-full py-3 px-4 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-semibold rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
                     >
-                      {method.isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
-                        <>
-                          {method.actionText}
-                          <ExternalLink className="w-4 h-4" />
-                        </>
-                      )}
+                      {method.actionText}
+                      <ExternalLink className="w-4 h-4" />
                     </button>
                   ) : (
                     <a 
@@ -148,19 +143,10 @@ export default function TopUpPage() {
                   Что делать после оплаты?
                 </h4>
                 <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                  Обязательно напишите в поддержку в Telegram и прикрепите скриншот транзакции и email вашего аккаунта.
+                  Обязательно напишите в Чат поддержки (иконка в правом нижнем углу) и прикрепите скриншот чека.
                 </p>
               </div>
-              <a 
-                href="https://t.me/out_tattoo_admin" 
-                target="_blank"
-                rel="noreferrer"
-                className="whitespace-nowrap px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-white font-medium rounded-xl shadow-lg shadow-cyan-500/20 transition-all hover:scale-105"
-              >
-                Написать в Telegram
-              </a>
             </div>
-
           </div>
         </div>
       </main>
