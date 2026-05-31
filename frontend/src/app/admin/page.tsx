@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Header } from '@/components/Header'
 import { AdminChat } from '@/components/AdminChat'
+import { AdminPayments } from '@/components/AdminPayments'
 import { supabase, Profile } from '@/lib/supabase'
 import { CheckCircle, XCircle, Clock, Loader2, Plus, Edit2, Trash2, Link as LinkIcon, Search, Coins, Ban } from 'lucide-react'
 import { getTranslation, Language } from '@/lib/i18n'
@@ -250,6 +251,16 @@ export default function AdminPage() {
             Управление пользователями
           </button>
           <button
+            onClick={() => setActiveTab('payments')}
+            className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'payments' 
+                ? 'border-cyan-500 text-cyan-600 dark:text-cyan-400' 
+                : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
+            }`}
+          >
+            Платежи (Revolut)
+          </button>
+          <button
             onClick={() => setActiveTab('chats')}
             className={`pb-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${
               activeTab === 'chats' 
@@ -260,6 +271,10 @@ export default function AdminPage() {
             Чат поддержки
           </button>
         </div>
+
+        {activeTab === 'payments' && (
+          <AdminPayments />
+        )}
 
         {activeTab === 'users' ? (
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-sm animate-fade-in-up">

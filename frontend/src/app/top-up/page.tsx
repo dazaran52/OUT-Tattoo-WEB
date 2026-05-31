@@ -2,14 +2,76 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Gem, Sparkles, AlertCircle, CreditCard, Wallet, HeartHandshake, ExternalLink, Loader2, X } from 'lucide-react'
+import { ArrowLeft, Gem, Sparkles, AlertCircle, CreditCard, Wallet, HeartHandshake, ExternalLink, Loader2, X, Copy, Check } from 'lucide-react'
 import { api } from '@/lib/api'
+import { supabase } from '@/lib/supabase'
+import toast from 'react-hot-toast'
 
 export default function TopUpPage() {
   const router = useRouter()
 
   const [amountCredits, setAmountCredits] = useState<number>(100)
   const [showRevolutModal, setShowRevolutModal] = useState(false)
+  const [showDonatelloModal, setShowDonatelloModal] = useState(false)
+  const [userEmail, setUserEmail] = useState<string>('')
+  const [isCopied, setIsCopied] = useState(false)
+  const [isCreatingRequest, setIsCreatingRequest] = useState(false)
+
+  import('react').then(React => {
+    React.useEffect(() => {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user?.email) {
+          setUserEmail(session.user.email)
+        }
+      })
+    }, [])
+  })
+
+  const copyEmail = () => {
+    navigator.clipboard.writeText(userEmail)
+    setIsCopied(true)
+    setTimeout(() => setIsCopied(false), 2000)
+  }
+
+  const handleRevolutContinue = async () => {
+    try {
+      setIsCreatingRequest(true)
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/payments/requests`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            amount_credits: amountCredits,
+            provider: 'revolut',
+            currency: 'EUR'
+          })
+        }
+      )
+      
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data.detail || 'Failed to create payment request')
+      }
+      
+      // Open Revolut link
+      window.open('https://checkout.revolut.com/pay/5ed4188d-af33-4d05-a5d6-5474f448f289', '_blank')
+      
+      // Redirect to dashboard where banner will appear
+      router.push('/dashboard')
+    } catch (err: any) {
+      toast.error(err.message || 'Ошибка создания заявки')
+    } finally {
+      setIsCreatingRequest(false)
+      setShowRevolutModal(false)
+    }
+  }
 
   const topUpMethods = [
     {
@@ -20,7 +82,8 @@ export default function TopUpPage() {
       color: 'from-rose-100 to-rose-50 dark:from-rose-900/40 dark:to-rose-900/10',
       border: 'border-rose-200 dark:border-rose-800',
       actionText: 'Оплата через Donatello',
-      link: 'https://donatello.to/out_tattoo_leads'
+      isDynamic: true,
+      onClick: () => setShowDonatelloModal(true)
     },
     {
       id: 'revolut',
@@ -136,14 +199,15 @@ export default function TopUpPage() {
               ))}
             </div>
 
+            {/* Bottom info section */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-neutral-100 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 text-left">
               <div>
                 <h4 className="font-bold text-neutral-900 dark:text-white flex items-center gap-2 mb-1">
                   <AlertCircle className="w-5 h-5 text-cyan-500" />
-                  Что делать после оплаты?
+                  Как работает пополнение?
                 </h4>
                 <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                  Обязательно напишите в Чат поддержки (иконка в правом нижнем углу) и прикрепите скриншот чека.
+                  Мы используем безопасные платежные системы. Для Donatello кредиты начисляются <b>автоматически</b>. Для Revolut потребуется прикрепить скриншот в личном кабинете.
                 </p>
               </div>
             </div>
@@ -181,14 +245,73 @@ export default function TopUpPage() {
               >
                 Отмена
               </button>
+              <button
+                onClick={handleRevolutContinue}
+                disabled={isCreatingRequest}
+                className="flex-1 py-3 px-4 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {isCreatingRequest ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Продолжить'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Donatello Trust Modal */}
+      {showDonatelloModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in-up">
+          <div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-md w-full p-8 shadow-2xl relative border border-neutral-200 dark:border-neutral-800 text-center">
+            <button 
+              onClick={() => setShowDonatelloModal(false)}
+              className="absolute top-4 right-4 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            <div className="w-16 h-16 bg-rose-100 dark:bg-rose-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+              <HeartHandshake className="w-8 h-8 text-rose-500" />
+            </div>
+            <h3 className="text-2xl font-bold text-neutral-900 dark:text-white mb-4">
+              Оплата через Donatello
+            </h3>
+            
+            <div className="bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800 p-5 rounded-2xl mb-6 text-left">
+              <h4 className="font-bold text-cyan-900 dark:text-cyan-400 mb-2 flex items-center gap-2">
+                <AlertCircle className="w-5 h-5" />
+                Обязательный шаг
+              </h4>
+              <p className="text-sm text-cyan-800 dark:text-cyan-300 mb-4">
+                Для автоматического зачисления кредитов, вставьте ваш Email в поле комментария при оплате на Donatello.
+              </p>
+              
+              <div className="bg-white dark:bg-neutral-950 p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 flex items-center justify-between gap-3">
+                <span className="font-mono text-neutral-900 dark:text-white truncate">
+                  {userEmail || 'Загрузка...'}
+                </span>
+                <button 
+                  onClick={copyEmail}
+                  className="p-2 shrink-0 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 rounded-lg transition-colors"
+                >
+                  {isCopied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <button
+                onClick={() => setShowDonatelloModal(false)}
+                className="flex-1 py-3 px-4 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-xl font-medium hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+              >
+                Отмена
+              </button>
               <a
-                href="https://checkout.revolut.com/pay/5ed4188d-af33-4d05-a5d6-5474f448f289"
+                href="https://donatello.to/out_tattoo_leads"
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={() => setShowRevolutModal(false)}
-                className="flex-1 py-3 px-4 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center justify-center"
+                onClick={() => setShowDonatelloModal(false)}
+                className="flex-1 py-3 px-4 bg-rose-500 text-white rounded-xl font-medium hover:bg-rose-600 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-rose-500/25"
               >
-                Продолжить
+                К оплате
+                <ExternalLink className="w-4 h-4" />
               </a>
             </div>
           </div>

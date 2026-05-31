@@ -13,6 +13,8 @@ interface Transaction {
   provider: string
   status: string
   created_at: string
+  type?: 'transaction' | 'request'
+  admin_message?: string
 }
 
 interface Props {
@@ -42,16 +44,40 @@ export function TransactionHistoryModal({ isOpen, onClose }: Props) {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
 
-      const { data, error } = await supabase
+      const { data: txData, error: txError } = await supabase
         .from('transactions')
         .select('*')
         .eq('user_id', session.user.id)
         .order('created_at', { ascending: false })
-        .limit(50)
+        .limit(20)
+        
+      const { data: prData, error: prError } = await supabase
+        .from('payment_requests')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: false })
+        .limit(20)
 
-      if (!error && data) {
-        setTransactions(data)
+      const combined: Transaction[] = []
+      if (txData) {
+        combined.push(...txData.map((t: any) => ({ ...t, type: 'transaction' })))
       }
+      if (prData) {
+        combined.push(...prData.map((p: any) => ({
+          id: p.id,
+          amount: p.amount_credits / 10,
+          currency: p.currency,
+          credits_added: p.amount_credits,
+          provider: p.provider,
+          status: p.status,
+          created_at: p.created_at,
+          type: 'request',
+          admin_message: p.admin_message
+        })))
+      }
+      
+      combined.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      setTransactions(combined)
       setIsLoading(false)
     }
 
@@ -105,8 +131,9 @@ export function TransactionHistoryModal({ isOpen, onClose }: Props) {
                   <div>
                     <div className="font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
                       +{tx.credits_added} {t('credit_plural')}
-                      <span className="text-xs font-normal px-2 py-0.5 rounded-md bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300">
-                        {tx.provider === 'donatello' ? 'Donatello' : tx.provider === 'cryptobot' ? 'Crypto' : 'Админ'}
+                      <span className={`text-xs font-normal px-2 py-0.5 rounded-md ${tx.type === 'request' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400' : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300'}`}>
+                        {tx.provider === 'donatello' ? 'Donatello' : tx.provider === 'cryptobot' ? 'Crypto' : tx.provider === 'revolut' ? 'Revolut' : 'Админ'}
+                        {tx.type === 'request' ? ' (Заявка)' : ''}
                       </span>
                     </div>
                     <div className="text-xs text-neutral-500 flex items-center gap-1 mt-1">
@@ -121,10 +148,16 @@ export function TransactionHistoryModal({ isOpen, onClose }: Props) {
                   </div>
                   <div className={`text-xs mt-1 ${
                     tx.status === 'completed' || tx.status === 'approved' ? 'text-green-600 dark:text-green-400' : 
-                    tx.status === 'pending' ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'
+                    (tx.status === 'pending' || tx.status === 'screenshot_uploaded') ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'
                   }`}>
-                    {tx.status === 'completed' || tx.status === 'approved' ? 'Зачислено' : tx.status}
+                    {tx.status === 'completed' || tx.status === 'approved' ? 'Зачислено' : 
+                     tx.status === 'screenshot_uploaded' ? 'На проверке' : 
+                     tx.status === 'pending' ? 'Ожидает оплаты' : 
+                     tx.status === 'cancelled' ? 'Отменено' : 'Отклонено'}
                   </div>
+                  {tx.admin_message && (
+                    <div className="text-[10px] text-red-500 mt-0.5">{tx.admin_message}</div>
+                  )}
                 </div>
               </div>
             ))

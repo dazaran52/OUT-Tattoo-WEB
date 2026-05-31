@@ -258,3 +258,90 @@ async def delete_lead(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error deleting lead: {str(e)}"
         )
+
+# --- Admin Payment Requests ---
+
+class RejectRequest(BaseModel):
+    message: str
+
+@router.get("/payment_requests")
+async def get_admin_payment_requests(
+    admin_user: AuthUser = Depends(get_admin_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    try:
+        # Get all payment requests that are not pending (so screenshot uploaded, or already approved/rejected)
+        # Actually, admin should see all, or at least screenshot_uploaded
+        response = supabase.table("payment_requests") \
+            .select("*, users!inner(email)") \
+            .neq("status", "pending") \
+            .order("created_at", desc=True) \
+            .execute()
+        return response.data or []
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/payment_requests/{req_id}/approve")
+async def approve_payment_request(
+    req_id: str,
+    admin_user: AuthUser = Depends(get_admin_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    try:
+        pr = supabase.table("payment_requests").select("*").eq("id", req_id).execute()
+        if not pr.data:
+            raise HTTPException(status_code=404, detail="Request not found")
+            
+        request_data = pr.data[0]
+        if request_data["status"] != "screenshot_uploaded":
+            raise HTTPException(status_code=400, detail="Only screenshot_uploaded can be approved")
+            
+        user_id = request_data["user_id"]
+        credits_to_add = request_data["amount_credits"]
+        
+        # Add to transactions
+        supabase.table("transactions").insert({
+            "user_id": user_id,
+            "amount": credits_to_add / 10 if request_data["currency"] == "EUR" else credits_to_add,
+            "currency": request_data["currency"],
+            "credits_added": credits_to_add,
+            "provider": request_data["provider"],
+            "provider_tx_id": f"manual_{req_id}"
+        }).execute()
+        
+        # Add credits
+        user_data = supabase.table("users").select("credits").eq("id", user_id).single().execute()
+        if user_data.data:
+            new_credits = user_data.data.get("credits", 0) + credits_to_add
+            supabase.table("users").update({"credits": new_credits}).eq("id", user_id).execute()
+            
+        # Update status
+        supabase.table("payment_requests").update({
+            "status": "approved"
+        }).eq("id", req_id).execute()
+        
+        return {"status": "approved"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/payment_requests/{req_id}/reject")
+async def reject_payment_request(
+    req_id: str,
+    req: RejectRequest,
+    admin_user: AuthUser = Depends(get_admin_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    try:
+        pr = supabase.table("payment_requests").select("*").eq("id", req_id).execute()
+        if not pr.data:
+            raise HTTPException(status_code=404, detail="Request not found")
+            
+        supabase.table("payment_requests").update({
+            "status": "rejected",
+            "admin_message": req.message
+        }).eq("id", req_id).execute()
+        
+        return {"status": "rejected"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
