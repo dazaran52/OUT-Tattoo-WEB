@@ -275,12 +275,13 @@ export default function TopUpPage() {
             </h3>
             <p className="text-neutral-600 dark:text-neutral-400 mb-6 leading-relaxed">
               Вы пополняете баланс на <strong>{amountCredits} кредитов</strong>.<br />
-              Пожалуйста, переведите ровно <strong>{amountCredits / 10} EUR</strong> по нашей ссылке. <br />
-              <strong>Обязательно вставьте ваш Email ({userEmail}) в комментарий к платежу!</strong>
+              Пожалуйста, переведите ровно <strong>{amountCredits / 10} EUR</strong> по нашей ссылке. <br /><br />
+              <strong className="text-green-600 dark:text-green-400">⚡ Обязательно вставьте ваш Email ({userEmail}) в комментарий (Note) к платежу!</strong><br />
+              Тогда кредиты будут зачислены <b>автоматически за 1-2 минуты</b>.
             </p>
             <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-400 p-4 rounded-xl text-sm mb-6 flex items-start gap-3 text-left">
               <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-              <p>После нажатия "Перейти к оплате", ссылка откроется в соседней вкладке, а вы будете перенаправлены на Главную страницу (Dashboard). После оплаты <strong>обязательно</strong> прикрепите туда скриншот чека!</p>
+              <p>После нажатия "Перейти к оплате", ссылка откроется в соседней вкладке, а вы будете перенаправлены на Главную страницу (Dashboard). Если вы забыли указать Email, вы сможете загрузить скриншот чека там.</p>
             </div>
             <div className="flex gap-4">
               <button

@@ -14,6 +14,11 @@ class Settings(BaseSettings):
     # Database Connection (for migrations)
     POSTGRES_URL: str | None = None  # e.g., postgresql://user:pass@host:5432/db
     
+    # Email Parser (IMAP)
+    EMAIL_IMAP_SERVER: str | None = None
+    EMAIL_ACCOUNT: str | None = None
+    EMAIL_PASSWORD: str | None = None
+    
     @property
     def SUPABASE_JWT_SECRET(self) -> str:
         """Decode base64 JWT secret to PEM format."""

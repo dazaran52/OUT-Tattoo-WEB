@@ -106,9 +106,15 @@ async def lifespan(app: FastAPI):
     # Run migrations
     run_migrations()
     
+    # Start email parser background task
+    import asyncio
+    from app.services.email_parser import start_email_parser
+    parser_task = asyncio.create_task(start_email_parser())
+    
     yield
     # Shutdown
     print("👋 Shutting down API")
+    parser_task.cancel()
 
 
 def create_application() -> FastAPI:
