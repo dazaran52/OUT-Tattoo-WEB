@@ -178,19 +178,6 @@ def _sync_check_emails(settings):
                             "credits": current_credits + credits_to_add
                         }).eq("id", user_id).execute()
                         
-                        # 3. Mark payment requests as approved (if any active)
-                        active_reqs = supabase.table("payment_requests")\
-                            .select("*").eq("user_id", user_id)\
-                            .in_("status", ["pending", "screenshot_uploaded"])\
-                            .execute()
-                        
-                        for req in active_reqs.data:
-                            # Only approve if amounts vaguely match or if there's just one request
-                            supabase.table("payment_requests").update({
-                                "status": "approved",
-                                "admin_message": "Automated approval via Revolut Email"
-                            }).eq("id", req["id"]).execute()
-                            
                         print(f"✅ Successfully processed automated payment for {target_user['email']}")
                 else:
                     print(f"⚠️ Could not find user for note: {note}")

@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Header } from '@/components/Header'
 import { AdminChat } from '@/components/AdminChat'
-import { AdminPayments } from '@/components/AdminPayments'
 import { supabase, Profile } from '@/lib/supabase'
 import { CheckCircle, XCircle, Clock, Loader2, Plus, Edit2, Trash2, Link as LinkIcon, Search, Coins, Ban } from 'lucide-react'
 import { getTranslation, Language } from '@/lib/i18n'
@@ -32,7 +31,7 @@ export default function AdminPage() {
   
   const [profile, setProfile] = useState<Profile | null>(null)
   const [users, setUsers] = useState<AdminUserResponse[]>([])
-  const [activeTab, setActiveTab] = useState<'users' | 'chats' | 'payments'>('users')
+  const [activeTab, setActiveTab] = useState<'users' | 'chats'>('users')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'balance_desc' | 'balance_asc'>('newest')
 
@@ -239,42 +238,28 @@ export default function AdminPage() {
           </div>
         )}
 
-        <div className="mb-6 border-b border-neutral-200 dark:border-neutral-800 flex gap-6">
+        <div className="flex gap-2 overflow-x-auto pb-4 mb-6">
           <button
             onClick={() => setActiveTab('users')}
-            className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold whitespace-nowrap transition-colors ${
               activeTab === 'users' 
-                ? 'border-cyan-500 text-cyan-600 dark:text-cyan-400' 
-                : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
+                ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900' 
+                : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
             }`}
           >
             Управление пользователями
           </button>
           <button
-            onClick={() => setActiveTab('payments')}
-            className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === 'payments' 
-                ? 'border-cyan-500 text-cyan-600 dark:text-cyan-400' 
-                : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
-            }`}
-          >
-            Платежи (Revolut)
-          </button>
-          <button
             onClick={() => setActiveTab('chats')}
-            className={`pb-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold whitespace-nowrap transition-colors ${
               activeTab === 'chats' 
-                ? 'border-cyan-500 text-cyan-600 dark:text-cyan-400' 
-                : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
+                ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900' 
+                : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
             }`}
           >
-            Чат поддержки
+            Поддержка (Чаты)
           </button>
         </div>
-
-        {activeTab === 'payments' && (
-          <AdminPayments />
-        )}
 
         {activeTab === 'users' ? (
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-sm animate-fade-in-up">

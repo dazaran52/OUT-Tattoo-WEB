@@ -10,7 +10,7 @@ import toast from 'react-hot-toast'
 interface TopUpMethod {
   id: string
   name: string
-  description: string
+  description: React.ReactNode
   icon: React.ReactNode
   color: string
   border: string
@@ -50,35 +50,14 @@ export default function TopUpPage() {
       setIsCreatingRequest(true)
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/payments/requests`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            amount_credits: amountCredits,
-            provider: 'revolut',
-            currency: 'EUR'
-          })
-        }
-      )
-      
-      const data = await response.json()
-      if (!response.ok) {
-        throw new Error(data.detail || 'Failed to create payment request')
-      }
       
       // Open Revolut link
       window.open('https://checkout.revolut.com/pay/05082067-c305-4853-a0ed-dd7cb4bccb39', '_blank')
       
-      // Redirect to dashboard where banner will appear
+      // Redirect to dashboard
       router.push('/dashboard')
     } catch (err: any) {
-      toast.error(err.message || 'Ошибка создания заявки')
+      toast.error('Произошла ошибка')
     } finally {
       setIsCreatingRequest(false)
       setShowRevolutModal(false)
@@ -89,7 +68,14 @@ export default function TopUpPage() {
     {
       id: 'donatello',
       name: 'Donatello',
-      description: 'Оплата картой (⚠️Apple Pay/Google Pay НЕ поддерживаются). Автоматическое зачисление. ВАЖНО: укажите ваш Email в комментарии к донату.',
+      description: (
+        <ul className="text-left space-y-1">
+          <li>• Быстрая оплата вводом реквизитов карты</li>
+          <li>• ⚠️ Apple Pay/Google Pay НЕ поддерживаются</li>
+          <li>• Автоматическое зачисление</li>
+          <li className="text-green-600 dark:text-green-400 font-semibold mt-2">ВАЖНО: укажите ваш Email в комментарии к донату.</li>
+        </ul>
+      ),
       icon: <HeartHandshake className="w-8 h-8 text-rose-500" />,
       color: 'from-rose-100 to-rose-50 dark:from-rose-900/40 dark:to-rose-900/10',
       border: 'border-rose-200 dark:border-rose-800',
@@ -100,7 +86,14 @@ export default function TopUpPage() {
     {
       id: 'revolut',
       name: 'Revolut Pro',
-      description: 'Перевод в EUR без комиссий с любой европейской карты, Revolut, Apple/Google Pay.',
+      description: (
+        <ul className="text-left space-y-1">
+          <li>• Быстрая оплата через Apple/Google Pay</li>
+          <li>• Без комиссий с любой европейской, украинской, Revolut карт</li>
+          <li>• Автоматическое зачисление</li>
+          <li className="text-green-600 dark:text-green-400 font-semibold mt-2">ВАЖНО: укажите ваш Email в комментарии (Note) к платежу.</li>
+        </ul>
+      ),
       icon: <CreditCard className="w-8 h-8 text-black dark:text-white" />,
       color: 'from-blue-100 to-blue-50 dark:from-blue-900/40 dark:to-blue-900/10',
       border: 'border-blue-200 dark:border-blue-800',
@@ -240,14 +233,14 @@ export default function TopUpPage() {
                 </div>
 
                 {/* Bottom info section */}
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-neutral-100 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 text-left">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-neutral-100 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 text-left mt-6">
                   <div>
                     <h4 className="font-bold text-neutral-900 dark:text-white flex items-center gap-2 mb-1">
                       <AlertCircle className="w-5 h-5 text-cyan-500" />
                       Как работает пополнение?
                     </h4>
                     <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                      Мы используем безопасные платежные системы. Для Donatello кредиты начисляются <b>автоматически</b>. Для Revolut потребуется прикрепить скриншот в личном кабинете.
+                      Оба метода обрабатываются <b>автоматически</b>. Главное правило — обязательно укажите ваш Email в комментарии (Note) к платежу, чтобы система смогла вас распознать. Кредиты зачисляются в течение 1-2 минут после оплаты.
                     </p>
                   </div>
                 </div>
@@ -273,15 +266,32 @@ export default function TopUpPage() {
             <h3 className="text-2xl font-bold text-neutral-900 dark:text-white mb-4">
               Оплата через Revolut
             </h3>
-            <p className="text-neutral-600 dark:text-neutral-400 mb-6 leading-relaxed">
-              Вы пополняете баланс на <strong>{amountCredits} кредитов</strong>.<br />
-              Пожалуйста, переведите ровно <strong>{amountCredits / 10} EUR</strong> по нашей ссылке. <br /><br />
-              <strong className="text-green-600 dark:text-green-400">⚡ Обязательно вставьте ваш Email ({userEmail}) в комментарий (Note) к платежу!</strong><br />
-              Тогда кредиты будут зачислены <b>автоматически за 1-2 минуты</b>.
-            </p>
-            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-400 p-4 rounded-xl text-sm mb-6 flex items-start gap-3 text-left">
-              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-              <p>После нажатия "Перейти к оплате", ссылка откроется в соседней вкладке, а вы будете перенаправлены на Главную страницу (Dashboard). Если вы забыли указать Email, вы сможете загрузить скриншот чека там.</p>
+            <div className="bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800 p-5 rounded-2xl mb-6 text-left">
+              <h4 className="font-bold text-cyan-900 dark:text-cyan-400 mb-2 flex items-center gap-2">
+                <AlertCircle className="w-5 h-5" />
+                Обязательный шаг
+              </h4>
+              <p className="text-sm text-cyan-800 dark:text-cyan-300 mb-4 leading-relaxed">
+                Вы пополняете баланс на <strong>{amountCredits} кредитов</strong>.<br />
+                Пожалуйста, переведите ровно <strong>{amountCredits / 10} EUR</strong> по нашей ссылке.<br /><br />
+                Для <b>автоматического</b> зачисления кредитов в течение 1-2 минут, обязательно скопируйте ваш Email ниже и вставьте в комментарий (Note) к платежу.
+              </p>
+              
+              <div className="bg-white dark:bg-neutral-950 p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 flex items-center justify-between gap-3 mb-4">
+                <span className="font-mono text-neutral-900 dark:text-white truncate">
+                  {userEmail || 'Загрузка...'}
+                </span>
+                <button 
+                  onClick={copyEmail}
+                  className="p-2 shrink-0 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 rounded-lg transition-colors"
+                >
+                  {isCopied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                </button>
+              </div>
+
+              <div className="text-xs text-cyan-700 dark:text-cyan-400">
+                После нажатия "Перейти к оплате", ссылка откроется в соседней вкладке. Если вы забыли указать Email, вы сможете прикрепить скриншот чека на Главной странице.
+              </div>
             </div>
             <div className="flex gap-4">
               <button

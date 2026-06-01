@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { LogOut, Gem, Menu, X, LayoutDashboard, Settings, Plus } from 'lucide-react'
+import { LogOut, Gem, Menu, X, LayoutDashboard, Settings, Plus, Moon, Sun, Globe } from 'lucide-react'
 import { Profile } from '@/lib/supabase'
 import { getTranslation, Language } from '@/lib/i18n'
 import { TransactionHistoryModal } from '@/components/TransactionHistoryModal'
@@ -18,13 +18,35 @@ export function Header({ profile, onLogout }: HeaderProps) {
   const router = useRouter()
   const [language, setLanguage] = useState<string>('cs')
   const [showHistory, setShowHistory] = useState(false)
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark')
   
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedLang = localStorage.getItem('language') || 'cs'
       setLanguage(savedLang)
+      const savedTheme = localStorage.getItem('theme') || 'dark'
+      setTheme(savedTheme as 'dark' | 'light')
     }
   }, [])
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark'
+    setTheme(newTheme)
+    localStorage.setItem('theme', newTheme)
+    const root = document.documentElement
+    if (newTheme === 'light') {
+      root.classList.remove('dark')
+    } else {
+      root.classList.add('dark')
+    }
+  }
+
+  const toggleLanguage = () => {
+    const newLang = language === 'cs' ? 'en' : 'cs'
+    setLanguage(newLang)
+    localStorage.setItem('language', newLang)
+    window.location.reload()
+  }
   
   const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language as Language, key)
   
@@ -71,6 +93,25 @@ export function Header({ profile, onLogout }: HeaderProps) {
                 <Plus className="w-4 h-4" />
               </button>
             </div>
+
+            {/* Language Switcher */}
+            <button
+              onClick={toggleLanguage}
+              className="flex items-center justify-center gap-1 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white transition-colors"
+              title="Change Language"
+            >
+              <Globe className="w-5 h-5" />
+              <span className="uppercase">{language}</span>
+            </button>
+
+            {/* Theme Switcher */}
+            <button
+              onClick={toggleTheme}
+              className="flex items-center justify-center text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white transition-colors"
+              title="Toggle Theme"
+            >
+              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
 
             {/* Notifications Menu */}
             <NotificationsMenu />

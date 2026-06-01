@@ -7,14 +7,12 @@ import { SkeletonCard } from '@/components/SkeletonCard'
 import { supabase, Profile } from '@/lib/supabase'
 import { LeadsFeed } from '@/components/LeadsFeed'
 import { getTranslation, Language } from '@/lib/i18n'
-import { PaymentRequestBanner } from '@/components/PaymentRequestBanner'
 
 export default function DashboardPage() {
   const router = useRouter()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [language, setLanguage] = useState<string>('cs')
-  const [activePaymentReq, setActivePaymentReq] = useState<any>(null)
   const [currentSession, setCurrentSession] = useState<any>(null)
 
   // Load language from localStorage
@@ -62,32 +60,10 @@ export default function DashboardPage() {
       setProfile(profileData)
       
       setCurrentSession(session)
-      await fetchActiveRequest(session)
     } catch (error) {
       console.error('Error fetching profile:', error)
     } finally {
       setIsLoading(false)
-    }
-  }
-
-  const fetchActiveRequest = async (session: any) => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/payments/requests/active`,
-        {
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-          },
-        }
-      )
-      if (response.ok) {
-        const data = await response.json()
-        setActivePaymentReq(data)
-      } else {
-        setActivePaymentReq(null)
-      }
-    } catch (e) {
-      console.error(e)
     }
   }
 
@@ -155,17 +131,6 @@ export default function DashboardPage() {
           </div>
           
         </div>
-
-        {activePaymentReq && currentSession && (
-          <PaymentRequestBanner 
-            req={activePaymentReq} 
-            session={currentSession} 
-            onUpdate={() => {
-              fetchActiveRequest(currentSession)
-              fetchProfile() // refresh credits just in case
-            }} 
-          />
-        )}
 
         {/* Leads Feed or Status Message */}
         {profile.status === 'pending' ? (
