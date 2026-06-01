@@ -323,10 +323,12 @@ export default function TopUpPage() {
                 <AlertCircle className="w-5 h-5" />
                 Обязательный шаг
               </h4>
-              <p className="text-sm text-cyan-800 dark:text-cyan-300 mb-4">
-                Вы пополняете баланс на <strong>{amountCredits} кредитов</strong> (эквивалент <strong>{amountCredits * 4} UAH</strong>).<br /><br />
-                ⚠️ <b>Внимание:</b> Donatello НЕ принимает Apple Pay / Google Pay. Оплата возможна только вводом данных карты.<br /><br />
-                Для автоматического зачисления кредитов, обязательно скопируйте ваш Email ниже и вставьте в комментарий к донату.
+              <p className="text-sm text-cyan-800 dark:text-cyan-300 mb-4 leading-relaxed">
+                Вы пополняете баланс на <strong>{amountCredits} кредитов</strong>.<br />
+                Сумма к оплате: <strong>{amountCredits * 4} UAH</strong> или <strong>{amountCredits / 10} EUR</strong>.<br /><br />
+                Вы можете оплатить картой украинского банка (в гривнах) или картой ЕС (в евро), выбрав нужный метод на странице оплаты.<br /><br />
+                ⚠️ <b>Внимание:</b> Apple Pay и Google Pay не работают. Потребуется ввести реквизиты карты вручную.<br /><br />
+                Для <b>автоматического</b> зачисления кредитов, обязательно скопируйте ваш Email ниже и вставьте в комментарий к донату.
               </p>
               
               <div className="bg-white dark:bg-neutral-950 p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 flex items-center justify-between gap-3">
