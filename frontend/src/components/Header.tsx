@@ -57,14 +57,14 @@ export function Header({ profile, onLogout }: HeaderProps) {
           {/* Logo */}
           <button 
             onClick={() => router.push('/dashboard')}
-            className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer"
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
           >
-            <div className="w-8 h-8 bg-gradient-to-br from-neutral-800 to-neutral-900 dark:from-neutral-100 dark:to-neutral-400 rounded-lg flex items-center justify-center">
-              <span className="text-white dark:text-neutral-950 font-bold text-sm">OUT</span>
-            </div>
-            <h1 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50 tracking-tight">
-              Tattoo Hub
+            <h1 className="text-xl font-bold text-neutral-900 dark:text-neutral-50 tracking-tight">
+              Tattoo
             </h1>
+            <div className="w-[3.25rem] h-8 bg-gradient-to-br from-neutral-800 to-neutral-900 dark:from-neutral-100 dark:to-neutral-400 rounded-lg flex items-center justify-center shadow-sm">
+              <span className="text-white dark:text-neutral-950 font-bold text-sm tracking-widest">HUB</span>
+            </div>
           </button>
 
           {/* Right Section */}

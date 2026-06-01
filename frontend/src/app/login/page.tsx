@@ -114,12 +114,14 @@ export default function LoginPage() {
       <div className="max-w-md w-full space-y-8 relative z-10 animate-fade-in-up">
         {/* Header/Logo */}
         <div className="text-center">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-tr from-neutral-900 to-neutral-700 dark:from-white dark:to-neutral-300 rounded-2xl flex items-center justify-center shadow-xl mb-6 transform hover:scale-105 transition-transform duration-300">
-            <span className="text-white dark:text-neutral-950 font-black text-2xl tracking-tighter">OUT</span>
+          <div className="flex items-center justify-center gap-3 mb-6 transform hover:scale-105 transition-transform duration-300">
+            <h2 className="text-5xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
+              Tattoo
+            </h2>
+            <div className="w-[5.5rem] h-14 bg-gradient-to-tr from-neutral-900 to-neutral-700 dark:from-white dark:to-neutral-300 rounded-2xl flex items-center justify-center shadow-xl">
+              <span className="text-white dark:text-neutral-950 font-black text-2xl tracking-widest">HUB</span>
+            </div>
           </div>
-          <h2 className="text-4xl font-extrabold tracking-tight text-neutral-900 dark:text-white mb-2">
-            Tattoo Hub
-          </h2>
           <p className="text-neutral-500 dark:text-neutral-400 text-lg">
             Эксклюзивная платформа для топ-мастеров
           </p>
