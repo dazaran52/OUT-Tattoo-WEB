@@ -1,4 +1,4 @@
--- Migration: Create leads and lead_unlocks tables for OUT Tattoo Leads
+-- Migration: Create leads and lead_unlocks tables for Tattoo Hub
 
 CREATE TABLE IF NOT EXISTS public.leads (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

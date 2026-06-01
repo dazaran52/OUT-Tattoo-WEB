@@ -72,7 +72,7 @@ export default function TopUpPage() {
       }
       
       // Open Revolut link
-      window.open('https://checkout.revolut.com/pay/05082067-c305-4853-a0ed-dd7cb4bccb39', '_blank')
+      window.open('https://checkout.revolut.com/pay/e79e0c52-e699-4abc-ab7d-ac68b1a62276', '_blank')
       
       // Redirect to dashboard
       router.push('/dashboard')
@@ -383,7 +383,7 @@ export default function TopUpPage() {
                 Отмена
               </button>
               <a
-                href="https://donatello.to/out_tattoo_leads"
+                href="https://donatello.to/TattooHub"
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setShowDonatelloModal(false)}

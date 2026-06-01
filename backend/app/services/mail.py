@@ -14,7 +14,7 @@ def send_transactional_email(to_email: str, subject: str, html_content: str):
         
     msg = EmailMessage()
     msg['Subject'] = subject
-    msg['From'] = f"OUT Tattoo Leads <{settings.SMTP_FROM_EMAIL}>"
+    msg['From'] = f"Tattoo Hub <{settings.SMTP_FROM_EMAIL}>"
     msg['To'] = to_email
     msg.set_content(html_content, subtype='html')
     

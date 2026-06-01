@@ -1,4 +1,4 @@
-// Centralized API client for OUT Tattoo Leads
+// Centralized API client for Tattoo Hub
 import { supabase } from './supabase'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'

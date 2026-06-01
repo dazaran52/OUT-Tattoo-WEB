@@ -162,8 +162,8 @@ async def update_user_status(
             if user_email:
                 send_transactional_email(
                     to_email=user_email,
-                    subject="Поздравляем! Ваш профиль OUT Tattoo верифицирован",
-                    html_content="<h1>Добро пожаловать в OUT Tattoo!</h1><p>Ваш аккаунт успешно проверен. Теперь вы можете получать заявки на тату в нашем приложении.</p>"
+                    subject="Поздравляем! Ваш профиль Tattoo Hub верифицирован",
+                    html_content="<h1>Добро пожаловать в Tattoo Hub!</h1><p>Ваш аккаунт успешно проверен. Теперь вы можете получать заявки на тату в нашем приложении.</p>"
                 )
         elif update_data.status == "rejected":
             # Send Email for rejection
@@ -171,7 +171,7 @@ async def update_user_status(
             if user_email:
                 send_transactional_email(
                     to_email=user_email,
-                    subject="Статус вашего профиля OUT Tattoo",
+                    subject="Статус вашего профиля Tattoo Hub",
                     html_content="<h1>Здравствуйте</h1><p>К сожалению, мы не можем подтвердить ваш аккаунт на данный момент.</p>"
                 )
             
@@ -209,7 +209,7 @@ async def update_user_credits(
         if user_email:
             send_transactional_email(
                 to_email=user_email,
-                subject="Ваш баланс OUT Tattoo пополнен!",
+                subject="Ваш баланс Tattoo Hub пополнен!",
                 html_content=f"<h1>Ваш баланс обновлен</h1><p>Текущий баланс: <strong>{update_data.credits} кредитов</strong>.</p>"
             )
             

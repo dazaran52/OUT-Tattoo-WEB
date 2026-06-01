@@ -63,7 +63,7 @@ export function Header({ profile, onLogout }: HeaderProps) {
               <span className="text-white dark:text-neutral-950 font-bold text-sm">OUT</span>
             </div>
             <h1 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50 tracking-tight">
-              OUT Tattoo Leads
+              Tattoo Hub
             </h1>
           </button>
 

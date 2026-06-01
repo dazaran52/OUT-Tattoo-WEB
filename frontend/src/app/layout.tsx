@@ -8,7 +8,7 @@ import { Toaster } from 'react-hot-toast'
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
 export const metadata: Metadata = {
-  title: 'OUT Tattoo Leads',
+  title: 'Tattoo Hub',
   description: 'Premium B2B Lead Platform for Tattoo Masters',
   manifest: '/manifest.json',
   themeColor: '#000000',

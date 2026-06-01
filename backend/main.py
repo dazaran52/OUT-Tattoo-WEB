@@ -1,4 +1,4 @@
-"""OUT Tattoo Leads - FastAPI Backend Application"""
+"""Tattoo Hub - FastAPI Backend Application"""
 import os
 import glob
 from pathlib import Path
@@ -104,7 +104,7 @@ async def lifespan(app: FastAPI):
     """Application lifespan events."""
     # Startup
     settings = get_settings()
-    print(f"🚀 OUT Tattoo Leads API starting in {settings.APP_ENV} mode")
+    print(f"🚀 Tattoo Hub API starting in {settings.APP_ENV} mode")
     
     # Run migrations
     run_migrations()
@@ -125,7 +125,7 @@ def create_application() -> FastAPI:
     settings = get_settings()
     
     app = FastAPI(
-        title="OUT Tattoo Leads API",
+        title="Tattoo Hub API",
         description="B2B SaaS API for tattoo masters lead generation",
         version="1.0.0",
         docs_url="/docs",
@@ -172,7 +172,7 @@ def create_application() -> FastAPI:
     async def root():
         """Root endpoint."""
         return {
-            "name": "OUT Tattoo Leads API",
+            "name": "Tattoo Hub API",
             "version": "1.0.0",
             "docs": "/docs"
         }

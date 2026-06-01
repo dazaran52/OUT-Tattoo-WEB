@@ -1,4 +1,4 @@
--- Migration: Create users table for OUT Tattoo Leads
+-- Migration: Create users table for Tattoo Hub
 -- This table stores user profiles linked to Supabase Auth
 
 CREATE TABLE IF NOT EXISTS public.users (

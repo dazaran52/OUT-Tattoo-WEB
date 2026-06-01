@@ -185,7 +185,7 @@ def _sync_check_emails(settings):
                         if target_user.get("email"):
                             send_transactional_email(
                                 to_email=target_user["email"],
-                                subject="Ваш баланс OUT Tattoo пополнен!",
+                                subject="Ваш баланс Tattoo Hub пополнен!",
                                 html_content=f"<h1>Ваш баланс обновлен</h1><p>Мы получили ваш перевод на сумму {amount} {currency}. Ваш баланс пополнен на <strong>{credits_to_add} кредитов</strong>.</p>"
                             )
                 else:

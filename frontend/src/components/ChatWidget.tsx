@@ -148,7 +148,7 @@ export function ChatWidget() {
           <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-t-2xl">
             <h3 className="font-bold text-white flex items-center gap-2">
               <MessageCircle className="w-5 h-5" />
-              Поддержка OUT Tattoo
+              Поддержка Tattoo Hub
             </h3>
           </div>
           <div className="p-4">

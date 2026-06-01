@@ -35,7 +35,7 @@ async def create_crypto_invoice(req: CryptoInvoiceRequest):
     data = {
         "asset": "USDT",
         "amount": str(req.amount_usdt),
-        "description": f"Пополнение баланса OUT Tattoo Leads",
+        "description": f"Пополнение баланса Tattoo Hub",
         "payload": json.dumps(payload_data)
     }
     

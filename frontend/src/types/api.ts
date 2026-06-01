@@ -1,4 +1,4 @@
-// API Types for OUT Tattoo Leads
+// API Types for Tattoo Hub
 
 export interface Profile {
   id: string

@@ -118,7 +118,7 @@ export default function LoginPage() {
             <span className="text-white dark:text-neutral-950 font-black text-2xl tracking-tighter">OUT</span>
           </div>
           <h2 className="text-4xl font-extrabold tracking-tight text-neutral-900 dark:text-white mb-2">
-            OUT Tattoo Leads
+            Tattoo Hub
           </h2>
           <p className="text-neutral-500 dark:text-neutral-400 text-lg">
             Эксклюзивная платформа для топ-мастеров
