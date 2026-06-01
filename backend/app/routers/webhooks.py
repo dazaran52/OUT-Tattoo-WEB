@@ -61,6 +61,14 @@ async def donatello_webhook(
     
     # Update balance
     supabase.table("users").update({"credits": new_balance}).eq("id", master["id"]).execute()
+    
+    # Create notification
+    supabase.table("notifications").insert({
+        "user_id": master["id"],
+        "title": "Баланс пополнен",
+        "message": f"Успешное пополнение через Donatello. Зачислено {credits_to_deposit} кредитов.",
+        "type": "payment"
+    }).execute()
 
     return {
         "success": True,

@@ -6,6 +6,7 @@ import { LogOut, Gem, Menu, X, LayoutDashboard, Settings, Plus } from 'lucide-re
 import { Profile } from '@/lib/supabase'
 import { getTranslation, Language } from '@/lib/i18n'
 import { TransactionHistoryModal } from '@/components/TransactionHistoryModal'
+import { NotificationsMenu } from '@/components/NotificationsMenu'
 
 interface HeaderProps {
   profile: Profile
@@ -70,6 +71,9 @@ export function Header({ profile, onLogout }: HeaderProps) {
                 <Plus className="w-4 h-4" />
               </button>
             </div>
+
+            {/* Notifications Menu */}
+            <NotificationsMenu />
 
             {/* Menu Button */}
             <div className="relative">

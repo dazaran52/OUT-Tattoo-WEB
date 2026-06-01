@@ -23,6 +23,7 @@ interface TopUpMethod {
 export default function TopUpPage() {
   const router = useRouter()
 
+  const [step, setStep] = useState<1 | 2>(1)
   const [amountCredits, setAmountCredits] = useState<number>(100)
   const [showRevolutModal, setShowRevolutModal] = useState(false)
   const [showDonatelloModal, setShowDonatelloModal] = useState(false)
@@ -72,7 +73,7 @@ export default function TopUpPage() {
       }
       
       // Open Revolut link
-      window.open('https://checkout.revolut.com/pay/5ed4188d-af33-4d05-a5d6-5474f448f289', '_blank')
+      window.open('https://checkout.revolut.com/pay/05082067-c305-4853-a0ed-dd7cb4bccb39', '_blank')
       
       // Redirect to dashboard where banner will appear
       router.push('/dashboard')
@@ -88,7 +89,7 @@ export default function TopUpPage() {
     {
       id: 'donatello',
       name: 'Donatello',
-      description: 'Оплата с украинских или международных карт (Apple Pay/Google Pay). Автоматическое зачисление! ВАЖНО: укажите ваш Email аккаунта в комментарии к донату.',
+      description: 'Оплата картой (⚠️Apple Pay/Google Pay НЕ поддерживаются). Автоматическое зачисление. ВАЖНО: укажите ваш Email в комментарии к донату.',
       icon: <HeartHandshake className="w-8 h-8 text-rose-500" />,
       color: 'from-rose-100 to-rose-50 dark:from-rose-900/40 dark:to-rose-900/10',
       border: 'border-rose-200 dark:border-rose-800',
@@ -99,7 +100,7 @@ export default function TopUpPage() {
     {
       id: 'revolut',
       name: 'Revolut Pro',
-      description: 'Мгновенный перевод без комиссий для пользователей Revolut или с любой европейской карты (Apple Pay/Google Pay).',
+      description: 'Перевод в EUR без комиссий с любой европейской карты, Revolut, Apple/Google Pay.',
       icon: <CreditCard className="w-8 h-8 text-black dark:text-white" />,
       color: 'from-blue-100 to-blue-50 dark:from-blue-900/40 dark:to-blue-900/10',
       border: 'border-blue-200 dark:border-blue-800',
@@ -141,87 +142,117 @@ export default function TopUpPage() {
                 Пополнение баланса
                 <Sparkles className="w-6 h-6 text-amber-500" />
               </h1>
-
               <p className="text-lg text-neutral-600 dark:text-neutral-300 max-w-xl mx-auto">
-                Выберите удобный способ оплаты.
+                {step === 1 ? 'Выберите необходимое количество кредитов' : 'Выберите удобный способ оплаты'}
               </p>
             </div>
 
-
-            <div className="max-w-md mx-auto mb-10 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 rounded-2xl shadow-sm">
-              <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3 text-center">
-                Количество кредитов для пополнения
-              </label>
-              <div className="flex items-center justify-center gap-4">
-                <button 
-                  onClick={() => setAmountCredits(Math.max(10, amountCredits - 10))}
-                  className="w-12 h-12 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white font-bold text-xl hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-                >
-                  -
-                </button>
-                <div className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-purple-500 w-24 text-center">
-                  {amountCredits}
-                </div>
-                <button 
-                  onClick={() => setAmountCredits(amountCredits + 10)}
-                  className="w-12 h-12 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white font-bold text-xl hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-                >
-                  +
-                </button>
-              </div>
-              <p className="text-center text-sm text-neutral-500 mt-4">
-                Эквивалент: <span className="font-semibold text-neutral-900 dark:text-white">{amountCredits / 10} EUR</span>
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10 max-w-3xl mx-auto">
-              {topUpMethods.map((method) => (
-                <div 
-                  key={method.id} 
-                  className={`bg-gradient-to-br ${method.color} border ${method.border} rounded-2xl p-6 flex flex-col items-center text-center transition-transform hover:-translate-y-1 duration-300`}
-                >
-                  <div className="mb-4 bg-white/50 dark:bg-neutral-900/50 p-4 rounded-2xl shadow-sm backdrop-blur-sm">
-                    {method.icon}
+            {step === 1 && (
+              <div className="max-w-md mx-auto mb-10 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 rounded-2xl shadow-sm animate-in fade-in slide-in-from-bottom-4">
+                <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3 text-center">
+                  Количество кредитов для пополнения
+                </label>
+                <div className="flex items-center justify-center gap-4">
+                  <button 
+                    onClick={() => setAmountCredits(Math.max(10, amountCredits - 10))}
+                    className="w-12 h-12 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white font-bold text-xl hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                  >
+                    -
+                  </button>
+                  <div className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-purple-500 w-24 text-center">
+                    {amountCredits}
                   </div>
-                  <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">{method.name}</h3>
-                  <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-6 flex-grow">
-                    {method.description}
-                  </p>
-                  {method.isDynamic ? (
-                    <button 
-                      onClick={method.onClick}
-                      className="w-full py-3 px-4 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-semibold rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-                    >
-                      {method.actionText}
-                      <ExternalLink className="w-4 h-4" />
-                    </button>
-                  ) : (
-                    <a 
-                      href={method.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full py-3 px-4 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-semibold rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-                    >
-                      {method.actionText}
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
-                  )}
+                  <button 
+                    onClick={() => setAmountCredits(amountCredits + 10)}
+                    className="w-12 h-12 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white font-bold text-xl hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                  >
+                    +
+                  </button>
                 </div>
-              ))}
-            </div>
+                <div className="mt-6 flex flex-col gap-2 p-4 bg-neutral-50 dark:bg-neutral-950 rounded-xl border border-neutral-100 dark:border-neutral-800">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-neutral-500">Эквивалент в EUR:</span>
+                    <span className="font-bold text-neutral-900 dark:text-white">{amountCredits / 10} EUR</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-neutral-500">Эквивалент в UAH:</span>
+                    <span className="font-bold text-neutral-900 dark:text-white">{amountCredits * 4} UAH</span>
+                  </div>
+                </div>
 
-            {/* Bottom info section */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-neutral-100 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 text-left">
-              <div>
-                <h4 className="font-bold text-neutral-900 dark:text-white flex items-center gap-2 mb-1">
-                  <AlertCircle className="w-5 h-5 text-cyan-500" />
-                  Как работает пополнение?
-                </h4>
-                <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                  Мы используем безопасные платежные системы. Для Donatello кредиты начисляются <b>автоматически</b>. Для Revolut потребуется прикрепить скриншот в личном кабинете.
-                </p>
+                <button
+                  onClick={() => setStep(2)}
+                  className="w-full mt-6 py-4 bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl font-bold shadow-lg shadow-cyan-500/25 transition-all hover:shadow-cyan-500/40"
+                >
+                  Далее
+                </button>
               </div>
-            </div>
+            )}
+
+            {step === 2 && (
+              <div className="animate-in fade-in slide-in-from-right-8 duration-500">
+                <div className="flex items-center justify-between mb-6 max-w-3xl mx-auto">
+                  <button 
+                    onClick={() => setStep(1)}
+                    className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors flex items-center gap-1"
+                  >
+                    <ArrowLeft className="w-4 h-4" /> Изменить сумму
+                  </button>
+                  <div className="text-sm font-semibold text-neutral-900 dark:text-white bg-neutral-100 dark:bg-neutral-800 px-3 py-1 rounded-full">
+                    Выбрано: {amountCredits} кредитов
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10 max-w-3xl mx-auto">
+                  {topUpMethods.map((method) => (
+                    <div 
+                      key={method.id} 
+                      className={`bg-gradient-to-br ${method.color} border ${method.border} rounded-2xl p-6 flex flex-col items-center text-center transition-transform hover:-translate-y-1 duration-300`}
+                    >
+                      <div className="mb-4 bg-white/50 dark:bg-neutral-900/50 p-4 rounded-2xl shadow-sm backdrop-blur-sm">
+                        {method.icon}
+                      </div>
+                      <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">{method.name}</h3>
+                      <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-6 flex-grow">
+                        {method.description}
+                      </p>
+                      {method.isDynamic ? (
+                        <button 
+                          onClick={method.onClick}
+                          className="w-full py-3 px-4 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-semibold rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                        >
+                          {method.actionText}
+                          <ExternalLink className="w-4 h-4" />
+                        </button>
+                      ) : (
+                        <a 
+                          href={method.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full py-3 px-4 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-semibold rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                        >
+                          {method.actionText}
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Bottom info section */}
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-neutral-100 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 text-left">
+                  <div>
+                    <h4 className="font-bold text-neutral-900 dark:text-white flex items-center gap-2 mb-1">
+                      <AlertCircle className="w-5 h-5 text-cyan-500" />
+                      Как работает пополнение?
+                    </h4>
+                    <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                      Мы используем безопасные платежные системы. Для Donatello кредиты начисляются <b>автоматически</b>. Для Revolut потребуется прикрепить скриншот в личном кабинете.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </main>
@@ -243,11 +274,13 @@ export default function TopUpPage() {
               Оплата через Revolut
             </h3>
             <p className="text-neutral-600 dark:text-neutral-400 mb-6 leading-relaxed">
-              Для оплаты без комиссий мы используем прямой перевод Revolut. Получателем платежа будет указан <strong>Mykyta Kuzmin</strong> — это официальный представитель нашей платформы в ЕС.
+              Вы пополняете баланс на <strong>{amountCredits} кредитов</strong>.<br />
+              Пожалуйста, переведите ровно <strong>{amountCredits / 10} EUR</strong> по нашей ссылке. <br />
+              <strong>Обязательно вставьте ваш Email ({userEmail}) в комментарий к платежу!</strong>
             </p>
             <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-400 p-4 rounded-xl text-sm mb-6 flex items-start gap-3 text-left">
               <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-              <p>После успешной оплаты обязательно отправьте чек администратору в чат поддержки для зачисления кредитов.</p>
+              <p>После нажатия "Перейти к оплате", ссылка откроется в соседней вкладке, а вы будете перенаправлены на Главную страницу (Dashboard). После оплаты <strong>обязательно</strong> прикрепите туда скриншот чека!</p>
             </div>
             <div className="flex gap-4">
               <button
@@ -261,7 +294,7 @@ export default function TopUpPage() {
                 disabled={isCreatingRequest}
                 className="flex-1 py-3 px-4 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
               >
-                {isCreatingRequest ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Продолжить'}
+                {isCreatingRequest ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Перейти к оплате'}
               </button>
             </div>
           </div>
@@ -291,8 +324,9 @@ export default function TopUpPage() {
                 Обязательный шаг
               </h4>
               <p className="text-sm text-cyan-800 dark:text-cyan-300 mb-4">
-                <b>Курс: 10 кредитов = 40 UAH.</b> Вы можете задонатить любую сумму (пропорция сохранится).<br /><br />
-                Для автоматического зачисления кредитов, вставьте ваш Email в поле комментария при оплате на Donatello.
+                Вы пополняете баланс на <strong>{amountCredits} кредитов</strong> (эквивалент <strong>{amountCredits * 4} UAH</strong>).<br /><br />
+                ⚠️ <b>Внимание:</b> Donatello НЕ принимает Apple Pay / Google Pay. Оплата возможна только вводом данных карты.<br /><br />
+                Для автоматического зачисления кредитов, обязательно скопируйте ваш Email ниже и вставьте в комментарий к донату.
               </p>
               
               <div className="bg-white dark:bg-neutral-950 p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 flex items-center justify-between gap-3">

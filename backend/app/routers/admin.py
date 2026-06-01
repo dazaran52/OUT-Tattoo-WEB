@@ -126,6 +126,14 @@ async def update_user_status(
                 detail="User not found"
             )
             
+        if update_data.status == "approved":
+            supabase.table("notifications").insert({
+                "user_id": user_id,
+                "title": "Профиль верифицирован",
+                "message": "Ваш профиль успешно проверен администратором. Теперь вы можете получать заявки на тату!",
+                "type": "system"
+            }).execute()
+            
         return {"message": f"User status updated to {update_data.status}"}
     except HTTPException:
         raise
@@ -320,6 +328,14 @@ async def approve_payment_request(
             "status": "approved"
         }).eq("id", req_id).execute()
         
+        # Create notification
+        supabase.table("notifications").insert({
+            "user_id": user_id,
+            "title": "Платеж одобрен",
+            "message": f"Ваш чек проверен. Зачислено {credits_to_add} кредитов.",
+            "type": "payment"
+        }).execute()
+        
         return {"status": "approved"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -340,6 +356,14 @@ async def reject_payment_request(
             "status": "rejected",
             "admin_message": req.message
         }).eq("id", req_id).execute()
+        
+        # Create notification
+        supabase.table("notifications").insert({
+            "user_id": pr.data[0]["user_id"],
+            "title": "Платеж отклонен",
+            "message": f"Ваш платеж отклонен. Причина: {req.message}",
+            "type": "payment"
+        }).execute()
         
         return {"status": "rejected"}
     except Exception as e:
