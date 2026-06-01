@@ -6,6 +6,7 @@ import traceback
 from email.header import decode_header
 from app.config import get_settings
 from app.database import get_supabase_client
+from app.services.mail import send_transactional_email
 
 # Conversions to credits (example)
 CREDITS_PER_UAH = 1.0 / 4.0  # 4 UAH = 1 credit
@@ -179,6 +180,14 @@ def _sync_check_emails(settings):
                         }).eq("id", user_id).execute()
                         
                         print(f"✅ Successfully processed automated payment for {target_user['email']}")
+                        
+                        # 3. Send Email
+                        if target_user.get("email"):
+                            send_transactional_email(
+                                to_email=target_user["email"],
+                                subject="Ваш баланс OUT Tattoo пополнен!",
+                                html_content=f"<h1>Ваш баланс обновлен</h1><p>Мы получили ваш перевод на сумму {amount} {currency}. Ваш баланс пополнен на <strong>{credits_to_add} кредитов</strong>.</p>"
+                            )
                 else:
                     print(f"⚠️ Could not find user for note: {note}")
         except Exception as e:

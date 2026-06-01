@@ -50,6 +50,26 @@ export default function TopUpPage() {
       setIsCreatingRequest(true)
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/payments/requests`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            amount_credits: amountCredits,
+            provider: 'revolut',
+            currency: 'EUR'
+          })
+        }
+      )
+      
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data.detail || 'Failed to create payment request')
+      }
       
       // Open Revolut link
       window.open('https://checkout.revolut.com/pay/05082067-c305-4853-a0ed-dd7cb4bccb39', '_blank')
@@ -57,7 +77,7 @@ export default function TopUpPage() {
       // Redirect to dashboard
       router.push('/dashboard')
     } catch (err: any) {
-      toast.error('Произошла ошибка')
+      toast.error(err.message || 'Ошибка создания заявки')
     } finally {
       setIsCreatingRequest(false)
       setShowRevolutModal(false)

@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Mail, Lock, Loader2, ArrowRight, Link as LinkIcon, Tag } from 'lucide-react'
+import { Mail, Lock, Loader2, ArrowRight, Link as LinkIcon, Tag, MapPin } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 export default function LoginPage() {
@@ -14,6 +14,33 @@ export default function LoginPage() {
   const [portfolioUrl, setPortfolioUrl] = useState('')
   const [referralCode, setReferralCode] = useState('')
   const [error, setError] = useState('')
+
+  const [countries, setCountries] = useState<any[]>([])
+  const [cities, setCities] = useState<any[]>([])
+  const [selectedCountry, setSelectedCountry] = useState('')
+  const [selectedCity, setSelectedCity] = useState('')
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/locations/countries`)
+      .then(res => res.json())
+      .then(data => setCountries(data))
+      .catch(err => console.error(err))
+  }, [])
+
+  useEffect(() => {
+    if (selectedCountry) {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/locations/countries/${selectedCountry}/cities`)
+        .then(res => res.json())
+        .then(data => {
+            setCities(data)
+            if (data.length > 0) setSelectedCity(data[0].id)
+        })
+        .catch(err => console.error(err))
+    } else {
+      setCities([])
+      setSelectedCity('')
+    }
+  }, [selectedCountry])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -33,6 +60,8 @@ export default function LoginPage() {
             data: {
               portfolio_url: portfolioUrl,
               referred_by: referralCode,
+              country_ids: selectedCountry ? [selectedCountry] : [],
+              city_ids: selectedCity ? [selectedCity] : [],
             }
           }
         })
@@ -179,6 +208,48 @@ export default function LoginPage() {
                       />
                     </div>
                   </div>
+
+                  <div className="animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+                    <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
+                      Ваша страна
+                    </label>
+                    <div className="relative group">
+                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 group-focus-within:text-neutral-900 dark:group-focus-within:text-white transition-colors" />
+                      <select
+                        required={isSignUp}
+                        value={selectedCountry}
+                        onChange={(e) => setSelectedCountry(e.target.value)}
+                        className="block w-full pl-12 pr-4 py-3.5 bg-white/50 dark:bg-neutral-950/50 border border-neutral-200 dark:border-neutral-800 rounded-xl text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white focus:border-transparent transition-all backdrop-blur-sm appearance-none"
+                      >
+                        <option value="" disabled>Выберите страну...</option>
+                        {countries.map(c => (
+                          <option key={c.id} value={c.id}>{c.name_ru}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {cities.length > 0 && (
+                    <div className="animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+                      <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
+                        Ваш город
+                      </label>
+                      <div className="relative group">
+                        <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 group-focus-within:text-neutral-900 dark:group-focus-within:text-white transition-colors" />
+                        <select
+                          required={isSignUp}
+                          value={selectedCity}
+                          onChange={(e) => setSelectedCity(e.target.value)}
+                          className="block w-full pl-12 pr-4 py-3.5 bg-white/50 dark:bg-neutral-950/50 border border-neutral-200 dark:border-neutral-800 rounded-xl text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white focus:border-transparent transition-all backdrop-blur-sm appearance-none"
+                        >
+                          <option value="" disabled>Выберите город...</option>
+                          {cities.map(c => (
+                            <option key={c.id} value={c.id}>{c.name_ru}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  )}
                 </>
               )}
             </div>

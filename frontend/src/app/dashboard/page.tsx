@@ -6,7 +6,9 @@ import { Header } from '@/components/Header'
 import { SkeletonCard } from '@/components/SkeletonCard'
 import { supabase, Profile } from '@/lib/supabase'
 import { LeadsFeed } from '@/components/LeadsFeed'
+import { AuctionsFeed } from '@/components/AuctionsFeed'
 import { getTranslation, Language } from '@/lib/i18n'
+import { toast } from 'react-hot-toast'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -14,6 +16,7 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [language, setLanguage] = useState<string>('cs')
   const [currentSession, setCurrentSession] = useState<any>(null)
+  const [activeTab, setActiveTab] = useState<'feed' | 'my-leads' | 'auctions'>('feed')
 
   // Load language from localStorage
   useEffect(() => {
@@ -28,6 +31,35 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchProfile()
+
+    // Realtime subscription for balance updates
+    let channel: any;
+    
+    const setupSubscription = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user?.id) {
+        channel = supabase.channel('realtime_user_balance')
+          .on(
+            'postgres_changes',
+            { event: 'UPDATE', schema: 'public', table: 'users', filter: `id=eq.${session.user.id}` },
+            (payload) => {
+              if (payload.new && 'credits' in payload.new) {
+                setProfile(prev => prev ? { ...prev, credits: payload.new.credits } : null)
+                toast('Баланс обновлен!', { icon: '💳' })
+              }
+            }
+          )
+          .subscribe()
+      }
+    }
+    
+    setupSubscription()
+
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel)
+      }
+    }
   }, [])
 
   const fetchProfile = async () => {
@@ -130,6 +162,41 @@ export default function DashboardPage() {
             </p>
           </div>
           
+          {/* Tabs */}
+          {profile.status === 'approved' && (
+            <div className="mt-4 md:mt-0 flex p-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg">
+              <button
+                onClick={() => setActiveTab('feed')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeTab === 'feed'
+                    ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
+                }`}
+              >
+                Все лиды
+              </button>
+              <button
+                onClick={() => setActiveTab('my-leads')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeTab === 'my-leads'
+                    ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
+                }`}
+              >
+                Мои лиды
+              </button>
+              <button
+                onClick={() => setActiveTab('auctions')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeTab === 'auctions'
+                    ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
+                }`}
+              >
+                Аукционы
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Leads Feed or Status Message */}
@@ -146,15 +213,22 @@ export default function DashboardPage() {
         ) : profile.status === 'rejected' ? (
           <div className="text-center p-12 bg-white dark:bg-neutral-900 rounded-xl border border-red-200 dark:border-red-900 shadow-sm">
             <div className="w-16 h-16 bg-red-100 dark:bg-red-900/50 rounded-full mx-auto mb-4 flex items-center justify-center">
-              <span className="text-2xl">🚫</span>
+              <span className="text-2xl text-red-600">❌</span>
             </div>
-            <h3 className="text-xl font-bold text-red-600 dark:text-red-400 mb-2">{t('accessDeniedTitle')}</h3>
+            <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">{t('rejectedTitle')}</h3>
             <p className="text-neutral-600 dark:text-neutral-400 max-w-md mx-auto">
-              {t('accessDeniedDesc')}
+              {t('rejectedDesc')}
             </p>
           </div>
+        ) : activeTab === 'auctions' ? (
+          <AuctionsFeed />
         ) : (
-          <LeadsFeed onUnlockSuccess={handleUnlockSuccess} isAdmin={profile.is_admin} />
+          <LeadsFeed 
+            onUnlockSuccess={handleUnlockSuccess} 
+            isAdmin={profile.is_admin} 
+            showOnlyUnlocked={activeTab === 'my-leads'}
+            userCities={profile.city_ids || []}
+          />
         )}
       </main>
     </div>

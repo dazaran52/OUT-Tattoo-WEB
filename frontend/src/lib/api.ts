@@ -18,6 +18,9 @@ export interface Profile {
   portfolio_url?: string
   own_referral_code?: string
   referred_by?: string
+  country_ids?: string[]
+  city_ids?: string[]
+  discount_tokens: number
 }
 
 async function getAuthHeaders() {

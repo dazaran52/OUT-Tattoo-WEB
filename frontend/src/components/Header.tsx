@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { LogOut, Gem, Menu, X, LayoutDashboard, Settings, Plus, Moon, Sun, Globe } from 'lucide-react'
+import { LogOut, Gem, Menu, X, LayoutDashboard, Settings, Plus, Moon, Sun, Globe, Ticket, Copy } from 'lucide-react'
 import { Profile } from '@/lib/supabase'
 import { getTranslation, Language } from '@/lib/i18n'
 import { TransactionHistoryModal } from '@/components/TransactionHistoryModal'
@@ -84,6 +84,13 @@ export function Header({ profile, onLogout }: HeaderProps) {
                 <Gem className="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
                 <span className="font-bold text-neutral-900 dark:text-white">{profile.credits}</span>
                 <span className="text-sm text-neutral-600 dark:text-neutral-300 pr-1">{t('credit_plural')}</span>
+                
+                {profile.discount_tokens > 0 && (
+                  <div className="flex items-center gap-1 ml-2 pl-2 border-l border-neutral-300 dark:border-neutral-600" title="Скидочные токены (50% скидка на лид)">
+                    <Ticket className="w-4 h-4 text-amber-500" />
+                    <span className="font-bold text-neutral-900 dark:text-white">{profile.discount_tokens}</span>
+                  </div>
+                )}
               </button>
               <button
                 onClick={() => router.push('/top-up')}
@@ -140,6 +147,23 @@ export function Header({ profile, onLogout }: HeaderProps) {
                       <LayoutDashboard className="w-4 h-4" />
                       Admin Panel
                     </a>
+                  )}
+                  {profile.own_referral_code && (
+                    <>
+                      <div className="border-t border-neutral-200 dark:border-neutral-800 my-1"></div>
+                      <div className="px-4 py-2 flex items-center justify-between group cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                           onClick={() => {
+                             navigator.clipboard.writeText(profile.own_referral_code || '');
+                             import('react-hot-toast').then(mod => mod.default.success('Реферальный код скопирован!'));
+                           }}
+                           title="Скопировать реферальный код">
+                        <div className="flex flex-col">
+                          <span className="text-xs text-neutral-500">Реферальный код</span>
+                          <span className="text-sm font-mono font-bold text-neutral-900 dark:text-white">{profile.own_referral_code}</span>
+                        </div>
+                        <Copy className="w-4 h-4 text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-white" />
+                      </div>
+                    </>
                   )}
                   <div className="border-t border-neutral-200 dark:border-neutral-800 my-1"></div>
                   <button

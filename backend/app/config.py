@@ -19,6 +19,13 @@ class Settings(BaseSettings):
     EMAIL_ACCOUNT: str | None = None
     EMAIL_PASSWORD: str | None = None
     
+    # SMTP (Brevo)
+    SMTP_SERVER: str = "smtp-relay.brevo.com"
+    SMTP_PORT: int = 587
+    SMTP_USERNAME: str | None = None
+    SMTP_PASSWORD: str | None = None
+    SMTP_FROM_EMAIL: str = "noreply@outtattoo.com"
+    
     @property
     def SUPABASE_JWT_SECRET(self) -> str:
         """Decode base64 JWT secret to PEM format."""

@@ -91,6 +91,8 @@ type Translations = {
     pendingReviewDesc: string;
     accessDeniedTitle: string;
     accessDeniedDesc: string;
+    rejectedTitle: string;
+    rejectedDesc: string;
     
     // Admin Leads Management
     usersManagement: string;
@@ -191,6 +193,8 @@ const translations: Translations = {
     pendingReviewDesc: 'Váš profil tatéra je v procesu ručního schvalování. Jakmile administrátor žádost schválí, získáte přístup k databázi poptávek.',
     accessDeniedTitle: 'Přístup odepřen',
     accessDeniedDesc: 'Vaše žádost byla administrátorem zamítnuta. Nemůžete prohlížet ani kupovat poptávky.',
+    rejectedTitle: 'Profil zamítnut',
+    rejectedDesc: 'Bohužel váš profil byl zamítnut administrátorem.',
     
     usersManagement: 'Uživatelé',
     leadsManagement: 'Poptávky',
@@ -285,8 +289,10 @@ const translations: Translations = {
     
     pendingReviewTitle: 'Заявка на рассмотрении',
     pendingReviewDesc: 'Ваш профиль мастера находится на ручной модерации. Как только администратор одобрит заявку, вы получите доступ к базе лидов.',
-    accessDeniedTitle: 'Доступ запрещен',
-    accessDeniedDesc: 'Ваша заявка была отклонена администратором. Вы не можете просматривать или покупать лиды.',
+    accessDeniedTitle: 'Доступ закрыт',
+    accessDeniedDesc: 'Ваша заявка была отклонена администратором. Вы не можете просматривать или покупать заявки.',
+    rejectedTitle: 'Профиль отклонён',
+    rejectedDesc: 'К сожалению, ваш профиль был отклонён администратором. Доступ закрыт.',
     
     usersManagement: 'Пользователи',
     leadsManagement: 'Лиды',
@@ -382,7 +388,9 @@ const translations: Translations = {
     pendingReviewTitle: 'Application Pending',
     pendingReviewDesc: 'Your artist profile is currently under manual review. Once approved by an administrator, you will gain access to the leads database.',
     accessDeniedTitle: 'Access Denied',
-    accessDeniedDesc: 'Your application has been rejected by an administrator. You cannot view or purchase leads.',
+    accessDeniedDesc: 'Your application was rejected by the administrator. You cannot view or purchase leads.',
+    rejectedTitle: 'Profile Rejected',
+    rejectedDesc: 'Unfortunately, your profile was rejected by the administrator. Access denied.',
     
     usersManagement: 'Users',
     leadsManagement: 'Leads',

@@ -24,6 +24,9 @@ class ProfileResponse(BaseModel):
     portfolio_url: str | None = None
     own_referral_code: str | None = None
     referred_by: str | None = None
+    country_ids: list[str] | None = None
+    city_ids: list[str] | None = None
+    discount_tokens: int = 0
 
 
 class ProfileCreate(BaseModel):
@@ -72,7 +75,10 @@ async def get_profile(
                 is_admin=data.get("is_admin", False),
                 portfolio_url=data.get("portfolio_url"),
                 own_referral_code=data.get("own_referral_code"),
-                referred_by=data.get("referred_by")
+                referred_by=data.get("referred_by"),
+                country_ids=data.get("country_ids", []),
+                city_ids=data.get("city_ids", []),
+                discount_tokens=data.get("discount_tokens", 0)
             )
         
     except Exception:
@@ -83,6 +89,8 @@ async def get_profile(
     try:
         portfolio_url = current_user.user_metadata.get("portfolio_url")
         referred_by = current_user.user_metadata.get("referred_by")
+        country_ids = current_user.user_metadata.get("country_ids", [])
+        city_ids = current_user.user_metadata.get("city_ids", [])
         
         new_profile = {
             "id": current_user.user_id,
@@ -90,7 +98,10 @@ async def get_profile(
             "credits": 0,
             "own_referral_code": str(uuid.uuid4())[:8].upper(),
             "portfolio_url": portfolio_url,
-            "referred_by": referred_by
+            "referred_by": referred_by,
+            "country_ids": country_ids,
+            "city_ids": city_ids,
+            "discount_tokens": 0
         }
         
         response = supabase.table("users") \
@@ -111,7 +122,10 @@ async def get_profile(
                 is_admin=data.get("is_admin", False),
                 portfolio_url=data.get("portfolio_url"),
                 own_referral_code=data.get("own_referral_code"),
-                referred_by=data.get("referred_by")
+                referred_by=data.get("referred_by"),
+                country_ids=data.get("country_ids", []),
+                city_ids=data.get("city_ids", []),
+                discount_tokens=data.get("discount_tokens", 0)
             )
         else:
             raise HTTPException(

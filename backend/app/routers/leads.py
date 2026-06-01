@@ -106,16 +106,25 @@ async def unlock_lead(
                 current_credits=user["credits"]
             )
 
-        if user["credits"] < lead["price_credits"]:
+        price_to_pay = lead["price_credits"]
+        tokens_to_deduct = 0
+        
+        if user.get("discount_tokens", 0) > 0:
+            price_to_pay = max(1, price_to_pay // 2)
+            tokens_to_deduct = 1
+
+        if user["credits"] < price_to_pay:
             raise HTTPException(
                 status_code=400,
                 detail="INSUFFICIENT_CREDITS"
             )
 
         # Deduct credits
-        new_credits = user["credits"] - lead["price_credits"]
+        new_credits = user["credits"] - price_to_pay
+        new_tokens = user.get("discount_tokens", 0) - tokens_to_deduct
+        
         update_res = supabase.table("users") \
-            .update({"credits": new_credits}) \
+            .update({"credits": new_credits, "discount_tokens": new_tokens}) \
             .eq("id", current_user.user_id) \
             .execute()
 

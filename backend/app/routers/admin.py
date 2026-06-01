@@ -4,6 +4,7 @@ from typing import List
 from app.middleware.auth import get_current_user, AuthUser
 from app.database import get_supabase_client
 from supabase import Client
+from app.services.mail import send_transactional_email
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -127,12 +128,52 @@ async def update_user_status(
             )
             
         if update_data.status == "approved":
+            target_user = response.data[0]
+            
+            # Reward Referrer if present
+            if target_user.get("referred_by"):
+                referrer_code = target_user["referred_by"]
+                try:
+                    referrer_res = supabase.table("users").select("id, discount_tokens, email").eq("own_referral_code", referrer_code).single().execute()
+                    if referrer_res.data:
+                        referrer_id = referrer_res.data["id"]
+                        current_tokens = referrer_res.data.get("discount_tokens", 0)
+                        supabase.table("users").update({"discount_tokens": current_tokens + 1}).eq("id", referrer_id).execute()
+                        
+                        # Notify referrer
+                        supabase.table("notifications").insert({
+                            "user_id": referrer_id,
+                            "title": "Новый реферал!",
+                            "message": f"Мастер {target_user.get('email')} был одобрен. Вы получили 1 скидочный токен (50% скидка)!",
+                            "type": "system"
+                        }).execute()
+                except Exception as e:
+                    print(f"Error rewarding referrer {referrer_code}: {e}")
+
             supabase.table("notifications").insert({
                 "user_id": user_id,
                 "title": "Профиль верифицирован",
                 "message": "Ваш профиль успешно проверен администратором. Теперь вы можете получать заявки на тату!",
                 "type": "system"
             }).execute()
+            
+            # Send Email
+            user_email = target_user.get("email")
+            if user_email:
+                send_transactional_email(
+                    to_email=user_email,
+                    subject="Поздравляем! Ваш профиль OUT Tattoo верифицирован",
+                    html_content="<h1>Добро пожаловать в OUT Tattoo!</h1><p>Ваш аккаунт успешно проверен. Теперь вы можете получать заявки на тату в нашем приложении.</p>"
+                )
+        elif update_data.status == "rejected":
+            # Send Email for rejection
+            user_email = response.data[0].get("email")
+            if user_email:
+                send_transactional_email(
+                    to_email=user_email,
+                    subject="Статус вашего профиля OUT Tattoo",
+                    html_content="<h1>Здравствуйте</h1><p>К сожалению, мы не можем подтвердить ваш аккаунт на данный момент.</p>"
+                )
             
         return {"message": f"User status updated to {update_data.status}"}
     except HTTPException:
@@ -162,6 +203,15 @@ async def update_user_credits(
             
         if not response.data:
             raise HTTPException(status_code=404, detail="User not found")
+            
+        # Send Email notification for balance change
+        user_email = response.data[0].get("email")
+        if user_email:
+            send_transactional_email(
+                to_email=user_email,
+                subject="Ваш баланс OUT Tattoo пополнен!",
+                html_content=f"<h1>Ваш баланс обновлен</h1><p>Текущий баланс: <strong>{update_data.credits} кредитов</strong>.</p>"
+            )
             
         return {"message": f"User credits updated to {update_data.credits}"}
     except HTTPException:

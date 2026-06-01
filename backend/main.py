@@ -14,6 +14,9 @@ from app.routers.webhooks import router as webhooks_router
 from app.routers.admin import router as admin_router
 from app.routers.payments import router as payments_router
 from app.routers.notifications import router as notifications_router
+from app.routers.locations import router as locations_router
+from app.routers.disputes import router as disputes_router
+from app.routers.auctions import router as auctions_router
 
 
 def run_migrations():
@@ -156,6 +159,9 @@ def create_application() -> FastAPI:
     app.include_router(admin_router)
     app.include_router(payments_router)
     app.include_router(notifications_router)
+    app.include_router(locations_router)
+    app.include_router(disputes_router)
+    app.include_router(auctions_router)
     
     @app.get("/health")
     async def health_check():

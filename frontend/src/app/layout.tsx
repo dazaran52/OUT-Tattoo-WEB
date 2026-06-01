@@ -9,7 +9,14 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
 export const metadata: Metadata = {
   title: 'OUT Tattoo Leads',
-  description: 'B2B SaaS for tattoo masters lead generation',
+  description: 'Premium B2B Lead Platform for Tattoo Masters',
+  manifest: '/manifest.json',
+  themeColor: '#000000',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'OUT Leads',
+  },
 }
 
 export default function RootLayout({

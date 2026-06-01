@@ -20,6 +20,9 @@ export type Profile = {
   portfolio_url?: string | null
   own_referral_code?: string | null
   referred_by?: string | null
+  country_ids?: string[]
+  city_ids?: string[]
+  discount_tokens: number
 }
 
 export type SupportMessage = {
