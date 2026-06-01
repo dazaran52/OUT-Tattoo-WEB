@@ -87,7 +87,7 @@ async def cryptobot_webhook(request: Request, crypto_pay_api_signature: str = He
     if not user_id:
         return {"status": "no user_id found in payload"}
         
-    supabase = get_supabase()
+    supabase = get_supabase_client()
     
     # Check if transaction already processed
     existing = supabase.table("transactions").select("id").eq("provider_tx_id", f"crypto_{invoice_id}").execute()
@@ -131,7 +131,7 @@ async def donatello_webhook(request: Request, x_key: str = Header(None, alias="X
     if not message:
         return {"status": "ignored", "reason": "No email in message"}
         
-    supabase = get_supabase()
+    supabase = get_supabase_client()
     
     # Check if transaction already processed
     existing = supabase.table("transactions").select("id").eq("provider_tx_id", f"donatello_{pub_id}").execute()
