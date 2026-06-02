@@ -222,7 +222,7 @@ async def remove_city(
 ):
     """Remove a city from master's preferences."""
     try:
-        supabase.table("user_cities").delete().eq("user_id", current_user.uid).eq("city_id", city_id).execute()
+        supabase.table("user_cities").delete().eq("user_id", current_user.user_id).eq("city_id", city_id).execute()
         return {"status": "success"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -240,7 +240,7 @@ async def get_analytics(
     """Get user analytics for the dashboard."""
     try:
         # Fetch all unlocked leads for the user with their prices
-        unlocks_res = supabase.table("lead_unlocks").select("unlocked_at, leads(price)").eq("user_id", current_user.uid).execute()
+        unlocks_res = supabase.table("lead_unlocks").select("unlocked_at, leads(price)").eq("user_id", current_user.user_id).execute()
         
         total_spent = 0
         total_leads = len(unlocks_res.data)
