@@ -109,53 +109,28 @@ async def unlock_lead(
         
         lead = lead_res.data
         
-        # Get user
-        user_res = supabase.table("users").select("*").eq("id", current_user.user_id).single().execute()
-        if not user_res.data:
-            raise HTTPException(status_code=404, detail="User profile not found.")
+        # Call the atomic RPC function
+        try:
+            rpc_res = supabase.rpc(
+                "unlock_lead",
+                {"p_user_id": current_user.user_id, "p_lead_id": lead_id}
+            ).execute()
+        except Exception as e:
+            if "INSUFFICIENT_CREDITS" in str(e):
+                raise HTTPException(status_code=400, detail="INSUFFICIENT_CREDITS")
+            elif "Already unlocked" in str(e):
+                # We need to fetch contacts since RPC might just return the text
+                pass
+            raise HTTPException(status_code=400, detail=str(e))
             
-        user = user_res.data
-
-        if unlock_check.data and len(unlock_check.data) > 0:
-            # Already unlocked
-            return UnlockResponse(
-                contacts=lead["contacts"],
-                is_unlocked=True,
-                current_credits=user["credits"]
-            )
-
-        price_to_pay = lead["price_credits"]
-        tokens_to_deduct = 0
-        
-        if user.get("discount_tokens", 0) > 0:
-            price_to_pay = max(1, price_to_pay // 2)
-            tokens_to_deduct = 1
-
-        if user["credits"] < price_to_pay:
-            raise HTTPException(
-                status_code=400,
-                detail="INSUFFICIENT_CREDITS"
-            )
-
-        # Deduct credits
-        new_credits = user["credits"] - price_to_pay
-        new_tokens = user.get("discount_tokens", 0) - tokens_to_deduct
-        
-        update_res = supabase.table("users") \
-            .update({"credits": new_credits, "discount_tokens": new_tokens}) \
-            .eq("id", current_user.user_id) \
-            .execute()
-
-        # Add unlock record
-        supabase.table("lead_unlocks").insert({
-            "user_id": current_user.user_id,
-            "lead_id": lead_id
-        }).execute()
-
+        data = rpc_res.data
+        if not data or not data.get("success"):
+            raise HTTPException(status_code=400, detail="Failed to unlock lead")
+            
         return UnlockResponse(
-            contacts=lead["contacts"],
+            contacts=data.get("contacts", "Hidden"),
             is_unlocked=True,
-            current_credits=new_credits
+            current_credits=data.get("new_credits", 0)
         )
 
     except HTTPException:

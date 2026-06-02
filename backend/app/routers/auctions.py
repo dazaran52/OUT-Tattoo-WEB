@@ -157,78 +157,33 @@ async def place_bid(
     Place a bid on an active auction.
     """
     try:
-        # Get auction
-        auction_res = supabase.table("auctions").select("*").eq("id", auction_id).single().execute()
-        if not auction_res.data:
-            raise HTTPException(status_code=404, detail="Auction not found")
+        # Call the atomic RPC function
+        try:
+            rpc_res = supabase.rpc(
+                "place_bid",
+                {
+                    "p_user_id": current_user.user_id,
+                    "p_auction_id": auction_id,
+                    "p_bid_amount": bid.amount
+                }
+            ).execute()
+        except Exception as e:
+            err_str = str(e)
+            if "Auction is no longer active" in err_str:
+                raise HTTPException(status_code=400, detail="Auction is no longer active.")
+            if "You cannot bid on your own auction" in err_str:
+                raise HTTPException(status_code=400, detail="You cannot bid on your own auction.")
+            if "Bid must be higher than current price" in err_str:
+                raise HTTPException(status_code=400, detail="Bid must be higher than current price.")
+            if "INSUFFICIENT_CREDITS" in err_str:
+                raise HTTPException(status_code=400, detail="INSUFFICIENT_CREDITS")
+            raise HTTPException(status_code=400, detail=err_str)
             
-        auction = auction_res.data
-        if auction["status"] != "active":
-            raise HTTPException(status_code=400, detail="Auction is no longer active.")
+        data = rpc_res.data
+        if not data or not data.get("success"):
+            raise HTTPException(status_code=400, detail="Failed to place bid")
             
-        if auction["seller_id"] == current_user.user_id:
-            raise HTTPException(status_code=400, detail="You cannot bid on your own auction.")
-            
-        if bid.amount <= auction["current_price"]:
-            raise HTTPException(status_code=400, detail="Bid must be higher than current price.")
-
-        # Check user credits taking into account if they are outbidding themselves
-        user_res = supabase.table("users").select("credits").eq("id", current_user.user_id).single().execute()
-        if not user_res.data:
-            raise HTTPException(status_code=400, detail="User not found")
-            
-        is_self_outbid = (auction.get("highest_bidder_id") == current_user.user_id)
-        cost = bid.amount - auction["current_price"] if is_self_outbid else bid.amount
-        
-        if user_res.data["credits"] < cost:
-            raise HTTPException(status_code=400, detail="INSUFFICIENT_CREDITS")
-            
-        # Refund previous bidder if it's someone else
-        if auction["highest_bidder_id"] and not is_self_outbid:
-            prev_bidder_id = auction["highest_bidder_id"]
-            prev_bid = auction["current_price"]
-            
-            # Add credits back to prev bidder
-            prev_user_res = supabase.table("users").select("credits").eq("id", prev_bidder_id).single().execute()
-            if prev_user_res.data:
-                supabase.table("users") \
-                    .update({"credits": prev_user_res.data["credits"] + prev_bid}) \
-                    .eq("id", prev_bidder_id) \
-                    .execute()
-                    
-                # Notify prev bidder
-                supabase.table("notifications").insert({
-                    "user_id": prev_bidder_id,
-                    "title": "Ваша ставка перебита",
-                    "message": f"Ваша ставка {prev_bid} кредитов на аукционе была перебита. Кредиты возвращены на баланс.",
-                    "type": "system"
-                }).execute()
-
-        # Deduct cost from new bidder
-        new_credits = user_res.data["credits"] - cost
-        supabase.table("users").update({"credits": new_credits}).eq("id", current_user.user_id).execute()
-
-        # Update auction: Extend by 1 hour (auto-end rule 1-1.5 hours) if ends_at is soon
-        now = datetime.now(timezone.utc)
-        ends_at = datetime.fromisoformat(auction["ends_at"].replace("Z", "+00:00"))
-        if (ends_at - now) < timedelta(hours=1):
-            ends_at = now + timedelta(hours=1)
-            
-        supabase.table("auctions").update({
-            "current_price": bid.amount,
-            "highest_bidder_id": current_user.user_id,
-            "last_bid_at": now.isoformat(),
-            "ends_at": ends_at.isoformat()
-        }).eq("id", auction_id).execute()
-        
-        # Record bid
-        supabase.table("auction_bids").insert({
-            "auction_id": auction_id,
-            "bidder_id": current_user.user_id,
-            "amount": bid.amount
-        }).execute()
-        
-        return {"message": "Bid placed successfully", "current_price": bid.amount}
+        return {"message": "Bid placed successfully", "current_price": data.get("current_price", bid.amount)}
 
     except HTTPException:
         raise
