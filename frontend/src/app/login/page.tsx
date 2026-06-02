@@ -284,9 +284,17 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <p className="text-center text-xs font-medium text-neutral-400 dark:text-neutral-500">
+        <p className="text-center text-xs font-medium text-neutral-400 dark:text-neutral-500 mb-4">
           Входя в систему, вы соглашаетесь с эксклюзивными условиями платформы
         </p>
+
+        <div className="flex flex-wrap justify-center gap-4 text-xs font-medium text-neutral-500 dark:text-neutral-500">
+          <a href="/terms" className="hover:text-neutral-900 dark:hover:text-white transition-colors">Условия использования</a>
+          <span>&middot;</span>
+          <a href="/privacy" className="hover:text-neutral-900 dark:hover:text-white transition-colors">Политика конфиденциальности</a>
+          <span>&middot;</span>
+          <a href="/refunds" className="hover:text-neutral-900 dark:hover:text-white transition-colors">Политика возвратов</a>
+        </div>
       </div>
     </div>
   )
