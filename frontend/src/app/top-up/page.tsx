@@ -6,6 +6,7 @@ import { ArrowLeft, Gem, Sparkles, AlertCircle, CreditCard, Wallet, HeartHandsha
 import { api } from '@/lib/api'
 import { supabase } from '@/lib/supabase'
 import toast from 'react-hot-toast'
+import { playSuccessSound, triggerHaptic } from '@/lib/sounds'
 
 interface TopUpMethod {
   id: string
@@ -54,7 +55,9 @@ export default function TopUpPage() {
       // Open Revolut link
       window.open('https://checkout.revolut.com/pay/e79e0c52-e699-4abc-ab7d-ac68b1a62276', '_blank')
       
-      // Redirect to dashboard
+      // Play sound and redirect
+      playSuccessSound()
+      triggerHaptic('success')
       router.push('/dashboard')
     } catch (err: any) {
       toast.error('Произошла ошибка при перенаправлении')
@@ -376,7 +379,11 @@ export default function TopUpPage() {
                 href="https://donatello.to/TattooHub"
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={() => setShowDonatelloModal(false)}
+                onClick={() => {
+                  setShowDonatelloModal(false);
+                  playSuccessSound();
+                  triggerHaptic('success');
+                }}
                 className="flex-1 py-3 px-4 bg-rose-500 text-white rounded-xl font-medium hover:bg-rose-600 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-rose-500/25"
               >
                 К оплате

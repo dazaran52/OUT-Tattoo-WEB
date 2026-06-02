@@ -10,6 +10,7 @@ import { DisputeModal } from '@/components/DisputeModal'
 import { AuctionModal } from '@/components/AuctionModal'
 import toast from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
+import { playSuccessSound, playErrorSound, triggerHaptic } from '@/lib/sounds'
 
 export interface Lead {
   id: string
@@ -151,8 +152,14 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
         onUnlockSuccess(data.current_credits)
       }
 
+      // Play success sound and haptic
+      playSuccessSound()
+      triggerHaptic('success')
+
     } catch (err: any) {
       if (err.message === 'INSUFFICIENT_CREDITS') {
+        playErrorSound()
+        triggerHaptic('error')
         const lead = leads.find(l => l.id === leadId)
         if (lead) {
           setLowBalanceRequiredCredits(lead.price_credits)
