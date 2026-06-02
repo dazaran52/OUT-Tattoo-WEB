@@ -96,7 +96,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
       .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, (payload) => {
         // Refresh leads when changes happen (debounced slightly to avoid spam)
         toast('Обновление базы лидов...', { icon: '🔄', duration: 2000 })
-        fetchLeads()
+        fetchLeads(true)
       })
       .subscribe()
 
@@ -105,9 +105,9 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
     }
   }, [])
 
-  const fetchLeads = async () => {
+  const fetchLeads = async (background = false) => {
     try {
-      setIsLoading(true)
+      if (!background) setIsLoading(true)
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
         setIsLoading(false)
@@ -133,10 +133,11 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
 
       const data = await response.json()
       setLeads(data)
-    } catch (err: any) {
-      setError(err.message || 'Error fetching leads')
+    } catch (err) {
+      console.error(err)
+      setError('Не удалось загрузить лиды. Проверьте соединение.')
     } finally {
-      setIsLoading(false)
+      if (!background) setIsLoading(false)
     }
   }
 

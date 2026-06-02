@@ -35,11 +35,27 @@ export function AuctionsFeed() {
 
   useEffect(() => {
     fetchAuctions()
+
+    const channel = supabase
+      .channel('auctions_changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'auctions' },
+        (payload) => {
+          console.log('Auction changed:', payload)
+          fetchAuctions(true)
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [])
 
-  const fetchAuctions = async () => {
+  const fetchAuctions = async (background = false) => {
     try {
-      setIsLoading(true)
+      if (!background) setIsLoading(true)
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/auctions`)
       if (!res.ok) throw new Error('Failed to fetch auctions')
       const data = await res.json()
@@ -54,7 +70,7 @@ export function AuctionsFeed() {
     } catch (err: any) {
       toast.error(err.message)
     } finally {
-      setIsLoading(false)
+      if (!background) setIsLoading(false)
     }
   }
 
