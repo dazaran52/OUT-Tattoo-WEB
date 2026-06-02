@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { SkeletonCard } from '@/components/SkeletonCard'
-import { RefreshCw, Search, Loader2, Plus, Edit2, Trash2, XCircle, ChevronLeft, ChevronRight, Image as ImageIcon } from 'lucide-react'
+import { RefreshCw, Search, Loader2, Plus, Edit2, Trash2, XCircle, ChevronLeft, ChevronRight, Image as ImageIcon, Clock } from 'lucide-react'
 import { getTranslation, Language } from '@/lib/i18n'
 import { LowBalanceModal } from '@/components/LowBalanceModal'
 import { DisputeModal } from '@/components/DisputeModal'
