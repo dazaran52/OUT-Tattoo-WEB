@@ -93,6 +93,20 @@ async def get_profile(
             response = supabase.table("users").insert(new_profile).execute()
             if response.data and len(response.data) > 0:
                 data = response.data[0]
+                
+                # Notify admins about new pending user
+                try:
+                    admin_res = supabase.table("users").select("id").eq("is_admin", True).execute()
+                    for admin in (admin_res.data or []):
+                        supabase.table("notifications").insert({
+                            "user_id": admin["id"],
+                            "title": "Новая регистрация",
+                            "message": f"Мастер {current_user.email} зарегистрировался и ждёт вашего одобрения.",
+                            "type": "system"
+                        }).execute()
+                except Exception as e:
+                    print(f"Warning: Failed to notify admins about new user: {e}")
+                    
             else:
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
