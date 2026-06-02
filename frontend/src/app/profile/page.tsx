@@ -274,9 +274,20 @@ export default function ProfilePage() {
                 <div className="w-24 h-24 bg-gradient-to-br from-neutral-300 dark:from-neutral-700 to-neutral-400 dark:to-neutral-600 rounded-full mx-auto md:mx-0 mb-4 flex items-center justify-center">
                   <User className="w-12 h-12 text-neutral-600 dark:text-neutral-400" />
                 </div>
-                <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-1">
-                  {profile.display_name || t('user')}
-                </h2>
+                <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
+                  <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
+                    {profile.display_name || t('user')}
+                  </h2>
+                  {profile.gamification_level && profile.gamification_level !== 'Newbie' && (
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                      profile.gamification_level === 'Elite' 
+                        ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-200 dark:border-amber-500/30'
+                        : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/30'
+                    }`}>
+                      {profile.gamification_level}
+                    </span>
+                  )}
+                </div>
                 <p className="text-neutral-600 dark:text-neutral-400 text-sm mb-2">{profile.email}</p>
                 
                 {profile.own_referral_code && (

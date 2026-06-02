@@ -23,6 +23,8 @@ export type Profile = {
   country_ids?: string[]
   city_ids?: string[]
   discount_tokens: number
+  unlocked_leads_count?: number
+  gamification_level?: string
 }
 
 export type SupportMessage = {

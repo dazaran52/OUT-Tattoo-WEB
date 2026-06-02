@@ -88,10 +88,21 @@ export function Header({ profile, onLogout }: HeaderProps) {
 
           {/* Right Section */}
           <div className="flex items-center gap-6">
-            {/* Email */}
-            <span className="hidden sm:block text-sm text-neutral-600 dark:text-neutral-300">
-              {profile.email}
-            </span>
+            {/* Email & Status */}
+            <div className="hidden sm:flex items-center gap-3">
+              <span className="text-sm text-neutral-600 dark:text-neutral-300">
+                {profile.email}
+              </span>
+              {profile.gamification_level && profile.gamification_level !== 'Newbie' && (
+                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                  profile.gamification_level === 'Elite' 
+                    ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-200 dark:border-amber-500/30'
+                    : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/30'
+                }`}>
+                  {profile.gamification_level}
+                </span>
+              )}
+            </div>
 
             {/* Notifications Button */}
             <button

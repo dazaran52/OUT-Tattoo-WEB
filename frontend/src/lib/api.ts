@@ -21,6 +21,7 @@ export interface Profile {
   country_ids?: string[]
   city_ids?: string[]
   discount_tokens: number
+  gamification_level?: string
 }
 
 async function getAuthHeaders() {

@@ -27,6 +27,8 @@ class ProfileResponse(BaseModel):
     country_ids: list[str] | None = None
     city_ids: list[str] | None = None
     discount_tokens: int = 0
+    unlocked_leads_count: int = 0
+    gamification_level: str = "Newbie"
 
 
 class ProfileCreate(BaseModel):
@@ -52,6 +54,7 @@ async def get_profile(
     
     If profile doesn't exist, creates it automatically with 0 credits.
     """
+    data = None
     try:
         # Try to fetch existing profile
         response = supabase.table("users") \
@@ -61,85 +64,77 @@ async def get_profile(
             .execute()
         
         if response.data:
-            # Profile exists, return it
             data = response.data
-            return ProfileResponse(
-                id=data["id"],
-                email=data["email"],
-                credits=data["credits"],
-                created_at=data.get("created_at"),
-                display_name=data.get("display_name"),
-                phone=data.get("phone"),
-                bio=data.get("bio"),
-                status=data.get("status", "pending"),
-                is_admin=data.get("is_admin", False),
-                portfolio_url=data.get("portfolio_url"),
-                own_referral_code=data.get("own_referral_code"),
-                referred_by=data.get("referred_by"),
-                country_ids=data.get("country_ids", []),
-                city_ids=data.get("city_ids", []),
-                discount_tokens=data.get("discount_tokens", 0)
-            )
-        
+            
     except Exception:
         # Profile not found, will create below
         pass
     
-    # Create new profile with 0 credits and a generated referral code
-    try:
-        portfolio_url = current_user.user_metadata.get("portfolio_url")
-        referred_by = current_user.user_metadata.get("referred_by")
-        country_ids = current_user.user_metadata.get("country_ids", [])
-        city_ids = current_user.user_metadata.get("city_ids", [])
-        
-        new_profile = {
-            "id": current_user.user_id,
-            "email": current_user.email,
-            "credits": 0,
-            "own_referral_code": str(uuid.uuid4())[:8].upper(),
-            "portfolio_url": portfolio_url,
-            "referred_by": referred_by,
-            "country_ids": country_ids,
-            "city_ids": city_ids,
-            "discount_tokens": 0
-        }
-        
-        response = supabase.table("users") \
-            .insert(new_profile) \
-            .execute()
-        
-        if response.data and len(response.data) > 0:
-            data = response.data[0]
-            return ProfileResponse(
-                id=data["id"],
-                email=data["email"],
-                credits=data["credits"],
-                created_at=data.get("created_at"),
-                display_name=data.get("display_name"),
-                phone=data.get("phone"),
-                bio=data.get("bio"),
-                status=data.get("status", "pending"),
-                is_admin=data.get("is_admin", False),
-                portfolio_url=data.get("portfolio_url"),
-                own_referral_code=data.get("own_referral_code"),
-                referred_by=data.get("referred_by"),
-                country_ids=data.get("country_ids", []),
-                city_ids=data.get("city_ids", []),
-                discount_tokens=data.get("discount_tokens", 0)
-            )
-        else:
+    if not data:
+        # Create new profile with 0 credits and a generated referral code
+        try:
+            portfolio_url = current_user.user_metadata.get("portfolio_url")
+            referred_by = current_user.user_metadata.get("referred_by")
+            country_ids = current_user.user_metadata.get("country_ids", [])
+            city_ids = current_user.user_metadata.get("city_ids", [])
+            
+            new_profile = {
+                "id": current_user.user_id,
+                "email": current_user.email,
+                "credits": 0,
+                "own_referral_code": str(uuid.uuid4())[:8].upper(),
+                "portfolio_url": portfolio_url,
+                "referred_by": referred_by,
+                "country_ids": country_ids,
+                "city_ids": city_ids,
+                "discount_tokens": 0
+            }
+            
+            response = supabase.table("users").insert(new_profile).execute()
+            if response.data and len(response.data) > 0:
+                data = response.data[0]
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Failed to create profile"
+                )
+        except HTTPException:
+            raise
+        except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create profile"
+                detail=f"Error creating profile: {str(e)}"
             )
-            
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error creating profile: {str(e)}"
-        )
+
+    # Calculate unlocks and gamification level
+    unlocks_res = supabase.table("lead_unlocks").select("id", count="exact").eq("user_id", current_user.uid).execute()
+    unlocked_count = unlocks_res.count if unlocks_res.count is not None else len(unlocks_res.data)
+    
+    level = "Newbie"
+    if unlocked_count >= 10:
+        level = "Elite"
+    elif unlocked_count >= 3:
+        level = "Pro"
+        
+    return ProfileResponse(
+        id=data["id"],
+        email=data["email"],
+        credits=data["credits"],
+        created_at=data.get("created_at"),
+        display_name=data.get("display_name"),
+        phone=data.get("phone"),
+        bio=data.get("bio"),
+        status=data.get("status", "pending"),
+        is_admin=data.get("is_admin", False),
+        portfolio_url=data.get("portfolio_url"),
+        own_referral_code=data.get("own_referral_code"),
+        referred_by=data.get("referred_by"),
+        country_ids=data.get("country_ids", []),
+        city_ids=data.get("city_ids", []),
+        discount_tokens=data.get("discount_tokens", 0),
+        unlocked_leads_count=unlocked_count,
+        gamification_level=level
+    )
 
 
 @router.put("/profile", response_model=ProfileResponse)
