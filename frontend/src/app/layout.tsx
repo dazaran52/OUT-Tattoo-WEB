@@ -4,6 +4,7 @@ import './globals.css'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { ChatWidget } from '@/components/ChatWidget'
 import { Toaster } from 'react-hot-toast'
+import { InstallPrompt } from '@/components/InstallPrompt'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
@@ -44,6 +45,7 @@ export default function RootLayout({
         <Toaster position="top-center" reverseOrder={false} />
         {children}
         <ChatWidget />
+        <InstallPrompt />
       </body>
     </html>
   )
