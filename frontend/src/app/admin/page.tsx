@@ -246,7 +246,7 @@ export default function AdminPage() {
               activeTab === 'users' ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
             }`}
           >
-            {t('users')}
+            {t('usersManagement')}
           </button>
           <button
             onClick={() => setActiveTab('chats')}
@@ -254,7 +254,7 @@ export default function AdminPage() {
               activeTab === 'chats' ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
             }`}
           >
-            {t('disputes')}
+            Споры
           </button>
           <button
             onClick={() => setActiveTab('locations')}
