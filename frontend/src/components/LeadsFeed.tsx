@@ -496,7 +496,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
       {error && (
         <div className="bg-red-900/50 border border-red-500 text-red-200 p-4 rounded-lg">
           {error}
-          <button onClick={fetchLeads} className="ml-4 text-sm underline">{t('tryAgain')}</button>
+          <button onClick={() => fetchLeads()} className="ml-4 text-sm underline">{t('tryAgain')}</button>
         </div>
       )}
       
