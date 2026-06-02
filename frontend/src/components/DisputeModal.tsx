@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { X, Upload, Loader2, AlertTriangle } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { Lead } from './LeadsFeed'
+import imageCompression from 'browser-image-compression'
 
 interface DisputeModalProps {
   isOpen: boolean
@@ -33,9 +34,17 @@ export function DisputeModal({ isOpen, onClose, lead }: DisputeModalProps) {
         const fileName = `${Math.random()}.${fileExt}`
         const filePath = `disputes/${fileName}`
 
+        const options = {
+          maxSizeMB: 1,
+          maxWidthOrHeight: 1024,
+          useWebWorker: true,
+        }
+        
+        const compressedFile = await imageCompression(file, options)
+
         const { error: uploadError } = await supabase.storage
           .from('lead_images')
-          .upload(filePath, file)
+          .upload(filePath, compressedFile)
 
         if (uploadError) throw uploadError
 

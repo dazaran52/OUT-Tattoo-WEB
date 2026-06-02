@@ -11,6 +11,7 @@ import { AuctionModal } from '@/components/AuctionModal'
 import toast from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
 import { playSuccessSound, playErrorSound, triggerHaptic } from '@/lib/sounds'
+import imageCompression from 'browser-image-compression'
 
 export interface Lead {
   id: string
@@ -229,9 +230,17 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
         const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`
         const filePath = `${fileName}`
 
+        const options = {
+          maxSizeMB: 1,
+          maxWidthOrHeight: 1024,
+          useWebWorker: true,
+        }
+        
+        const compressedFile = await imageCompression(file, options)
+
         const { data, error } = await supabase.storage
           .from('lead_images')
-          .upload(filePath, file)
+          .upload(filePath, compressedFile)
 
         if (error) throw error
 
