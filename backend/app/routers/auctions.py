@@ -81,60 +81,7 @@ async def get_active_auctions(supabase: Client = Depends(get_supabase_client)):
     try:
         now_iso = datetime.now(timezone.utc).isoformat()
         
-        # 1. Process expired auctions lazily
-        expired_res = supabase.table("auctions") \
-            .select("*") \
-            .eq("status", "active") \
-            .lt("ends_at", now_iso) \
-            .execute()
-            
-        for exp_auction in (expired_res.data or []):
-            # Atomic update to prevent race conditions
-            update_res = supabase.table("auctions").update({"status": "completed"}).eq("id", exp_auction["id"]).eq("status", "active").execute()
-            if update_res.data:
-                winner_id = exp_auction.get("highest_bidder_id")
-                seller_id = exp_auction.get("seller_id")
-                final_price = exp_auction.get("current_price")
-                
-                if winner_id:
-                    # Grant lead to winner
-                    supabase.table("lead_unlocks").insert({
-                        "user_id": winner_id,
-                        "lead_id": exp_auction["lead_id"],
-                        "price_paid": final_price
-                    }).execute()
-                    
-                    # Notify winner
-                    supabase.table("notifications").insert({
-                        "user_id": winner_id,
-                        "title": "Вы выиграли аукцион!",
-                        "message": f"Поздравляем! Вы выиграли аукцион за {final_price} кредитов. Лид теперь в разделе 'Мои лиды'.",
-                        "type": "system"
-                    }).execute()
-                    
-                    # Grant credits to seller (80% of final price for example, or 100%)
-                    seller_res = supabase.table("users").select("credits").eq("id", seller_id).single().execute()
-                    if seller_res.data:
-                        # Let's give 100% to seller for now
-                        supabase.table("users").update({"credits": seller_res.data["credits"] + final_price}).eq("id", seller_id).execute()
-                        
-                    # Notify seller
-                    supabase.table("notifications").insert({
-                        "user_id": seller_id,
-                        "title": "Аукцион завершен",
-                        "message": f"Ваш лид был продан за {final_price} кредитов. Кредиты зачислены на баланс.",
-                        "type": "system"
-                    }).execute()
-                else:
-                    # No bids
-                    supabase.table("notifications").insert({
-                        "user_id": seller_id,
-                        "title": "Аукцион завершен (без ставок)",
-                        "message": f"Ваш аукцион завершился, но никто не сделал ставку.",
-                        "type": "system"
-                    }).execute()
-
-        # 2. Get active auctions
+        # Get active auctions
         res = supabase.table("auctions") \
             .select("*, leads(title, description, price_credits, image_url)") \
             .eq("status", "active") \
