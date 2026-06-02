@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Loader2, Clock, Gavel, ArrowUpRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { SkeletonCard } from '@/components/SkeletonCard'
 import toast from 'react-hot-toast'
 
 interface Auction {
@@ -106,8 +107,10 @@ export function AuctionsFeed() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center p-12">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[...Array(6)].map((_, i) => (
+          <SkeletonCard key={i} />
+        ))}
       </div>
     )
   }

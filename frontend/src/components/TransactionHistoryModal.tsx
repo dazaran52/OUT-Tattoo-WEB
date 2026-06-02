@@ -110,8 +110,19 @@ export function TransactionHistoryModal({ isOpen, onClose }: Props) {
 
         <div className="flex-1 overflow-y-auto pr-2 space-y-3">
           {isLoading ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-cyan-500" />
+            <div className="space-y-3">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="flex items-center justify-between p-4 rounded-2xl border border-neutral-100 dark:border-neutral-800 animate-pulse bg-white dark:bg-neutral-900">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-neutral-100 dark:bg-neutral-800 rounded-xl" />
+                    <div>
+                      <div className="h-4 w-24 bg-neutral-200 dark:bg-neutral-700 rounded mb-2" />
+                      <div className="h-3 w-16 bg-neutral-100 dark:bg-neutral-800 rounded" />
+                    </div>
+                  </div>
+                  <div className="h-6 w-16 bg-neutral-200 dark:bg-neutral-700 rounded-lg" />
+                </div>
+              ))}
             </div>
           ) : transactions.length === 0 ? (
             <div className="text-center py-12 text-neutral-500 dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-800/30 rounded-2xl border border-neutral-100 dark:border-neutral-800">

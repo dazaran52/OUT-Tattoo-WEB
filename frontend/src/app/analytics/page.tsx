@@ -76,8 +76,20 @@ export default function AnalyticsPage() {
 
   if (isLoading || !profile || !analytics) {
     return (
-      <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-cyan-500 animate-spin" />
+      <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
+        {profile ? <Header profile={profile} onLogout={handleLogout} /> : <div className="h-16 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900" />}
+        <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
+          <div className="mb-8">
+            <div className="h-8 w-48 bg-neutral-200 dark:bg-neutral-800 rounded animate-pulse mb-2"></div>
+            <div className="h-4 w-64 bg-neutral-200 dark:bg-neutral-800 rounded animate-pulse"></div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            {[...Array(2)].map((_, i) => (
+              <div key={i} className="bg-white dark:bg-neutral-900 rounded-2xl p-6 border border-neutral-200 dark:border-neutral-800 animate-pulse h-28"></div>
+            ))}
+          </div>
+          <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 border border-neutral-200 dark:border-neutral-800 animate-pulse h-[350px]"></div>
+        </main>
       </div>
     )
   }
