@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Header } from '@/components/Header'
 import { AdminChat } from '@/components/AdminChat'
+import { AdminLocations } from '@/components/AdminLocations'
 import { supabase, Profile } from '@/lib/supabase'
 import { CheckCircle, XCircle, Clock, Loader2, Plus, Edit2, Trash2, Link as LinkIcon, Search, Coins, Ban } from 'lucide-react'
 import { getTranslation, Language } from '@/lib/i18n'
@@ -31,7 +32,7 @@ export default function AdminPage() {
   
   const [profile, setProfile] = useState<Profile | null>(null)
   const [users, setUsers] = useState<AdminUserResponse[]>([])
-  const [activeTab, setActiveTab] = useState<'users' | 'chats'>('users')
+  const [activeTab, setActiveTab] = useState<'users' | 'chats' | 'locations'>('users')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'balance_desc' | 'balance_asc'>('newest')
 
@@ -238,28 +239,34 @@ export default function AdminPage() {
           </div>
         )}
 
-        <div className="flex gap-2 overflow-x-auto pb-4 mb-6">
+        <div className="flex bg-neutral-100 dark:bg-neutral-800 p-1 rounded-xl w-fit mb-6">
           <button
             onClick={() => setActiveTab('users')}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold whitespace-nowrap transition-colors ${
-              activeTab === 'users' 
-                ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900' 
-                : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+            className={`px-6 py-2.5 rounded-lg font-bold text-sm transition-all ${
+              activeTab === 'users' ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
             }`}
           >
-            Управление пользователями
+            {t('users')}
           </button>
           <button
             onClick={() => setActiveTab('chats')}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold whitespace-nowrap transition-colors ${
-              activeTab === 'chats' 
-                ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900' 
-                : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+            className={`px-6 py-2.5 rounded-lg font-bold text-sm transition-all ${
+              activeTab === 'chats' ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
             }`}
           >
-            Поддержка (Чаты)
+            {t('disputes')}
+          </button>
+          <button
+            onClick={() => setActiveTab('locations')}
+            className={`px-6 py-2.5 rounded-lg font-bold text-sm transition-all ${
+              activeTab === 'locations' ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+            }`}
+          >
+            Локации
           </button>
         </div>
+
+        {activeTab === 'locations' && <AdminLocations />}
 
         {activeTab === 'users' ? (
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-sm animate-fade-in-up">

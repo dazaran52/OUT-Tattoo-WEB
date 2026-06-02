@@ -79,10 +79,64 @@ async def create_auction(
 @router.get("")
 async def get_active_auctions(supabase: Client = Depends(get_supabase_client)):
     try:
-        # Get active auctions
         now_iso = datetime.now(timezone.utc).isoformat()
+        
+        # 1. Process expired auctions lazily
+        expired_res = supabase.table("auctions") \
+            .select("*") \
+            .eq("status", "active") \
+            .lt("ends_at", now_iso) \
+            .execute()
+            
+        for exp_auction in (expired_res.data or []):
+            # Atomic update to prevent race conditions
+            update_res = supabase.table("auctions").update({"status": "completed"}).eq("id", exp_auction["id"]).eq("status", "active").execute()
+            if update_res.data:
+                winner_id = exp_auction.get("highest_bidder_id")
+                seller_id = exp_auction.get("seller_id")
+                final_price = exp_auction.get("current_price")
+                
+                if winner_id:
+                    # Grant lead to winner
+                    supabase.table("lead_unlocks").insert({
+                        "user_id": winner_id,
+                        "lead_id": exp_auction["lead_id"],
+                        "price_paid": final_price
+                    }).execute()
+                    
+                    # Notify winner
+                    supabase.table("notifications").insert({
+                        "user_id": winner_id,
+                        "title": "Вы выиграли аукцион!",
+                        "message": f"Поздравляем! Вы выиграли аукцион за {final_price} кредитов. Лид теперь в разделе 'Мои лиды'.",
+                        "type": "system"
+                    }).execute()
+                    
+                    # Grant credits to seller (80% of final price for example, or 100%)
+                    seller_res = supabase.table("users").select("credits").eq("id", seller_id).single().execute()
+                    if seller_res.data:
+                        # Let's give 100% to seller for now
+                        supabase.table("users").update({"credits": seller_res.data["credits"] + final_price}).eq("id", seller_id).execute()
+                        
+                    # Notify seller
+                    supabase.table("notifications").insert({
+                        "user_id": seller_id,
+                        "title": "Аукцион завершен",
+                        "message": f"Ваш лид был продан за {final_price} кредитов. Кредиты зачислены на баланс.",
+                        "type": "system"
+                    }).execute()
+                else:
+                    # No bids
+                    supabase.table("notifications").insert({
+                        "user_id": seller_id,
+                        "title": "Аукцион завершен (без ставок)",
+                        "message": f"Ваш аукцион завершился, но никто не сделал ставку.",
+                        "type": "system"
+                    }).execute()
+
+        # 2. Get active auctions
         res = supabase.table("auctions") \
-            .select("*, leads(title, description, price_credits)") \
+            .select("*, leads(title, description, price_credits, image_url)") \
             .eq("status", "active") \
             .gte("ends_at", now_iso) \
             .order("ends_at", desc=False) \
@@ -118,13 +172,19 @@ async def place_bid(
         if bid.amount <= auction["current_price"]:
             raise HTTPException(status_code=400, detail="Bid must be higher than current price.")
 
-        # Check user credits
+        # Check user credits taking into account if they are outbidding themselves
         user_res = supabase.table("users").select("credits").eq("id", current_user.user_id).single().execute()
-        if not user_res.data or user_res.data["credits"] < bid.amount:
+        if not user_res.data:
+            raise HTTPException(status_code=400, detail="User not found")
+            
+        is_self_outbid = (auction.get("highest_bidder_id") == current_user.user_id)
+        cost = bid.amount - auction["current_price"] if is_self_outbid else bid.amount
+        
+        if user_res.data["credits"] < cost:
             raise HTTPException(status_code=400, detail="INSUFFICIENT_CREDITS")
             
-        # Refund previous bidder if any
-        if auction["highest_bidder_id"]:
+        # Refund previous bidder if it's someone else
+        if auction["highest_bidder_id"] and not is_self_outbid:
             prev_bidder_id = auction["highest_bidder_id"]
             prev_bid = auction["current_price"]
             
@@ -140,12 +200,12 @@ async def place_bid(
                 supabase.table("notifications").insert({
                     "user_id": prev_bidder_id,
                     "title": "Ваша ставка перебита",
-                    "message": f"Ваша ставка {prev_bid} на аукционе была перебита. Кредиты возвращены.",
+                    "message": f"Ваша ставка {prev_bid} кредитов на аукционе была перебита. Кредиты возвращены на баланс.",
                     "type": "system"
                 }).execute()
 
-        # Deduct from new bidder
-        new_credits = user_res.data["credits"] - bid.amount
+        # Deduct cost from new bidder
+        new_credits = user_res.data["credits"] - cost
         supabase.table("users").update({"credits": new_credits}).eq("id", current_user.user_id).execute()
 
         # Update auction: Extend by 1 hour (auto-end rule 1-1.5 hours) if ends_at is soon

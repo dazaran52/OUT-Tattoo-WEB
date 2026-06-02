@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { LogOut, Gem, Menu, X, LayoutDashboard, Settings, Plus, Moon, Sun, Globe, Ticket, Copy, Bell, BarChart2 } from 'lucide-react'
+import { LogOut, Gem, Menu, X, LayoutDashboard, Settings, Plus, Moon, Sun, Globe, Ticket, Copy, Bell, BarChart2, HelpCircle } from 'lucide-react'
 import { Profile } from '@/lib/supabase'
 import { subscribeToPush } from '@/lib/push'
 import { getTranslation, Language } from '@/lib/i18n'
 import { TransactionHistoryModal } from '@/components/TransactionHistoryModal'
 import { NotificationsMenu } from '@/components/NotificationsMenu'
 import { toast } from 'react-hot-toast'
+import { OnboardingTour } from '@/components/OnboardingTour'
 
 interface HeaderProps {
   profile: Profile
@@ -21,6 +22,7 @@ export function Header({ profile, onLogout }: HeaderProps) {
   const [language, setLanguage] = useState<string>('cs')
   const [showHistory, setShowHistory] = useState(false)
   const [isSubscribing, setIsSubscribing] = useState(false)
+  const [startTour, setStartTour] = useState(false)
 
   const handleSubscribe = async () => {
     try {
@@ -116,8 +118,17 @@ export function Header({ profile, onLogout }: HeaderProps) {
               <Bell className={`w-5 h-5 ${isSubscribing ? 'animate-pulse' : ''}`} />
             </button>
 
+            {/* Help / Tour Button */}
+            <button
+              onClick={() => setStartTour(true)}
+              className="p-2 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+              title="Как это работает?"
+            >
+              <HelpCircle className="w-5 h-5" />
+            </button>
+
             {/* Credits Counter & Top-up */}
-            <div className="flex items-center gap-1">
+            <div id="tour-balance" className="flex items-center gap-1">
               <button 
                 onClick={() => setShowHistory(true)}
                 title="История пополнений"
@@ -150,7 +161,7 @@ export function Header({ profile, onLogout }: HeaderProps) {
               title="Change Language"
             >
               <Globe className="w-5 h-5" />
-              <span className="uppercase">{language}</span>
+              <span className="uppercase text-sm font-semibold">{language === 'cs' ? 'cz' : language}</span>
             </button>
 
             {/* Theme Switcher */}
@@ -166,7 +177,7 @@ export function Header({ profile, onLogout }: HeaderProps) {
             <NotificationsMenu />
 
             {/* Menu Button */}
-            <div className="relative">
+            <div id="tour-profile" className="relative">
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
                 className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
@@ -226,6 +237,7 @@ export function Header({ profile, onLogout }: HeaderProps) {
         </div>
       </div>
 
+      <OnboardingTour startTour={startTour} onTourEnd={() => setStartTour(false)} />
       <TransactionHistoryModal 
         isOpen={showHistory} 
         onClose={() => setShowHistory(false)} 

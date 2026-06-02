@@ -21,6 +21,7 @@ export interface Lead {
   is_unlocked: boolean
   image_urls?: string[]
   created_at?: string
+  country_id?: string
   city_id?: string
 }
 
@@ -46,7 +47,30 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
   const [isLowBalanceModalOpen, setIsLowBalanceModalOpen] = useState(false)
   const [lowBalanceRequiredCredits, setLowBalanceRequiredCredits] = useState(50)
   const [editingLead, setEditingLead] = useState<Lead | null>(null)
-  const [formData, setFormData] = useState({ title: '', description: '', contacts: '', price_credits: 50, image_urls: [] as string[] })
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    contacts: '',
+    price_credits: 50,
+    image_urls: [] as string[],
+    country_id: '',
+    city_id: ''
+  })
+  
+  const [countries, setCountries] = useState<any[]>([])
+  const [cities, setCities] = useState<any[]>([])
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/locations/countries`)
+      .then(res => res.json())
+      .then(data => setCountries(data))
+      .catch(err => console.error(err))
+      
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/locations/cities`)
+      .then(res => res.json())
+      .then(data => setCities(data))
+      .catch(err => console.error(err))
+  }, [])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [uploadingImages, setUploadingImages] = useState(false)
   const [lightboxImage, setLightboxImage] = useState<string | null>(null)
@@ -181,11 +205,13 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
         description: lead.description,
         contacts: lead.contacts,
         price_credits: lead.price_credits,
-        image_urls: lead.image_urls || []
+        image_urls: lead.image_urls || [],
+        country_id: lead.country_id || '',
+        city_id: lead.city_id || ''
       })
     } else {
       setEditingLead(null)
-      setFormData({ title: '', description: '', contacts: '', price_credits: 50, image_urls: [] })
+      setFormData({ title: '', description: '', contacts: '', price_credits: 50, image_urls: [], country_id: '', city_id: '' })
     }
     setIsModalOpen(true)
   }
@@ -238,13 +264,19 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
       const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/leads${isEditing ? `/${editingLead.id}` : ''}`
       const method = isEditing ? 'PUT' : 'POST'
 
+      const payload = {
+        ...formData,
+        country_id: formData.country_id || null,
+        city_id: formData.city_id || null
+      }
+
       const res = await fetch(url, {
         method,
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       })
 
       if (!res.ok) throw new Error('Failed to save lead')
@@ -529,8 +561,29 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
               )}
               
               <div className="p-6 flex-1 relative z-10">
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-xl font-bold text-neutral-900 dark:text-white leading-tight pr-12">{lead.title}</h3>
+                <div className="flex-1 flex justify-between items-start gap-4">
+                  <div>
+                    <h3 className="font-bold text-lg text-neutral-900 dark:text-white leading-tight mb-2 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
+                      {lead.title}
+                    </h3>
+                    <div className="flex flex-wrap gap-2 text-xs text-neutral-500 mb-3 font-medium">
+                      <span className="bg-neutral-100 dark:bg-neutral-800 px-2 py-1 rounded-md">
+                        #ID-{lead.id.substring(0, 6)}
+                      </span>
+                      {lead.created_at && (
+                        <span className="bg-neutral-100 dark:bg-neutral-800 px-2 py-1 rounded-md flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {new Date(lead.created_at).toLocaleDateString()}
+                        </span>
+                      )}
+                      {(lead.country_id || lead.city_id) && (
+                        <span className="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-md flex items-center gap-1">
+                          📍 {countries.find(c => c.id === lead.country_id)?.name_ru || ''} 
+                          {lead.city_id && cities.find(c => c.id === lead.city_id) ? `, ${cities.find(c => c.id === lead.city_id)?.name_ru}` : ''}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                   <span className="bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-sm whitespace-nowrap border border-neutral-200 dark:border-neutral-700 flex items-center gap-1">
                     💎 {lead.price_credits} {t('credits')}
                   </span>
@@ -621,6 +674,42 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
                   className="w-full bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-lg px-4 py-2.5 text-neutral-900 dark:text-white focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white focus:border-transparent outline-none transition-all"
                   placeholder="e.g. Tattoo sleeve on right arm"
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                    Country (Optional)
+                  </label>
+                  <select
+                    value={formData.country_id || ''}
+                    onChange={e => {
+                      setFormData({...formData, country_id: e.target.value, city_id: ''})
+                    }}
+                    className="w-full bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-lg px-4 py-2.5 text-neutral-900 dark:text-white focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white focus:border-transparent outline-none transition-all"
+                  >
+                    <option value="">Any</option>
+                    {countries.map(c => (
+                      <option key={c.id} value={c.id}>{c.name_ru}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                    City (Optional)
+                  </label>
+                  <select
+                    value={formData.city_id || ''}
+                    onChange={e => setFormData({...formData, city_id: e.target.value})}
+                    disabled={!formData.country_id || cities.filter(c => c.country_id === formData.country_id).length === 0}
+                    className="w-full bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-lg px-4 py-2.5 text-neutral-900 dark:text-white focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white focus:border-transparent outline-none transition-all disabled:opacity-50"
+                  >
+                    <option value="">Any</option>
+                    {cities.filter(c => c.country_id === formData.country_id).map(c => (
+                      <option key={c.id} value={c.id}>{c.name_ru}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <div>

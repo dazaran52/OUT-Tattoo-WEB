@@ -151,6 +151,12 @@ export function AuctionsFeed() {
               </div>
             </div>
 
+            {auction.leads?.image_url && (
+              <div className="w-full h-36 bg-neutral-100 dark:bg-neutral-800 relative">
+                <img src={auction.leads.image_url} alt="Lead photo" className="w-full h-full object-cover" />
+              </div>
+            )}
+
             {/* Auction Details */}
             <div className="p-5 flex-1 space-y-4">
               <div>

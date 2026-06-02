@@ -42,7 +42,8 @@ export default function LoginPage() {
   const [countries, setCountries] = useState<any[]>([])
   const [cities, setCities] = useState<any[]>([])
   const [selectedCountry, setSelectedCountry] = useState('')
-  const [selectedCity, setSelectedCity] = useState('')
+  const [selectedCities, setSelectedCities] = useState<string[]>([])
+  const [isCityDropdownOpen, setIsCityDropdownOpen] = useState(false)
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/locations/countries`)
@@ -57,12 +58,12 @@ export default function LoginPage() {
         .then(res => res.json())
         .then(data => {
             setCities(data)
-            if (data.length > 0) setSelectedCity(data[0].id)
+            if (data.length > 0) setSelectedCities([data[0].id])
         })
         .catch(err => console.error(err))
     } else {
       setCities([])
-      setSelectedCity('')
+      setSelectedCities([])
     }
   }, [selectedCountry])
 
@@ -85,7 +86,7 @@ export default function LoginPage() {
               portfolio_url: portfolioUrl,
               referred_by: referralCode,
               country_ids: selectedCountry ? [selectedCountry] : [],
-              city_ids: selectedCity ? [selectedCity] : [],
+              city_ids: selectedCities,
             }
           }
         })
@@ -128,7 +129,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center px-4 sm:px-6 lg:px-8 relative overflow-hidden transition-colors duration-500">
+    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-x-hidden overflow-y-auto transition-colors duration-500">
       
       {/* Language Switcher */}
       <div className="absolute top-6 right-6 z-50">
@@ -137,7 +138,7 @@ export default function LoginPage() {
           className="flex items-center gap-2 px-3 py-2 bg-white/50 dark:bg-neutral-900/50 backdrop-blur-md border border-neutral-200 dark:border-neutral-800 rounded-xl text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
         >
           <Globe className="w-4 h-4" />
-          <span className="uppercase text-sm font-semibold">{language}</span>
+          <span className="uppercase text-sm font-semibold">{language === 'cs' ? 'cz' : language}</span>
         </button>
       </div>
 
@@ -163,7 +164,7 @@ export default function LoginPage() {
         </div>
 
         {/* Glassmorphism Form Container */}
-        <div className="bg-white/70 dark:bg-neutral-900/60 backdrop-blur-xl border border-white/20 dark:border-neutral-800/50 shadow-2xl rounded-3xl overflow-hidden">
+        <div className="bg-white/70 dark:bg-neutral-900/60 backdrop-blur-xl border border-white/20 dark:border-neutral-800/50 shadow-2xl rounded-3xl">
           {/* Tabs */}
           <div className="flex border-b border-neutral-200/50 dark:border-neutral-800/50">
             <button
@@ -291,18 +292,58 @@ export default function LoginPage() {
                         {t('city')}
                       </label>
                       <div className="relative group">
-                        <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 group-focus-within:text-neutral-900 dark:group-focus-within:text-white transition-colors" />
-                        <select
-                          required={isSignUp}
-                          value={selectedCity}
-                          onChange={(e) => setSelectedCity(e.target.value)}
-                          className="block w-full pl-12 pr-4 py-3.5 bg-white/50 dark:bg-neutral-950/50 border border-neutral-200 dark:border-neutral-800 rounded-xl text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white focus:border-transparent transition-all backdrop-blur-sm appearance-none"
+                        <div 
+                          className="w-full flex items-center min-h-[50px] pl-12 pr-4 py-2 bg-white/50 dark:bg-neutral-950/50 border border-neutral-200 dark:border-neutral-800 rounded-xl cursor-pointer backdrop-blur-sm"
+                          onClick={() => setIsCityDropdownOpen(!isCityDropdownOpen)}
                         >
-                          <option value="" disabled>{t('selectCity')}</option>
-                          {cities.map(c => (
-                            <option key={c.id} value={c.id}>{c.name_ru}</option>
-                          ))}
-                        </select>
+                          <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 group-focus-within:text-neutral-900 dark:group-focus-within:text-white transition-colors" />
+                          <div className="flex-1 flex flex-wrap gap-1">
+                            {selectedCities.length === 0 ? (
+                              <span className="text-neutral-400">{t('selectCity')}</span>
+                            ) : (
+                              selectedCities.map(cityId => {
+                                const city = cities.find(c => c.id === cityId)
+                                return city ? (
+                                  <span key={city.id} className="text-xs bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 px-2 py-1 rounded-md flex items-center gap-1">
+                                    {city.name_ru}
+                                    <button 
+                                      type="button" 
+                                      className="hover:text-red-400"
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        setSelectedCities(prev => prev.filter(id => id !== city.id))
+                                      }}
+                                    >
+                                      &times;
+                                    </button>
+                                  </span>
+                                ) : null
+                              })
+                            )}
+                          </div>
+                        </div>
+
+                        {isCityDropdownOpen && (
+                          <div className="absolute z-50 w-full mt-2 max-h-60 overflow-y-auto bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-xl">
+                            {cities.map(c => (
+                              <label key={c.id} className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer border-b border-neutral-100 dark:border-neutral-800/50 last:border-0">
+                                <input 
+                                  type="checkbox" 
+                                  className="w-4 h-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900 dark:border-neutral-700 dark:bg-neutral-950 dark:checked:bg-white"
+                                  checked={selectedCities.includes(c.id)}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSelectedCities(prev => [...prev, c.id])
+                                    } else {
+                                      setSelectedCities(prev => prev.filter(id => id !== c.id))
+                                    }
+                                  }}
+                                />
+                                <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{c.name_ru}</span>
+                              </label>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}

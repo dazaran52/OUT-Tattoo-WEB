@@ -11,11 +11,18 @@ export const metadata: Metadata = {
   title: 'Tattoo HUB',
   description: 'Premium B2B Lead Platform for Tattoo Masters',
   manifest: '/manifest.json',
+  icons: {
+    icon: '/icon-192x192.png',
+    apple: '/icon-192x192.png',
+  },
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'default',
+    statusBarStyle: 'black-translucent',
     title: 'Tattoo HUB',
   },
+  other: {
+    'mobile-web-app-capable': 'yes'
+  }
 }
 
 export const viewport = {

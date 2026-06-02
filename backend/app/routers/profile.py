@@ -214,6 +214,65 @@ async def update_profile(
         )
 
 
+@router.get("/my-leads")
+async def get_my_leads(
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    """Get leads unlocked by the current user."""
+    try:
+        unlocks_res = supabase.table("lead_unlocks") \
+            .select("lead_id") \
+            .eq("user_id", current_user.user_id) \
+            .execute()
+        
+        lead_ids = [u["lead_id"] for u in (unlocks_res.data or [])]
+        
+        if not lead_ids:
+            return []
+            
+        leads_res = supabase.table("leads") \
+            .select("*") \
+            .in_("id", lead_ids) \
+            .order("created_at", desc=True) \
+            .execute()
+            
+        leads = leads_res.data or []
+        
+        # Check active auctions to hide contacts
+        auctions_res = supabase.table("auctions") \
+            .select("lead_id") \
+            .eq("status", "active") \
+            .execute()
+        auction_lead_ids = {a["lead_id"] for a in (auctions_res.data or [])}
+        
+        processed_leads = []
+        for lead in leads:
+            if lead["id"] in auction_lead_ids:
+                contact_info = "******** [Лид на аукционе]"
+            else:
+                contact_info = lead["contacts"]
+                
+            processed_leads.append({
+                "id": lead["id"],
+                "title": lead["title"],
+                "description": lead["description"],
+                "contacts": contact_info,
+                "price_credits": lead["price_credits"],
+                "is_unlocked": True,
+                "image_urls": lead.get("image_urls", []),
+                "created_at": lead.get("created_at"),
+                "country_id": lead.get("country_id"),
+                "city_id": lead.get("city_id")
+            })
+            
+        return processed_leads
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching my leads: {str(e)}"
+        )
+
 @router.delete("/city/{city_id}")
 async def remove_city(
     city_id: str,

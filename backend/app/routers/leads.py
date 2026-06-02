@@ -17,6 +17,8 @@ class LeadResponse(BaseModel):
     is_unlocked: bool
     image_urls: List[str] = []
     created_at: str | None = None
+    country_id: str | None = None
+    city_id: str | None = None
 
 class UnlockResponse(BaseModel):
     contacts: str
@@ -44,18 +46,34 @@ async def get_leads(
         
         unlocked_lead_ids = {u["lead_id"] for u in (unlocks_res.data or [])}
 
+        # Fetch active auctions to hide contacts
+        auctions_res = supabase.table("auctions") \
+            .select("lead_id") \
+            .eq("status", "active") \
+            .execute()
+        auction_lead_ids = {a["lead_id"] for a in (auctions_res.data or [])}
+
         processed_leads = []
         for lead in leads:
             is_unlocked = lead["id"] in unlocked_lead_ids
+            
+            # Hide contacts if lead is currently on auction, even if unlocked
+            if lead["id"] in auction_lead_ids:
+                contact_info = "******** [Лид на аукционе]"
+            else:
+                contact_info = lead["contacts"] if is_unlocked else "******** [Skryto. Odemkněte za credits]"
+                
             processed_leads.append(LeadResponse(
                 id=lead["id"],
                 title=lead["title"],
                 description=lead["description"],
-                contacts=lead["contacts"] if is_unlocked else "******** [Skryto. Odemkněte za credits]",
+                contacts=contact_info,
                 price_credits=lead["price_credits"],
                 is_unlocked=is_unlocked,
                 image_urls=lead.get("image_urls", []),
-                created_at=lead.get("created_at")
+                created_at=lead.get("created_at"),
+                country_id=lead.get("country_id"),
+                city_id=lead.get("city_id")
             ))
             
         return processed_leads

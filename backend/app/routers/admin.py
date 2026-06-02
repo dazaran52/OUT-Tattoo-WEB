@@ -31,6 +31,8 @@ class LeadCreate(BaseModel):
     contacts: str
     price_credits: int
     image_urls: List[str] = []
+    country_id: str | None = None
+    city_id: str | None = None
 
 class LeadUpdate(BaseModel):
     title: str | None = None
@@ -38,6 +40,8 @@ class LeadUpdate(BaseModel):
     contacts: str | None = None
     price_credits: int | None = None
     image_urls: List[str] | None = None
+    country_id: str | None = None
+    city_id: str | None = None
 
 async def get_admin_user(
     current_user: AuthUser = Depends(get_current_user),
@@ -148,6 +152,9 @@ async def update_user_status(
                             "message": f"Мастер {target_user.get('email')} был одобрен. Вы получили 1 скидочный токен (50% скидка)!",
                             "type": "system"
                         }).execute()
+                        
+                        # Clear referred_by to prevent double rewards
+                        supabase.table("users").update({"referred_by": None}).eq("id", user_id).execute()
                 except Exception as e:
                     print(f"Error rewarding referrer {referrer_code}: {e}")
 
@@ -340,4 +347,64 @@ async def delete_lead(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error deleting lead: {str(e)}"
         )
+
+# --- Locations Admin ---
+
+class CountryCreate(BaseModel):
+    code: str
+    name_ru: str
+    name_en: str
+
+class CityCreate(BaseModel):
+    country_id: str
+    name_ru: str
+    name_en: str
+
+@router.post("/locations/countries")
+async def create_country(
+    data: CountryCreate,
+    admin_user: AuthUser = Depends(get_admin_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    try:
+        res = supabase.table("countries").insert(data.model_dump()).execute()
+        return res.data[0] if res.data else None
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/locations/countries/{country_id}")
+async def delete_country(
+    country_id: str,
+    admin_user: AuthUser = Depends(get_admin_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    try:
+        res = supabase.table("countries").delete().eq("id", country_id).execute()
+        return {"status": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/locations/cities")
+async def create_city(
+    data: CityCreate,
+    admin_user: AuthUser = Depends(get_admin_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    try:
+        res = supabase.table("cities").insert(data.model_dump()).execute()
+        return res.data[0] if res.data else None
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/locations/cities/{city_id}")
+async def delete_city(
+    city_id: str,
+    admin_user: AuthUser = Depends(get_admin_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    try:
+        res = supabase.table("cities").delete().eq("id", city_id).execute()
+        return {"status": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 

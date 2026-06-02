@@ -1,9 +1,10 @@
 import json
-from fastapi import APIRouter, Header, HTTPException, Request
+from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from pydantic import BaseModel
 from typing import Optional, Dict
 from app.database import get_supabase_client
-from app.middleware.auth import get_current_user
+from app.middleware.auth import get_current_user, AuthUser
+from supabase import Client
 
 router = APIRouter(prefix="/api/notifications", tags=["notifications"])
 
@@ -28,7 +29,7 @@ async def subscribe_to_push(subscription: PushSubscription, authorization: str =
         
     # Insert new subscription
     data = {
-        "user_id": user.uid,
+        "user_id": user.user_id,
         "endpoint": subscription.endpoint,
         "p256dh": subscription.keys.get("p256dh", ""),
         "auth": subscription.keys.get("auth", "")
@@ -46,5 +47,51 @@ async def unsubscribe_from_push(endpoint: str, authorization: str = Header(None)
         
     supabase = get_supabase_client()
     
-    supabase.table("push_subscriptions").delete().eq("user_id", user.uid).eq("endpoint", endpoint).execute()
+    supabase.table("push_subscriptions").delete().eq("user_id", user.user_id).eq("endpoint", endpoint).execute()
     return {"status": "success"}
+
+@router.get("")
+async def get_notifications(
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    try:
+        res = supabase.table("notifications") \
+            .select("*") \
+            .eq("user_id", current_user.user_id) \
+            .order("created_at", desc=True) \
+            .execute()
+        return res.data or []
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/{notification_id}/read")
+async def mark_read(
+    notification_id: str,
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    try:
+        supabase.table("notifications") \
+            .update({"is_read": True}) \
+            .eq("id", notification_id) \
+            .eq("user_id", current_user.user_id) \
+            .execute()
+        return {"status": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/read-all")
+async def mark_all_read(
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    try:
+        supabase.table("notifications") \
+            .update({"is_read": True}) \
+            .eq("user_id", current_user.user_id) \
+            .eq("is_read", False) \
+            .execute()
+        return {"status": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

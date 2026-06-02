@@ -166,6 +166,7 @@ export default function DashboardPage() {
           {profile.status === 'approved' && (
             <div className="mt-4 md:mt-0 flex p-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg">
               <button
+                id="tour-leads"
                 onClick={() => setActiveTab('feed')}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   activeTab === 'feed'
@@ -186,6 +187,7 @@ export default function DashboardPage() {
                 Мои лиды
               </button>
               <button
+                id="tour-auctions"
                 onClick={() => setActiveTab('auctions')}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   activeTab === 'auctions'

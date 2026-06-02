@@ -167,7 +167,7 @@ const translations: Translations = {
     aboutMe: 'Informace o mně',
     saveChanges: 'Uložit změny',
     memberSince: 'Člen od',
-    unlocked: 'Odemčených',
+    unlocked: 'Odemčeno',
     spent: 'Utraceno',
     
     settings: 'Nastavení',
