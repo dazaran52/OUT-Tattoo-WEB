@@ -408,3 +408,72 @@ async def delete_city(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+class DisputeResolution(BaseModel):
+    action: str
+    admin_comment: str
+
+@router.get("/disputes")
+async def get_all_disputes(
+    admin_user: AuthUser = Depends(get_admin_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    try:
+        res = supabase.table("disputes") \
+            .select("*, users(email), leads(title, price_credits)") \
+            .eq("status", "pending") \
+            .order("created_at", desc=True) \
+            .execute()
+        return res.data or []
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/disputes/{dispute_id}/resolve")
+async def resolve_dispute(
+    dispute_id: str,
+    resolution: DisputeResolution,
+    admin_user: AuthUser = Depends(get_admin_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    try:
+        dispute_res = supabase.table("disputes").select("*").eq("id", dispute_id).single().execute()
+        if not dispute_res.data:
+            raise HTTPException(status_code=404, detail="Dispute not found")
+            
+        dispute = dispute_res.data
+        if dispute["status"] != "pending":
+            raise HTTPException(status_code=400, detail="Dispute already resolved")
+
+        user_id = dispute["user_id"]
+        
+        if resolution.action == "refund":
+            # get lead price
+            lead_res = supabase.table("leads").select("price_credits").eq("id", dispute["lead_id"]).single().execute()
+            price = lead_res.data["price_credits"] if lead_res.data else 50
+                
+            user_res = supabase.table("users").select("credits").eq("id", user_id).single().execute()
+            if user_res.data:
+                supabase.table("users").update({"credits": user_res.data["credits"] + price}).eq("id", user_id).execute()
+                
+            supabase.table("disputes").update({"status": "resolved"}).eq("id", dispute_id).execute()
+            
+            supabase.table("notifications").insert({
+                "user_id": user_id,
+                "title": "Спор разрешен (Возврат средств)",
+                "message": f"Ваш спор по лиду был удовлетворен. {price} кредитов возвращено. Комментарий: {resolution.admin_comment}",
+                "type": "system"
+            }).execute()
+        else:
+            supabase.table("disputes").update({"status": "rejected"}).eq("id", dispute_id).execute()
+            
+            supabase.table("notifications").insert({
+                "user_id": user_id,
+                "title": "Спор отклонен",
+                "message": f"Ваш спор по лиду был отклонен. Комментарий: {resolution.admin_comment}",
+                "type": "system"
+            }).execute()
+            
+        return {"status": "success"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
