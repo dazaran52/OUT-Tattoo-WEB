@@ -17,6 +17,7 @@ from app.routers.notifications import router as notifications_router
 from app.routers.locations import router as locations_router
 from app.routers.disputes import router as disputes_router
 from app.routers.auctions import router as auctions_router
+from app.routers import settings as settings_router
 
 
 def run_migrations():
@@ -164,6 +165,7 @@ def create_application() -> FastAPI:
     app.include_router(locations_router)
     app.include_router(disputes_router)
     app.include_router(auctions_router)
+    app.include_router(settings_router.router)
     
     @app.get("/health")
     async def health_check():

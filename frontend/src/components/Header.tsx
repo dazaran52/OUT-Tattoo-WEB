@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { LogOut, Gem, Menu, X, LayoutDashboard, Settings, Plus, Moon, Sun, Globe, Ticket, Copy } from 'lucide-react'
+import { LogOut, Gem, Menu, X, LayoutDashboard, Settings, Plus, Moon, Sun, Globe, Ticket, Copy, Bell } from 'lucide-react'
 import { Profile } from '@/lib/supabase'
+import { subscribeToPush } from '@/lib/push'
 import { getTranslation, Language } from '@/lib/i18n'
 import { TransactionHistoryModal } from '@/components/TransactionHistoryModal'
 import { NotificationsMenu } from '@/components/NotificationsMenu'
+import { toast } from 'react-hot-toast'
 
 interface HeaderProps {
   profile: Profile
@@ -18,6 +20,23 @@ export function Header({ profile, onLogout }: HeaderProps) {
   const router = useRouter()
   const [language, setLanguage] = useState<string>('cs')
   const [showHistory, setShowHistory] = useState(false)
+  const [isSubscribing, setIsSubscribing] = useState(false)
+
+  const handleSubscribe = async () => {
+    try {
+      setIsSubscribing(true)
+      await subscribeToPush()
+      toast.success('Уведомления успешно включены!')
+    } catch (err: any) {
+      if (Notification.permission === 'denied') {
+        toast.error('Вы заблокировали уведомления в браузере. Разрешите их в настройках.')
+      } else {
+        toast.error('Не удалось включить уведомления')
+      }
+    } finally {
+      setIsSubscribing(false)
+    }
+  }
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
   
   useEffect(() => {
@@ -73,6 +92,16 @@ export function Header({ profile, onLogout }: HeaderProps) {
             <span className="hidden sm:block text-sm text-neutral-600 dark:text-neutral-300">
               {profile.email}
             </span>
+
+            {/* Notifications Button */}
+            <button
+              onClick={handleSubscribe}
+              disabled={isSubscribing}
+              className="p-2 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+              title="Включить Push-уведомления"
+            >
+              <Bell className={`w-5 h-5 ${isSubscribing ? 'animate-pulse' : ''}`} />
+            </button>
 
             {/* Credits Counter & Top-up */}
             <div className="flex items-center gap-1">

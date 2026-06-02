@@ -5,6 +5,7 @@ from app.middleware.auth import get_current_user, AuthUser
 from app.database import get_supabase_client
 from supabase import Client
 from app.services.mail import send_transactional_email
+from app.services.notifications import send_push_notification
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -263,7 +264,30 @@ async def create_lead(
         response = supabase.table("leads").insert(lead_data.model_dump()).execute()
         if not response.data:
             raise HTTPException(status_code=400, detail="Failed to create lead")
-        return response.data[0]
+            
+        new_lead = response.data[0]
+        
+        # Optionally send push notification asynchronously
+        try:
+            city_res = supabase.table("locations").select("name").eq("id", new_lead["city_id"]).execute()
+            city_name = city_res.data[0]["name"] if city_res.data else "новом городе"
+            price = new_lead["price"]
+            
+            # Fetch all users who have a push subscription
+            # For a real scalable app, you'd use a background worker (Celery/RQ)
+            subs_res = supabase.table("push_subscriptions").select("user_id").execute()
+            user_ids = list(set([sub["user_id"] for sub in subs_res.data]))
+            
+            for uid in user_ids:
+                send_push_notification(
+                    user_id=uid,
+                    title="Новый лид! 🔥",
+                    body=f"Доступен новый лид в {city_name} за {price}€. Успей забрать первым!"
+                )
+        except Exception as e:
+            print(f"Failed to send notifications: {e}")
+            
+        return new_lead
     except HTTPException:
         raise
     except Exception as e:
