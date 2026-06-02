@@ -2,7 +2,7 @@ import { WifiOff } from 'lucide-react'
 import Link from 'next/link'
 
 export const metadata = {
-  title: 'Offline | OUT Tattoo',
+  title: 'Offline | Tattoo HUB',
 }
 
 export default function OfflinePage() {
