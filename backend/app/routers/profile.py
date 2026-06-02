@@ -107,7 +107,7 @@ async def get_profile(
             )
 
     # Calculate unlocks and gamification level
-    unlocks_res = supabase.table("lead_unlocks").select("id", count="exact").eq("user_id", current_user.uid).execute()
+    unlocks_res = supabase.table("lead_unlocks").select("id", count="exact").eq("user_id", current_user.user_id).execute()
     unlocked_count = unlocks_res.count if unlocks_res.count is not None else len(unlocks_res.data)
     
     level = "Newbie"
