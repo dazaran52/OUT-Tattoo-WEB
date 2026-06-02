@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Mail, Lock, Loader2, ArrowRight, Link as LinkIcon, Tag, MapPin } from 'lucide-react'
+import { Mail, Lock, Loader2, ArrowRight, Link as LinkIcon, Tag, MapPin, Globe } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { getTranslation, Language } from '@/lib/i18n'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -14,6 +15,29 @@ export default function LoginPage() {
   const [portfolioUrl, setPortfolioUrl] = useState('')
   const [referralCode, setReferralCode] = useState('')
   const [error, setError] = useState('')
+  const [language, setLanguage] = useState<string>('cs')
+
+  useEffect(() => {
+    const savedLang = localStorage.getItem('language')
+    if (savedLang) {
+      setLanguage(savedLang)
+    } else {
+      const sysLang = navigator.language.toLowerCase()
+      if (sysLang.startsWith('ru')) setLanguage('ru')
+      else if (sysLang.startsWith('en')) setLanguage('en')
+      else setLanguage('cs')
+    }
+  }, [])
+
+  const toggleLanguage = () => {
+    const langs = ['cs', 'en', 'ru']
+    const currentIndex = langs.indexOf(language)
+    const newLang = langs[(currentIndex + 1) % langs.length] || 'cs'
+    setLanguage(newLang)
+    localStorage.setItem('language', newLang)
+  }
+
+  const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language as Language, key)
 
   const [countries, setCountries] = useState<any[]>([])
   const [cities, setCities] = useState<any[]>([])
@@ -106,6 +130,17 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center px-4 sm:px-6 lg:px-8 relative overflow-hidden transition-colors duration-500">
       
+      {/* Language Switcher */}
+      <div className="absolute top-6 right-6 z-50">
+        <button
+          onClick={toggleLanguage}
+          className="flex items-center gap-2 px-3 py-2 bg-white/50 dark:bg-neutral-900/50 backdrop-blur-md border border-neutral-200 dark:border-neutral-800 rounded-xl text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
+        >
+          <Globe className="w-4 h-4" />
+          <span className="uppercase text-sm font-semibold">{language}</span>
+        </button>
+      </div>
+
       {/* Animated Background Blobs */}
       <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-2xl opacity-20 dark:opacity-10 animate-blob"></div>
       <div className="absolute top-0 -right-4 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-2xl opacity-20 dark:opacity-10 animate-blob animation-delay-2000"></div>
@@ -123,13 +158,32 @@ export default function LoginPage() {
             </div>
           </div>
           <p className="text-neutral-500 dark:text-neutral-400 text-lg">
-            Эксклюзивная платформа для топ-мастеров
+            {t('exclusivePlatform')}
           </p>
         </div>
 
         {/* Glassmorphism Form Container */}
-        <div className="bg-white/70 dark:bg-neutral-900/60 backdrop-blur-xl border border-white/20 dark:border-neutral-800/50 shadow-2xl rounded-3xl p-8">
-          <form className="space-y-6" onSubmit={handleSubmit}>
+        <div className="bg-white/70 dark:bg-neutral-900/60 backdrop-blur-xl border border-white/20 dark:border-neutral-800/50 shadow-2xl rounded-3xl overflow-hidden">
+          {/* Tabs */}
+          <div className="flex border-b border-neutral-200/50 dark:border-neutral-800/50">
+            <button
+              type="button"
+              onClick={() => setIsSignUp(false)}
+              className={`flex-1 py-4 text-sm font-bold transition-colors ${!isSignUp ? 'bg-white/50 dark:bg-neutral-800/50 text-neutral-900 dark:text-white border-b-2 border-neutral-900 dark:border-white' : 'text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800/30'}`}
+            >
+              {t('loginTab')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsSignUp(true)}
+              className={`flex-1 py-4 text-sm font-bold transition-colors ${isSignUp ? 'bg-white/50 dark:bg-neutral-800/50 text-neutral-900 dark:text-white border-b-2 border-neutral-900 dark:border-white' : 'text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800/30'}`}
+            >
+              {t('registerTab')}
+            </button>
+          </div>
+
+          <div className="p-8">
+            <form className="space-y-6" onSubmit={handleSubmit}>
             {error && (
               <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-sm text-red-600 dark:text-red-400 flex items-center gap-3">
                 <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></div>
@@ -140,7 +194,7 @@ export default function LoginPage() {
             <div className="space-y-5">
               <div>
                 <label htmlFor="email" className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
-                  Email
+                  {t('email')}
                 </label>
                 <div className="relative group">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 group-focus-within:text-neutral-900 dark:group-focus-within:text-white transition-colors" />
@@ -158,7 +212,7 @@ export default function LoginPage() {
 
               <div>
                 <label htmlFor="password" className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
-                  Пароль
+                  {t('passwordAuth')}
                 </label>
                 <div className="relative group">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 group-focus-within:text-neutral-900 dark:group-focus-within:text-white transition-colors" />
@@ -178,7 +232,7 @@ export default function LoginPage() {
                 <>
                   <div className="animate-fade-in-up">
                     <label htmlFor="portfolioUrl" className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
-                      Ссылка на портфолио (Instagram / Сайт)
+                      {t('portfolioUrl')}
                     </label>
                     <div className="relative group">
                       <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 group-focus-within:text-neutral-900 dark:group-focus-within:text-white transition-colors" />
@@ -196,7 +250,7 @@ export default function LoginPage() {
 
                   <div className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
                     <label htmlFor="referralCode" className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
-                      Реферальный код (если есть)
+                      {t('referralCode')}
                     </label>
                     <div className="relative group">
                       <Tag className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 group-focus-within:text-neutral-900 dark:group-focus-within:text-white transition-colors" />
@@ -213,7 +267,7 @@ export default function LoginPage() {
 
                   <div className="animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
                     <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
-                      Ваша страна
+                      {t('country')}
                     </label>
                     <div className="relative group">
                       <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 group-focus-within:text-neutral-900 dark:group-focus-within:text-white transition-colors" />
@@ -223,7 +277,7 @@ export default function LoginPage() {
                         onChange={(e) => setSelectedCountry(e.target.value)}
                         className="block w-full pl-12 pr-4 py-3.5 bg-white/50 dark:bg-neutral-950/50 border border-neutral-200 dark:border-neutral-800 rounded-xl text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white focus:border-transparent transition-all backdrop-blur-sm appearance-none"
                       >
-                        <option value="" disabled>Выберите страну...</option>
+                        <option value="" disabled>{t('selectCountry')}</option>
                         {countries.map(c => (
                           <option key={c.id} value={c.id}>{c.name_ru}</option>
                         ))}
@@ -234,7 +288,7 @@ export default function LoginPage() {
                   {cities.length > 0 && (
                     <div className="animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
                       <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
-                        Ваш город
+                        {t('city')}
                       </label>
                       <div className="relative group">
                         <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 group-focus-within:text-neutral-900 dark:group-focus-within:text-white transition-colors" />
@@ -244,7 +298,7 @@ export default function LoginPage() {
                           onChange={(e) => setSelectedCity(e.target.value)}
                           className="block w-full pl-12 pr-4 py-3.5 bg-white/50 dark:bg-neutral-950/50 border border-neutral-200 dark:border-neutral-800 rounded-xl text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white focus:border-transparent transition-all backdrop-blur-sm appearance-none"
                         >
-                          <option value="" disabled>Выберите город...</option>
+                          <option value="" disabled>{t('selectCity')}</option>
                           {cities.map(c => (
                             <option key={c.id} value={c.id}>{c.name_ru}</option>
                           ))}
@@ -265,35 +319,25 @@ export default function LoginPage() {
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <>
-                  {isSignUp ? 'Создать аккаунт' : 'Войти в систему'}
+                  {isSignUp ? t('createAccount') : t('signIn')}
                   <ArrowRight className="w-5 h-5" />
                 </>
               )}
             </button>
           </form>
-
-          <div className="mt-8 text-center border-t border-neutral-200/50 dark:border-neutral-800/50 pt-6">
-            <button
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-sm font-medium text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
-            >
-              {isSignUp 
-                ? 'Уже есть аккаунт? Войти' 
-                : 'Нет аккаунта? Подать заявку'}
-            </button>
           </div>
         </div>
 
         <p className="text-center text-xs font-medium text-neutral-400 dark:text-neutral-500 mb-4">
-          Входя в систему, вы соглашаетесь с эксклюзивными условиями платформы
+          {t('termsAgreement')}
         </p>
 
         <div className="flex flex-wrap justify-center gap-4 text-xs font-medium text-neutral-500 dark:text-neutral-500">
-          <a href="/terms" className="hover:text-neutral-900 dark:hover:text-white transition-colors">Условия использования</a>
+          <a href="/terms" className="hover:text-neutral-900 dark:hover:text-white transition-colors">{t('termsOfService')}</a>
           <span>&middot;</span>
-          <a href="/privacy" className="hover:text-neutral-900 dark:hover:text-white transition-colors">Политика конфиденциальности</a>
+          <a href="/privacy" className="hover:text-neutral-900 dark:hover:text-white transition-colors">{t('privacyPolicy')}</a>
           <span>&middot;</span>
-          <a href="/refunds" className="hover:text-neutral-900 dark:hover:text-white transition-colors">Политика возвратов</a>
+          <a href="/refunds" className="hover:text-neutral-900 dark:hover:text-white transition-colors">{t('refundPolicy')}</a>
         </div>
       </div>
     </div>

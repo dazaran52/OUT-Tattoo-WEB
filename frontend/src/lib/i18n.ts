@@ -109,6 +109,40 @@ type Translations = {
     leadDeleted: string;
     confirmDeleteLead: string;
     noLeadsAdmin: string;
+    
+    // Auth
+    loginTab: string;
+    registerTab: string;
+    email: string;
+    passwordAuth: string;
+    portfolioUrl: string;
+    referralCode: string;
+    country: string;
+    city: string;
+    selectCountry: string;
+    selectCity: string;
+    createAccount: string;
+    signIn: string;
+    termsAgreement: string;
+    termsOfService: string;
+    privacyPolicy: string;
+    refundPolicy: string;
+    exclusivePlatform: string;
+    
+    // Chat & Top-Up
+    emailRegistered: string;
+    emailError: string;
+    chatStarted: string;
+    emailConfirmRequired: string;
+    supportService: string;
+    enterEmailForAnswer: string;
+    yourEmail: string;
+    startChat: string;
+    cardDetailsManual: string;
+    autoCreditComment: string;
+    toPay: string;
+    typeMessage: string;
+    noMessages: string;
   };
 };
 
@@ -207,9 +241,43 @@ const translations: Translations = {
     actions: 'Akce',
     leadCreated: 'Poptávka byla úspěšně vytvořena',
     leadUpdated: 'Poptávka byla úspěšně upravenena',
-    leadDeleted: 'Poptávka byla úspěšně smazána',
-    confirmDeleteLead: 'Opravdu chcete smazat tuto poptávku? Tato akce je nevratná.',
-    noLeadsAdmin: 'Nenalezeny žádné poptávky',
+    leadDeleted: 'Poptávka byla smazána',
+    confirmDeleteLead: 'Opravdu chcete smazat tuto poptávku?',
+    noLeadsAdmin: 'Nenalezeny žádné poptávky. Vytvořte novou.',
+    
+    // Auth
+    loginTab: 'Přihlásit se',
+    registerTab: 'Registrace',
+    email: 'Email',
+    passwordAuth: 'Heslo',
+    portfolioUrl: 'Odkaz na portfolio (Instagram, web atd.)',
+    referralCode: 'Referenční kód (volitelné)',
+    country: 'Vaše země',
+    city: 'Vaše město',
+    selectCountry: 'Vyberte zemi...',
+    selectCity: 'Vyberte město...',
+    createAccount: 'Vytvořit účet',
+    signIn: 'Přihlásit se',
+    termsAgreement: 'Přihlášením souhlasíte s exkluzivními podmínkami platformy',
+    termsOfService: 'Podmínky použití',
+    privacyPolicy: 'Ochrana osobních údajů',
+    refundPolicy: 'Zásady vrácení peněz',
+    exclusivePlatform: 'Exkluzivní platforma pro top mistry',
+    
+    // Chat & Top-Up
+    emailRegistered: 'Tento email je již zaregistrován. Prosím, přihlaste se.',
+    emailError: 'Chyba. Zkuste jiný email.',
+    chatStarted: 'Chat zahájen! Nyní můžete psát.',
+    emailConfirmRequired: 'Je vyžadováno potvrzení emailu. Registrujte se prosím v hlavním menu.',
+    supportService: 'Podpora',
+    enterEmailForAnswer: 'Zadejte svůj email, abychom vám mohli odpovědět:',
+    yourEmail: 'Váš Email',
+    startChat: 'Zahájit chat',
+    cardDetailsManual: 'Bude nutné zadat údaje o kartě ručně.',
+    autoCreditComment: 'Pro automatické připsání kreditů zkopírujte svůj Email níže a vložte jej do komentáře k platbě.',
+    toPay: 'K úhradě',
+    typeMessage: 'Napište zprávu...',
+    noMessages: 'Zatím nemáte žádné zprávy. Napište nám, pokud potřebujete pomoc!',
   },
   ru: {
     back: 'Назад',
@@ -305,9 +373,43 @@ const translations: Translations = {
     actions: 'Действия',
     leadCreated: 'Лид успешно создан',
     leadUpdated: 'Лид успешно обновлен',
-    leadDeleted: 'Лид успешно удален',
-    confirmDeleteLead: 'Вы уверены, что хотите удалить этот лид? Это действие нельзя отменить.',
-    noLeadsAdmin: 'Лиды не найдены',
+    leadDeleted: 'Лид удален',
+    confirmDeleteLead: 'Вы уверены, что хотите удалить этот лид?',
+    noLeadsAdmin: 'Лиды не найдены. Создайте новый.',
+    
+    // Auth
+    loginTab: 'Вход',
+    registerTab: 'Регистрация',
+    email: 'Email',
+    passwordAuth: 'Пароль',
+    portfolioUrl: 'Ссылка на портфолио (Instagram, сайт и т.д.)',
+    referralCode: 'Реферальный код (если есть)',
+    country: 'Ваша страна',
+    city: 'Ваш город',
+    selectCountry: 'Выберите страну...',
+    selectCity: 'Выберите город...',
+    createAccount: 'Создать аккаунт',
+    signIn: 'Войти в систему',
+    termsAgreement: 'Входя в систему, вы соглашаетесь с эксклюзивными условиями платформы',
+    termsOfService: 'Условия использования',
+    privacyPolicy: 'Политика конфиденциальности',
+    refundPolicy: 'Политика возвратов',
+    exclusivePlatform: 'Эксклюзивная платформа для топ-мастеров',
+    
+    // Chat & Top-Up
+    emailRegistered: 'Этот email уже зарегистрирован. Пожалуйста, войдите в аккаунт.',
+    emailError: 'Ошибка. Попробуйте другой email.',
+    chatStarted: 'Чат начат! Теперь вы можете писать.',
+    emailConfirmRequired: 'Требуется подтверждение email. Пожалуйста, зарегистрируйтесь через основное меню.',
+    supportService: 'Служба поддержки',
+    enterEmailForAnswer: 'Введите ваш Email, чтобы мы могли ответить вам:',
+    yourEmail: 'Ваш Email',
+    startChat: 'Начать чат',
+    cardDetailsManual: 'Потребуется ввести реквизиты карты вручную.',
+    autoCreditComment: 'Для автоматического зачисления кредитов, обязательно скопируйте ваш Email ниже и вставьте в комментарий к платежу.',
+    toPay: 'К оплате',
+    typeMessage: 'Написать сообщение...',
+    noMessages: 'У вас пока нет сообщений. Напишите нам, если нужна помощь!',
   },
   en: {
     back: 'Back',
@@ -403,9 +505,43 @@ const translations: Translations = {
     actions: 'Actions',
     leadCreated: 'Lead created successfully',
     leadUpdated: 'Lead updated successfully',
-    leadDeleted: 'Lead deleted successfully',
-    confirmDeleteLead: 'Are you sure you want to delete this lead? This action cannot be undone.',
-    noLeadsAdmin: 'No leads found',
+    leadDeleted: 'Lead deleted',
+    confirmDeleteLead: 'Are you sure you want to delete this lead?',
+    noLeadsAdmin: 'No leads found. Create a new one.',
+    
+    // Auth
+    loginTab: 'Login',
+    registerTab: 'Register',
+    email: 'Email',
+    passwordAuth: 'Password',
+    portfolioUrl: 'Portfolio URL (Instagram, website, etc.)',
+    referralCode: 'Referral Code (optional)',
+    country: 'Your Country',
+    city: 'Your City',
+    selectCountry: 'Select country...',
+    selectCity: 'Select city...',
+    createAccount: 'Create Account',
+    signIn: 'Sign In',
+    termsAgreement: 'By signing in, you agree to the exclusive terms of the platform',
+    termsOfService: 'Terms of Service',
+    privacyPolicy: 'Privacy Policy',
+    refundPolicy: 'Refund Policy',
+    exclusivePlatform: 'Exclusive platform for top artists',
+    
+    // Chat & Top-Up
+    emailRegistered: 'This email is already registered. Please sign in.',
+    emailError: 'Error. Try a different email.',
+    chatStarted: 'Chat started! You can now type your message.',
+    emailConfirmRequired: 'Email confirmation required. Please register via the main menu.',
+    supportService: 'Support Service',
+    enterEmailForAnswer: 'Enter your email so we can reply:',
+    yourEmail: 'Your Email',
+    startChat: 'Start Chat',
+    cardDetailsManual: 'You will need to enter your card details manually.',
+    autoCreditComment: 'For automatic credit processing, please copy your Email below and paste it into the payment comment.',
+    toPay: 'To Pay',
+    typeMessage: 'Type a message...',
+    noMessages: 'You have no messages yet. Write to us if you need help!',
   },
 };
 

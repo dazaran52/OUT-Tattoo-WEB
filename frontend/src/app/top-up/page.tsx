@@ -7,6 +7,7 @@ import { api } from '@/lib/api'
 import { supabase } from '@/lib/supabase'
 import toast from 'react-hot-toast'
 import { playSuccessSound, triggerHaptic } from '@/lib/sounds'
+import { getTranslation, Language } from '@/lib/i18n'
 
 interface TopUpMethod {
   id: string
@@ -31,6 +32,21 @@ export default function TopUpPage() {
   const [userEmail, setUserEmail] = useState<string>('')
   const [isCopied, setIsCopied] = useState(false)
   const [isCreatingRequest, setIsCreatingRequest] = useState(false)
+  const [language, setLanguage] = useState<string>('cs')
+
+  useEffect(() => {
+    const savedLang = localStorage.getItem('language')
+    if (savedLang) {
+      setLanguage(savedLang)
+    } else {
+      const sysLang = navigator.language.toLowerCase()
+      if (sysLang.startsWith('ru')) setLanguage('ru')
+      else if (sysLang.startsWith('en')) setLanguage('en')
+      else setLanguage('cs')
+    }
+  }, [])
+
+  const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language as Language, key)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -311,7 +327,7 @@ export default function TopUpPage() {
                 onClick={() => setShowRevolutModal(false)}
                 className="flex-1 py-3 px-4 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-xl font-medium hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
               >
-                Отмена
+                {t('cancel')}
               </button>
               <button
                 onClick={handleRevolutContinue}
@@ -357,7 +373,7 @@ export default function TopUpPage() {
               
               <div className="bg-white dark:bg-neutral-950 p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 flex items-center justify-between gap-3">
                 <span className="font-mono text-neutral-900 dark:text-white truncate">
-                  {userEmail || 'Загрузка...'}
+                  {userEmail || t('loading')}
                 </span>
                 <button 
                   onClick={copyEmail}
@@ -373,7 +389,7 @@ export default function TopUpPage() {
                 onClick={() => setShowDonatelloModal(false)}
                 className="flex-1 py-3 px-4 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-xl font-medium hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
               >
-                Отмена
+                {t('cancel')}
               </button>
               <a
                 href="https://donatello.to/TattooHub"
@@ -386,7 +402,7 @@ export default function TopUpPage() {
                 }}
                 className="flex-1 py-3 px-4 bg-rose-500 text-white rounded-xl font-medium hover:bg-rose-600 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-rose-500/25"
               >
-                К оплате
+                {t('toPay')}
                 <ExternalLink className="w-4 h-4" />
               </a>
             </div>

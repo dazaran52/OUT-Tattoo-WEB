@@ -3,16 +3,35 @@
 import { useState, useEffect, useRef } from 'react'
 import { MessageCircle, X, Send, Loader2 } from 'lucide-react'
 import { supabase, SupportMessage } from '@/lib/supabase'
+import toast from 'react-hot-toast'
+import { getTranslation, Language } from '@/lib/i18n'
 
 export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false)
   const [session, setSession] = useState<any>(null)
   const [messages, setMessages] = useState<SupportMessage[]>([])
   const [newMessage, setNewMessage] = useState('')
+  const [guestEmail, setGuestEmail] = useState('')
+  const [isGuestLoading, setIsGuestLoading] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isSending, setIsSending] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const [language, setLanguage] = useState<string>('cs')
+
+  useEffect(() => {
+    const savedLang = localStorage.getItem('language')
+    if (savedLang) {
+      setLanguage(savedLang)
+    } else {
+      const sysLang = navigator.language.toLowerCase()
+      if (sysLang.startsWith('ru')) setLanguage('ru')
+      else if (sysLang.startsWith('en')) setLanguage('en')
+      else setLanguage('cs')
+    }
+  }, [])
+
+  const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language as Language, key)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -136,7 +155,45 @@ export function ChatWidget() {
     setIsSending(false)
   }
 
-  // If not logged in, just show telegram link
+  const handleGuestSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!guestEmail.trim()) return
+
+    setIsGuestLoading(true)
+    // Create shadow account
+    const randomPassword = Math.random().toString(36).slice(-10) + 'A1!'
+    const { data, error } = await supabase.auth.signUp({
+      email: guestEmail.trim(),
+      password: randomPassword,
+      options: {
+        data: {
+          is_guest: true
+        }
+      }
+    })
+
+    if (error) {
+      if (error.message.includes('already registered')) {
+        toast.error(t('emailRegistered'))
+      } else {
+        toast.error(t('emailError'))
+      }
+    } else {
+      toast.success(t('chatStarted'))
+      // The session effect will catch the new session automatically if auto-login works
+      // If not, we manually set session:
+      if (data.session) {
+        setSession(data.session)
+      } else {
+        // Fallback if email confirmation is required, we can't do live chat.
+        // We will just show an error.
+        toast.error(t('emailConfirmRequired'))
+      }
+    }
+    setIsGuestLoading(false)
+  }
+
+  // If not logged in, show Email pre-chat form
   if (!session?.user) {
     return (
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
@@ -145,25 +202,34 @@ export function ChatWidget() {
             isOpen ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 translate-y-4 pointer-events-none'
           }`}
         >
-          <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-t-2xl">
-            <h3 className="font-bold text-white flex items-center gap-2">
+          <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 bg-gradient-to-r from-neutral-900 to-neutral-700 dark:from-white dark:to-neutral-300 rounded-t-2xl">
+            <h3 className="font-bold text-white dark:text-neutral-950 flex items-center gap-2">
               <MessageCircle className="w-5 h-5" />
-              Поддержка Tattoo Hub
+              {t('supportService')}
             </h3>
           </div>
           <div className="p-4">
             <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
-              Войдите в аккаунт, чтобы начать чат, или напишите нам в Telegram.
+              {t('enterEmailForAnswer')}
             </p>
-            <a
-              href="https://t.me/out_tattoo_admin"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full py-2.5 px-4 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-semibold rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 text-sm"
-            >
-              <Send className="w-4 h-4" />
-              Написать в Telegram
-            </a>
+            <form onSubmit={handleGuestSubmit} className="space-y-3">
+              <input 
+                type="email" 
+                required
+                placeholder={t('yourEmail')}
+                value={guestEmail}
+                onChange={(e) => setGuestEmail(e.target.value)}
+                className="w-full px-3 py-2 text-sm bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-lg focus:outline-none focus:border-neutral-500"
+              />
+              <button
+                type="submit"
+                disabled={isGuestLoading}
+                className="w-full py-2.5 px-4 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-semibold rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 text-sm disabled:opacity-50"
+              >
+                {isGuestLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                {t('startChat')}
+              </button>
+            </form>
           </div>
         </div>
 
@@ -203,7 +269,7 @@ export function ChatWidget() {
           ) : messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center text-neutral-500 dark:text-neutral-400">
               <MessageCircle className="w-12 h-12 mb-2 opacity-20" />
-              <p className="text-sm">У вас пока нет сообщений.<br/>Напишите нам, если нужна помощь!</p>
+              <p className="text-sm">{t('noMessages')}</p>
             </div>
           ) : (
             messages.map((msg) => {
@@ -214,7 +280,7 @@ export function ChatWidget() {
                     {!isMine && (
                       <span className="text-[10px] text-neutral-500 font-medium mb-1 pl-1 flex items-center gap-1">
                         <MessageCircle className="w-3 h-3" />
-                        Служба поддержки
+                        {t('supportService')}
                       </span>
                     )}
                     <div 
@@ -249,7 +315,7 @@ export function ChatWidget() {
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Ваше сообщение..."
+            placeholder={t('typeMessage')}
             className="flex-1 bg-neutral-100 dark:bg-neutral-800 border-transparent focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 rounded-xl px-4 py-2 text-sm text-neutral-900 dark:text-white outline-none transition-all"
           />
           <button

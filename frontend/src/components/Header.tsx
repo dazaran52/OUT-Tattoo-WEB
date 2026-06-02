@@ -61,7 +61,9 @@ export function Header({ profile, onLogout }: HeaderProps) {
   }
 
   const toggleLanguage = () => {
-    const newLang = language === 'cs' ? 'en' : 'cs'
+    const langs = ['cs', 'en', 'ru']
+    const currentIndex = langs.indexOf(language)
+    const newLang = langs[(currentIndex + 1) % langs.length] || 'cs'
     setLanguage(newLang)
     localStorage.setItem('language', newLang)
     window.location.reload()
