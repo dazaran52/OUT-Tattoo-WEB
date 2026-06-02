@@ -267,8 +267,8 @@ export default function AdminPage() {
         </div>
 
         {activeTab === 'locations' && <AdminLocations />}
-
-        {activeTab === 'users' ? (
+        {activeTab === 'chats' && <AdminChat />}
+        {activeTab === 'users' && (
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-sm animate-fade-in-up">
             <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 flex flex-col sm:flex-row gap-4 items-center justify-between">
               <div className="relative w-full sm:w-96">
@@ -397,8 +397,6 @@ export default function AdminPage() {
               </table>
             </div>
           </div>
-        ) : (
-          <AdminChat />
         )}
       </main>
     </div>
