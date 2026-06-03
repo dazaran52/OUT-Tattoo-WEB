@@ -359,7 +359,7 @@ async def process_lead_email(sender_name: str | None, sender_email: str, subject
             except Exception as e:
                 logger.error(f"Error updating active conversation: {e}")
 
-def check_lead_emails():
+def check_lead_emails(loop: asyncio.AbstractEventLoop):
     """Polls the lead capture IMAP mailbox and processes new emails stealthily."""
     settings = get_settings()
     
@@ -451,7 +451,7 @@ def check_lead_emails():
                 # Execute asynchronously
                 asyncio.run_coroutine_threadsafe(
                     process_lead_email(sender_name, sender_email, subject, body, attachments, msg_id),
-                    asyncio.get_event_loop()
+                    loop
                 )
                 
             except Exception as email_err:
@@ -470,7 +470,7 @@ async def start_email_lead_agent():
         try:
             # Execute the synchronous polling block in a threadpool executor to avoid blocking the async event loop
             loop = asyncio.get_event_loop()
-            await loop.run_in_executor(None, check_lead_emails)
+            await loop.run_in_executor(None, check_lead_emails, loop)
         except Exception as err:
             logger.error(f"Lead Interceptor Loop Error: {err}")
             
