@@ -25,6 +25,14 @@ export function InstallPrompt() {
   }, [])
 
   const handleInstallClick = async () => {
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+      try {
+        await Notification.requestPermission()
+      } catch (e) {
+        console.error('Notification permission error:', e)
+      }
+    }
+
     if (!deferredPrompt) return
 
     // Show the install prompt
