@@ -105,6 +105,20 @@ export const api = {
     return res.json()
   },
 
+  async updateLeadStatus(leadId: string, status: string): Promise<{success: boolean, trust_score: number}> {
+    const headers = await getAuthHeaders()
+    const res = await fetch(`${API_URL}/api/leads/${leadId}/status`, {
+      method: 'PATCH',
+      headers,
+      body: JSON.stringify({ status })
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.detail || 'Failed to update lead status')
+    }
+    return res.json()
+  },
+
   async createCryptoInvoice(amountUsdt: number): Promise<{pay_url: string}> {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session?.user) throw new Error('Not logged in')

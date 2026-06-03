@@ -19,6 +19,8 @@ class LeadResponse(BaseModel):
     created_at: str | None = None
     country_id: str | None = None
     city_id: str | None = None
+    trust_score: int = 100
+    unlock_status: str | None = None
 
 class UnlockResponse(BaseModel):
     contacts: str
@@ -40,11 +42,11 @@ async def get_leads(
 
         # Fetch unlocks for the current user
         unlocks_res = supabase.table("lead_unlocks") \
-            .select("lead_id") \
+            .select("lead_id, status") \
             .eq("user_id", current_user.user_id) \
             .execute()
         
-        unlocked_lead_ids = {u["lead_id"] for u in (unlocks_res.data or [])}
+        unlocked_lead_map = {u["lead_id"]: u["status"] for u in (unlocks_res.data or [])}
 
         # Fetch active auctions to hide contacts
         auctions_res = supabase.table("auctions") \
@@ -55,25 +57,28 @@ async def get_leads(
 
         processed_leads = []
         for lead in leads:
-            is_unlocked = lead["id"] in unlocked_lead_ids
+            is_unlocked = lead["id"] in unlocked_lead_map
+            unlock_status = unlocked_lead_map.get(lead["id"]) if is_unlocked else None
             
             # Hide contacts if lead is currently on auction, even if unlocked
             if lead["id"] in auction_lead_ids:
                 contact_info = "******** [Лид на аукционе]"
             else:
-                contact_info = lead["contacts"] if is_unlocked else "******** [Skryto. Odemkněte za credits]"
+                contacts = lead["contacts"] if is_unlocked else "******** [Skryto. Odemkněte za credits]"
                 
             processed_leads.append(LeadResponse(
                 id=lead["id"],
                 title=lead["title"],
                 description=lead["description"],
-                contacts=contact_info,
+                contacts=contacts,
                 price_credits=lead["price_credits"],
                 is_unlocked=is_unlocked,
-                image_urls=lead.get("image_urls", []),
+                image_urls=lead.get("image_urls") or [],
                 created_at=lead.get("created_at"),
                 country_id=lead.get("country_id"),
-                city_id=lead.get("city_id")
+                city_id=lead.get("city_id"),
+                trust_score=lead.get("trust_score", 100),
+                unlock_status=unlock_status
             ))
             
         return processed_leads
@@ -140,3 +145,52 @@ async def unlock_lead(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error unlocking lead: {str(e)}"
         )
+
+
+class LeadStatusUpdate(BaseModel):
+    status: str
+
+@router.patch("/{lead_id}/status")
+async def update_lead_status(
+    lead_id: str,
+    payload: LeadStatusUpdate,
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    """Update lead status by the master who unlocked it."""
+    valid_statuses = ['new', 'contacted', 'no_answer', 'fake', 'appointment_set', 'came']
+    if payload.status not in valid_statuses:
+        raise HTTPException(status_code=400, detail="Invalid status")
+        
+    try:
+        # Update unlock status
+        res = supabase.table("lead_unlocks") \
+            .update({"status": payload.status}) \
+            .eq("lead_id", lead_id) \
+            .eq("user_id", current_user.user_id) \
+            .execute()
+            
+        if not res.data:
+            raise HTTPException(status_code=404, detail="Unlock record not found")
+            
+        # Recalculate lead trust score
+        unlocks_res = supabase.table("lead_unlocks").select("status").eq("lead_id", lead_id).execute()
+        unlocks = unlocks_res.data or []
+        
+        base_score = 100
+        for u in unlocks:
+            s = u["status"]
+            if s == "fake": base_score -= 50
+            elif s == "no_answer": base_score -= 20
+            elif s == "came": base_score += 50
+            elif s == "appointment_set": base_score += 20
+            
+        final_score = max(0, min(100, base_score))
+        
+        supabase.table("leads").update({"trust_score": final_score}).eq("id", lead_id).execute()
+        
+        return {"success": True, "trust_score": final_score}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

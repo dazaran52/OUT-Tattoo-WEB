@@ -19,6 +19,8 @@ export interface Lead {
   contacts: string
   price_credits: number
   is_unlocked: boolean
+  trust_score: number
+  unlock_status?: string
   created_at: string
 }
 
@@ -27,6 +29,7 @@ export interface LeadUnlock {
   user_id: string
   lead_id: string
   unlocked_at: string
+  status: string
 }
 
 export interface ApiError {

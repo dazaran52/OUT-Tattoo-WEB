@@ -12,6 +12,7 @@ import toast from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
 import { playSuccessSound, playErrorSound, triggerHaptic } from '@/lib/sounds'
 import imageCompression from 'browser-image-compression'
+import { api } from '@/lib/api'
 
 export interface Lead {
   id: string
@@ -24,6 +25,8 @@ export interface Lead {
   created_at?: string
   country_id?: string
   city_id?: string
+  trust_score?: number
+  unlock_status?: string
 }
 
 interface LeadsFeedProps {
@@ -196,6 +199,23 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
       }
     } finally {
       setUnlockingId(null)
+    }
+  }
+
+  const handleStatusChange = async (leadId: string, status: string) => {
+    try {
+      setActionLoadingId(leadId)
+      const res = await api.updateLeadStatus(leadId, status)
+      setLeads(currentLeads => 
+        currentLeads.map(lead => 
+          lead.id === leadId ? { ...lead, unlock_status: status, trust_score: res.trust_score } : lead
+        )
+      )
+      toast.success('Статус обновлен')
+    } catch (err: any) {
+      toast.error(err.message || 'Ошибка обновления статуса')
+    } finally {
+      setActionLoadingId(null)
     }
   }
 
@@ -594,9 +614,16 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
                       )}
                     </div>
                   </div>
-                  <span className="bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-sm whitespace-nowrap border border-neutral-200 dark:border-neutral-700 flex items-center gap-1">
-                    💎 {lead.price_credits} {t('credits')}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {lead.trust_score !== undefined && (
+                      <span className={`text-xs px-2 py-1.5 rounded-full font-bold shadow-sm whitespace-nowrap border flex items-center gap-1 ${lead.trust_score >= 80 ? 'bg-green-50 text-green-600 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800/50' : lead.trust_score >= 50 ? 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/50' : 'bg-red-50 text-red-600 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/50'}`}>
+                        🛡️ {lead.trust_score}/100
+                      </span>
+                    )}
+                    <span className="bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-sm whitespace-nowrap border border-neutral-200 dark:border-neutral-700 flex items-center gap-1">
+                      💎 {lead.price_credits} {t('credits')}
+                    </span>
+                  </div>
                 </div>
                 <p className="text-neutral-600 dark:text-neutral-400 text-sm mb-6 leading-relaxed line-clamp-3 group-hover:line-clamp-none transition-all">{lead.description}</p>
                 
@@ -616,8 +643,25 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                       {isAdmin ? "ADMIN VIEW" : t('unlocked')}
                     </div>
+                    {!isAdmin && showOnlyUnlocked && (
+                      <div className="mt-3 bg-white dark:bg-neutral-950 p-3 rounded-lg border border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
+                        <span className="text-xs font-medium text-neutral-500">Оценить лида:</span>
+                        <select 
+                          value={lead.unlock_status || 'new'}
+                          onChange={(e) => handleStatusChange(lead.id, e.target.value)}
+                          className="bg-neutral-100 dark:bg-neutral-900 text-xs font-medium border border-neutral-200 dark:border-neutral-800 rounded-md px-2 py-1 outline-none focus:ring-1 focus:ring-cyan-500"
+                        >
+                          <option value="new">Новый</option>
+                          <option value="contacted">Связался</option>
+                          <option value="appointment_set">Записан</option>
+                          <option value="came">Пришел на сеанс (+рейтинг)</option>
+                          <option value="no_answer">Не отвечает (-рейтинг)</option>
+                          <option value="fake">Фейк/Мошенник (-рейтинг)</option>
+                        </select>
+                      </div>
+                    )}
                     {!isAdmin && (
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-2 gap-2 mt-2">
                         <button 
                           onClick={() => setSelectedDisputeLead(lead)}
                           className="w-full py-2 px-3 bg-white dark:bg-neutral-900 border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 rounded-lg text-xs font-bold hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center justify-center gap-1"
