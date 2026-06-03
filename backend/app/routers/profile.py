@@ -27,6 +27,7 @@ class ProfileResponse(BaseModel):
     country_ids: list[str] | None = None
     city_ids: list[str] | None = None
     discount_tokens: int = 0
+    withdrawable_credits: int = 0
     unlocked_leads_count: int = 0
     gamification_level: str = "Newbie"
 
@@ -87,7 +88,8 @@ async def get_profile(
                 "referred_by": referred_by,
                 "country_ids": country_ids,
                 "city_ids": city_ids,
-                "discount_tokens": 0
+                "discount_tokens": 0,
+                "withdrawable_credits": 0
             }
             
             response = supabase.table("users").insert(new_profile).execute()
@@ -147,7 +149,8 @@ async def get_profile(
         city_ids=data.get("city_ids", []),
         discount_tokens=data.get("discount_tokens", 0),
         unlocked_leads_count=unlocked_count,
-        gamification_level=level
+        gamification_level=level,
+        withdrawable_credits=data.get("withdrawable_credits", 0)
     )
 
 

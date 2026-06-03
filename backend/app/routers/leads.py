@@ -40,13 +40,12 @@ async def get_leads(
         leads_res = supabase.table("leads").select("*").order("created_at", desc=True).execute()
         leads = leads_res.data or []
 
-        # Fetch unlocks for the current user
-        unlocks_res = supabase.table("lead_unlocks") \
-            .select("lead_id, status") \
-            .eq("user_id", current_user.user_id) \
-            .execute()
+        # Fetch ALL unlocks to enforce exclusivity
+        all_unlocks_res = supabase.table("lead_unlocks").select("lead_id, user_id, status").execute()
+        all_unlocks = all_unlocks_res.data or []
         
-        unlocked_lead_map = {u["lead_id"]: u["status"] for u in (unlocks_res.data or [])}
+        unlocked_by_me = {u["lead_id"]: u["status"] for u in all_unlocks if u["user_id"] == current_user.user_id}
+        unlocked_by_anyone = {u["lead_id"] for u in all_unlocks}
 
         # Fetch active auctions to hide contacts
         auctions_res = supabase.table("auctions") \
@@ -57,8 +56,13 @@ async def get_leads(
 
         processed_leads = []
         for lead in leads:
-            is_unlocked = lead["id"] in unlocked_lead_map
-            unlock_status = unlocked_lead_map.get(lead["id"]) if is_unlocked else None
+            is_unlocked = lead["id"] in unlocked_by_me
+            
+            # EXCLUSIVE LEADS: If someone else bought it, hide it completely.
+            if lead["id"] in unlocked_by_anyone and not is_unlocked:
+                continue
+                
+            unlock_status = unlocked_by_me.get(lead["id"]) if is_unlocked else None
             
             # Hide contacts if lead is currently on auction, even if unlocked
             if lead["id"] in auction_lead_ids:
@@ -192,5 +196,39 @@ async def update_lead_status(
         return {"success": True, "trust_score": final_score}
     except HTTPException:
         raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+class MasterLeadCreate(BaseModel):
+    title: str
+    description: str
+    contacts: str
+    city_id: str
+    country_id: str
+    price_credits: int = 50
+
+@router.post("/master")
+async def create_master_lead(
+    lead_data: MasterLeadCreate,
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    """Allow a master to create their own lead (C2C)."""
+    try:
+        # Insert lead
+        lead_insert = supabase.table("leads").insert(lead_data.model_dump()).execute()
+        if not lead_insert.data:
+            raise HTTPException(status_code=400, detail="Failed to create lead")
+            
+        new_lead = lead_insert.data[0]
+        
+        # Auto-unlock for the creator so they own it
+        unlock_insert = supabase.table("lead_unlocks").insert({
+            "user_id": current_user.user_id,
+            "lead_id": new_lead["id"],
+            "status": "new"
+        }).execute()
+        
+        return new_lead
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

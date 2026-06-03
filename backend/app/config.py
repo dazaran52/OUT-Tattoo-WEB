@@ -43,6 +43,21 @@ class Settings(BaseSettings):
     APP_ENV: str = "development"
     DONATELLO_X_KEY: str = "OUT_TATTOO_SECRET_123"
     
+    # Conversational AI
+    GEMINI_API_KEY: str | None = None
+    
+    # Lead Interceptor IMAP (Main Studio Box - Vean Tattoo)
+    LEAD_CAPTURE_IMAP_SERVER: str | None = None
+    LEAD_CAPTURE_EMAIL: str | None = None
+    LEAD_CAPTURE_PASSWORD: str | None = None
+    
+    # Lead Reply SMTP (Second Studio Box - VK WorkSpace)
+    LEAD_REPLY_SMTP_SERVER: str | None = "smtp.mail.ru"
+    LEAD_REPLY_SMTP_PORT: int = 465
+    LEAD_REPLY_EMAIL: str | None = None
+    LEAD_REPLY_PASSWORD: str | None = None
+    LEAD_REPLY_FROM_NAME: str = "Tattoo Booking Helper"
+    
     @property
     def DATABASE_URL(self) -> str:
         """Get database URL, fallback to constructing from Supabase URL."""

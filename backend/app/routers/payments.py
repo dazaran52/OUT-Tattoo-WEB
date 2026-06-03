@@ -178,4 +178,44 @@ async def donatello_webhook(request: Request, x_key: str = Header(None, alias="X
     supabase.table("users").update({"credits": current_credits + credits_to_add}).eq("id", user_id).execute()
     
     return {"status": "success"}
+class WithdrawRequest(BaseModel):
+    amount: int
+    payment_details: str
 
+@router.post("/withdraw")
+async def request_withdrawal(
+    req: WithdrawRequest,
+    current_user: AuthUser = Depends(get_current_user),
+    supabase = Depends(get_supabase_client)
+):
+    """Request withdrawal of earned credits."""
+    if req.amount <= 0:
+        raise HTTPException(status_code=400, detail="Amount must be positive")
+        
+    user_res = supabase.table("users").select("credits, withdrawable_credits").eq("id", current_user.user_id).execute()
+    if not user_res.data:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    user_data = user_res.data[0]
+    withdrawable = user_data.get("withdrawable_credits", 0)
+    credits = user_data.get("credits", 0)
+    
+    if req.amount > withdrawable:
+        raise HTTPException(status_code=400, detail="Not enough withdrawable credits")
+    if req.amount > credits:
+        raise HTTPException(status_code=400, detail="Not enough total credits")
+        
+    # Deduct credits
+    supabase.table("users").update({
+        "credits": credits - req.amount,
+        "withdrawable_credits": withdrawable - req.amount
+    }).eq("id", current_user.user_id).execute()
+    
+    # Create request
+    supabase.table("withdrawal_requests").insert({
+        "user_id": current_user.user_id,
+        "amount": req.amount,
+        "payment_details": req.payment_details
+    }).execute()
+    
+    return {"success": True}

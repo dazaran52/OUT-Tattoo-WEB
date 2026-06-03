@@ -8,6 +8,7 @@ import { getTranslation, Language } from '@/lib/i18n'
 import { LowBalanceModal } from '@/components/LowBalanceModal'
 import { DisputeModal } from '@/components/DisputeModal'
 import { AuctionModal } from '@/components/AuctionModal'
+import { MasterLeadModal } from '@/components/MasterLeadModal'
 import toast from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
 import { playSuccessSound, playErrorSound, triggerHaptic } from '@/lib/sounds'
@@ -82,6 +83,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
 
   const [selectedDisputeLead, setSelectedDisputeLead] = useState<Lead | null>(null)
   const [selectedAuctionLead, setSelectedAuctionLead] = useState<Lead | null>(null)
+  const [isMasterModalOpen, setIsMasterModalOpen] = useState(false)
 
   const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language as Language, key)
 
@@ -415,6 +417,15 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
         />
       )}
 
+      <MasterLeadModal
+        isOpen={isMasterModalOpen}
+        onClose={() => setIsMasterModalOpen(false)}
+        onSuccess={fetchLeads}
+        language={language}
+        cities={cities}
+        countries={countries}
+      />
+
       {selectedAuctionLead && (
         <AuctionModal
           isOpen={!!selectedAuctionLead}
@@ -459,13 +470,21 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
           </div>
         </div>
         <div className="flex gap-2">
-          {isAdmin && (
+          {isAdmin ? (
             <button
               onClick={() => openLeadModal()}
               className="flex items-center gap-2 px-4 py-2 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-lg text-sm font-bold shadow-md hover:shadow-lg transition-all"
             >
               <Plus className="w-4 h-4" />
               {t('createLead')}
+            </button>
+          ) : (
+            <button
+              onClick={() => setIsMasterModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-bold shadow-md hover:shadow-lg transition-all whitespace-nowrap"
+            >
+              <Plus className="w-4 h-4" />
+              Слить лида
             </button>
           )}
           {!showOnlyUnlocked && userCities.length > 0 && (
@@ -615,11 +634,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    {lead.trust_score !== undefined && (
-                      <span className={`text-xs px-2 py-1.5 rounded-full font-bold shadow-sm whitespace-nowrap border flex items-center gap-1 ${lead.trust_score >= 80 ? 'bg-green-50 text-green-600 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800/50' : lead.trust_score >= 50 ? 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/50' : 'bg-red-50 text-red-600 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/50'}`}>
-                        🛡️ {lead.trust_score}/100
-                      </span>
-                    )}
+
                     <span className="bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-sm whitespace-nowrap border border-neutral-200 dark:border-neutral-700 flex items-center gap-1">
                       💎 {lead.price_credits} {t('credits')}
                     </span>
@@ -643,23 +658,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                       {isAdmin ? "ADMIN VIEW" : t('unlocked')}
                     </div>
-                    {!isAdmin && showOnlyUnlocked && (
-                      <div className="mt-3 bg-white dark:bg-neutral-950 p-3 rounded-lg border border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
-                        <span className="text-xs font-medium text-neutral-500">Оценить лида:</span>
-                        <select 
-                          value={lead.unlock_status || 'new'}
-                          onChange={(e) => handleStatusChange(lead.id, e.target.value)}
-                          className="bg-neutral-100 dark:bg-neutral-900 text-xs font-medium border border-neutral-200 dark:border-neutral-800 rounded-md px-2 py-1 outline-none focus:ring-1 focus:ring-cyan-500"
-                        >
-                          <option value="new">Новый</option>
-                          <option value="contacted">Связался</option>
-                          <option value="appointment_set">Записан</option>
-                          <option value="came">Пришел на сеанс (+рейтинг)</option>
-                          <option value="no_answer">Не отвечает (-рейтинг)</option>
-                          <option value="fake">Фейк/Мошенник (-рейтинг)</option>
-                        </select>
-                      </div>
-                    )}
+
                     {!isAdmin && (
                       <div className="grid grid-cols-2 gap-2 mt-2">
                         <button 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { LogOut, Gem, Menu, X, LayoutDashboard, Settings, Plus, Moon, Sun, Globe, Ticket, Copy, Bell, BarChart2, HelpCircle } from 'lucide-react'
+import { LogOut, Gem, Menu, X, LayoutDashboard, Settings, Plus, Moon, Sun, Globe, Ticket, Copy, Bell, BarChart2, HelpCircle, Shield } from 'lucide-react'
 import { Profile } from '@/lib/supabase'
 import { subscribeToPush } from '@/lib/push'
 import { getTranslation, Language } from '@/lib/i18n'
@@ -118,15 +118,6 @@ export function Header({ profile, onLogout }: HeaderProps) {
               <Bell className={`w-5 h-5 ${isSubscribing ? 'animate-pulse' : ''}`} />
             </button>
 
-            {/* Help / Tour Button */}
-            <button
-              onClick={() => setStartTour(true)}
-              className="p-2 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
-              title="Как это работает?"
-            >
-              <HelpCircle className="w-5 h-5" />
-            </button>
-
             {/* Credits Counter & Top-up */}
             <div id="tour-balance" className="flex items-center gap-1">
               <button 
@@ -154,25 +145,6 @@ export function Header({ profile, onLogout }: HeaderProps) {
               </button>
             </div>
 
-            {/* Language Switcher */}
-            <button
-              onClick={toggleLanguage}
-              className="flex items-center justify-center gap-1 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white transition-colors"
-              title="Change Language"
-            >
-              <Globe className="w-5 h-5" />
-              <span className="uppercase text-sm font-semibold">{language === 'cs' ? 'cz' : language}</span>
-            </button>
-
-            {/* Theme Switcher */}
-            <button
-              onClick={toggleTheme}
-              className="flex items-center justify-center text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white transition-colors"
-              title="Toggle Theme"
-            >
-              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            </button>
-
             {/* Notifications Menu */}
             <NotificationsMenu />
 
@@ -195,13 +167,30 @@ export function Header({ profile, onLogout }: HeaderProps) {
                     <BarChart2 className="w-4 h-4" />
                     Аналитика
                   </a>
+                  <div className="border-t border-neutral-200 dark:border-neutral-800 my-1"></div>
+                  
+                  <button onClick={() => setStartTour(true)} className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 w-full text-left">
+                    <HelpCircle className="w-4 h-4" />
+                    Как это работает?
+                  </button>
+                  <button onClick={toggleLanguage} className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 w-full text-left">
+                    <Globe className="w-4 h-4" />
+                    Язык: <span className="uppercase font-semibold">{language === 'cs' ? 'cz' : language}</span>
+                  </button>
+                  <button onClick={toggleTheme} className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 w-full text-left">
+                    {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                    Тема оформления
+                  </button>
+
+                  <div className="border-t border-neutral-200 dark:border-neutral-800 my-1"></div>
+                  
                   <a href="/profile" className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800">
                     <Settings className="w-4 h-4" />
                     {t('settings')}
                   </a>
                   {profile.is_admin && (
                     <a href="/admin" className="flex items-center gap-3 px-4 py-2 text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-neutral-100 dark:hover:bg-neutral-800">
-                      <LayoutDashboard className="w-4 h-4" />
+                      <Shield className="w-4 h-4" />
                       Admin Panel
                     </a>
                   )}
@@ -241,6 +230,7 @@ export function Header({ profile, onLogout }: HeaderProps) {
       <TransactionHistoryModal 
         isOpen={showHistory} 
         onClose={() => setShowHistory(false)} 
+        withdrawableCredits={profile.withdrawable_credits}
       />
     </header>
   )

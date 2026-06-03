@@ -6,6 +6,7 @@ import { Header } from '@/components/Header'
 import { AdminChat } from '@/components/AdminChat'
 import { AdminLocations } from '@/components/AdminLocations'
 import { AdminDisputes } from '@/components/AdminDisputes'
+import { AdminWithdrawals } from '@/components/AdminWithdrawals'
 import { supabase, Profile } from '@/lib/supabase'
 import { CheckCircle, XCircle, Clock, Loader2, Plus, Edit2, Trash2, Link as LinkIcon, Search, Coins, Ban } from 'lucide-react'
 import { getTranslation, Language } from '@/lib/i18n'
@@ -33,7 +34,7 @@ export default function AdminPage() {
   
   const [profile, setProfile] = useState<Profile | null>(null)
   const [users, setUsers] = useState<AdminUserResponse[]>([])
-  const [activeTab, setActiveTab] = useState<'users' | 'chats' | 'locations' | 'disputes'>('users')
+  const [activeTab, setActiveTab] = useState<'users' | 'chats' | 'locations' | 'disputes' | 'withdrawals'>('users')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'balance_desc' | 'balance_asc'>('newest')
 
@@ -273,11 +274,21 @@ export default function AdminPage() {
           >
             Локации
           </button>
+          <button
+            onClick={() => setActiveTab('withdrawals')}
+            className={`px-6 py-2.5 rounded-lg font-bold text-sm transition-all ${
+              activeTab === 'withdrawals' ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+            }`}
+          >
+            Выводы
+          </button>
         </div>
 
         {activeTab === 'locations' && <AdminLocations />}
         {activeTab === 'chats' && <AdminChat />}
         {activeTab === 'disputes' && <AdminDisputes />}
+        {activeTab === 'withdrawals' && <AdminWithdrawals />}
+        
         {activeTab === 'users' && (
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-sm animate-fade-in-up">
             <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 flex flex-col sm:flex-row gap-4 items-center justify-between">

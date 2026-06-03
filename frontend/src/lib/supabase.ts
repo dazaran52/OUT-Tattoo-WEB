@@ -25,6 +25,7 @@ export type Profile = {
   discount_tokens: number
   unlocked_leads_count?: number
   gamification_level?: string
+  withdrawable_credits?: number
 }
 
 export type SupportMessage = {

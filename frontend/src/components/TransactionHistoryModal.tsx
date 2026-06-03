@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { X, Loader2, ArrowDownToLine, Gem, Calendar } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { getTranslation, Language } from '@/lib/i18n'
+import { WithdrawalModal } from './WithdrawalModal'
 
 interface Transaction {
   id: string
@@ -20,12 +21,14 @@ interface Transaction {
 interface Props {
   isOpen: boolean
   onClose: () => void
+  withdrawableCredits?: number
 }
 
-export function TransactionHistoryModal({ isOpen, onClose }: Props) {
+export function TransactionHistoryModal({ isOpen, onClose, withdrawableCredits = 0 }: Props) {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [language, setLanguage] = useState<string>('cs')
+  const [showWithdraw, setShowWithdraw] = useState(false)
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -108,6 +111,21 @@ export function TransactionHistoryModal({ isOpen, onClose }: Props) {
           </div>
         </div>
 
+        {withdrawableCredits > 0 && (
+          <div className="mx-4 mb-4 bg-cyan-50 dark:bg-cyan-900/20 p-4 rounded-xl border border-cyan-100 dark:border-cyan-900/50 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-bold text-cyan-600 dark:text-cyan-400">Доступно для вывода</p>
+              <p className="text-lg font-bold text-neutral-900 dark:text-white">{withdrawableCredits} кредитов</p>
+            </div>
+            <button
+              onClick={() => setShowWithdraw(true)}
+              className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-bold shadow-md transition-colors"
+            >
+              Вывести
+            </button>
+          </div>
+        )}
+
         <div className="flex-1 overflow-y-auto pr-2 space-y-3">
           {isLoading ? (
             <div className="space-y-3">
@@ -175,6 +193,16 @@ export function TransactionHistoryModal({ isOpen, onClose }: Props) {
           )}
         </div>
       </div>
+      
+      <WithdrawalModal
+        isOpen={showWithdraw}
+        onClose={() => setShowWithdraw(false)}
+        withdrawableCredits={withdrawableCredits}
+        onSuccess={() => {
+          setShowWithdraw(false)
+          window.location.reload()
+        }}
+      />
     </div>
   )
 }

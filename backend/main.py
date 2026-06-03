@@ -113,12 +113,15 @@ async def lifespan(app: FastAPI):
     # Start email parser background task
     import asyncio
     from app.services.email_parser import start_email_parser
+    from app.services.email_lead_agent import start_email_lead_agent
     parser_task = asyncio.create_task(start_email_parser())
+    lead_agent_task = asyncio.create_task(start_email_lead_agent())
     
     yield
     # Shutdown
     print("👋 Shutting down API")
     parser_task.cancel()
+    lead_agent_task.cancel()
 
 
 def create_application() -> FastAPI:

@@ -34,7 +34,8 @@ BEGIN
             
             -- Grant credits to seller
             UPDATE users 
-            SET credits = credits + v_auction.current_price
+            SET credits = credits + v_auction.current_price,
+                withdrawable_credits = withdrawable_credits + v_auction.current_price
             WHERE id = v_auction.seller_id;
             
             -- Notify seller
