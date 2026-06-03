@@ -83,7 +83,7 @@ async def get_active_auctions(supabase: Client = Depends(get_supabase_client)):
         
         # Get active auctions
         res = supabase.table("auctions") \
-            .select("*, leads(title, description, price_credits, image_url)") \
+            .select("*, leads(title, description, price_credits, image_urls)") \
             .eq("status", "active") \
             .gte("ends_at", now_iso) \
             .order("ends_at", desc=False) \
