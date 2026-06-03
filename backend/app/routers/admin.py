@@ -276,9 +276,9 @@ async def create_lead(
         
         # Optionally send push notification asynchronously
         try:
-            city_res = supabase.table("locations").select("name").eq("id", new_lead["city_id"]).execute()
-            city_name = city_res.data[0]["name"] if city_res.data else "новом городе"
-            price = new_lead["price"]
+            city_res = supabase.table("cities").select("name_ru").eq("id", new_lead.get("city_id")).execute()
+            city_name = city_res.data[0]["name_ru"] if city_res.data else "новом городе"
+            price = new_lead.get("price_credits", 50)
             
             # Fetch all users who have a push subscription
             # For a real scalable app, you'd use a background worker (Celery/RQ)

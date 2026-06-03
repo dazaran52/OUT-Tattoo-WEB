@@ -104,6 +104,11 @@ async def place_bid(
     Place a bid on an active auction.
     """
     try:
+        # Pre-fetch auction details for notifications
+        auction_res = supabase.table("auctions").select("highest_bidder_id, seller_id").eq("id", auction_id).execute()
+        prev_highest = auction_res.data[0].get("highest_bidder_id") if auction_res.data else None
+        seller_id = auction_res.data[0].get("seller_id") if auction_res.data else None
+        
         # Call the atomic RPC function
         try:
             rpc_res = supabase.rpc(
@@ -129,6 +134,31 @@ async def place_bid(
         data = rpc_res.data
         if not data or not data.get("success"):
             raise HTTPException(status_code=400, detail="Failed to place bid")
+            
+        # Send push notifications
+        from app.services.notifications import send_push_notification
+        
+        if prev_highest and prev_highest != current_user.user_id:
+            try:
+                send_push_notification(
+                    user_id=prev_highest,
+                    title="Ваша ставка перебита! ⚡",
+                    body=f"Кто-то предложил {bid.amount} кредитов. Сделайте новую ставку, чтобы не упустить лид!",
+                    url="/dashboard"
+                )
+            except Exception as e:
+                print(f"Push to prev bidder failed: {e}")
+                
+        if seller_id and seller_id != current_user.user_id:
+            try:
+                send_push_notification(
+                    user_id=seller_id,
+                    title="Новая ставка на аукционе! 🎉",
+                    body=f"Кто-то предложил {bid.amount} кредитов за ваш лид.",
+                    url="/dashboard"
+                )
+            except Exception as e:
+                print(f"Push to seller failed: {e}")
             
         return {"message": "Bid placed successfully", "current_price": data.get("current_price", bid.amount)}
 
