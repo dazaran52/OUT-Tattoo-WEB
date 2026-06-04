@@ -232,3 +232,49 @@ async def create_master_lead(
         return new_lead
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+class ClientLeadCreate(BaseModel):
+    description: str
+    style: str | None = None
+    location: str | None = None
+    size: str | None = None
+    budget: str | None = None
+    city: str | None = None
+    name: str | None = None
+    contact: str
+
+@router.post("/client")
+async def create_client_lead(
+    lead_data: ClientLeadCreate,
+    supabase: Client = Depends(get_supabase_client)
+):
+    """Public endpoint for clients submitting leads via the Landing Page."""
+    try:
+        # Format the lead for the DB
+        title = f"{lead_data.style or 'Тату'} {lead_data.location or ''} {lead_data.size or ''}".strip()
+        if not title:
+            title = "Новая заявка на тату"
+            
+        full_description = f"{lead_data.description}\n\n"
+        if lead_data.budget:
+            full_description += f"Бюджет: {lead_data.budget}\n"
+        if lead_data.city:
+            full_description += f"Город: {lead_data.city}\n"
+            
+        contacts = f"Имя: {lead_data.name or 'Без имени'}, Контакт: {lead_data.contact}"
+
+        db_lead = {
+            "title": title[:255],
+            "description": full_description,
+            "contacts": contacts,
+            "price_credits": 50, # default price
+            "trust_score": 100
+        }
+
+        lead_insert = supabase.table("leads").insert(db_lead).execute()
+        if not lead_insert.data:
+            raise HTTPException(status_code=400, detail="Failed to create lead")
+            
+        return {"success": True, "lead": lead_insert.data[0]}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
