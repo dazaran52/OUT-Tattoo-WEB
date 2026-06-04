@@ -108,14 +108,13 @@ export function Header({ profile, onLogout }: HeaderProps) {
               )}
             </div>
 
-            {/* Notifications Button */}
-            <button
-              onClick={handleSubscribe}
-              disabled={isSubscribing}
-              className="p-2 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
-              title="Включить Push-уведомления"
+            {/* Help Button */}
+            <button 
+              onClick={() => setStartTour(true)} 
+              className="hidden sm:flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
             >
-              <Bell className={`w-5 h-5 ${isSubscribing ? 'animate-pulse' : ''}`} />
+              <HelpCircle className="w-4 h-4" />
+              Как это работает?
             </button>
 
             {/* Credits Counter & Top-up */}
@@ -169,9 +168,9 @@ export function Header({ profile, onLogout }: HeaderProps) {
                   </a>
                   <div className="border-t border-neutral-200 dark:border-neutral-800 my-1"></div>
                   
-                  <button onClick={() => setStartTour(true)} className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 w-full text-left">
-                    <HelpCircle className="w-4 h-4" />
-                    Как это работает?
+                  <button onClick={handleSubscribe} disabled={isSubscribing} className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 w-full text-left">
+                    <Bell className={`w-4 h-4 ${isSubscribing ? 'animate-pulse' : ''}`} />
+                    Включить Push-уведомления
                   </button>
                   <button onClick={toggleLanguage} className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 w-full text-left">
                     <Globe className="w-4 h-4" />
