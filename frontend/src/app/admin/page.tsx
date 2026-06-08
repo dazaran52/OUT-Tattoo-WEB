@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Header } from '@/components/Header'
 import { AdminChat } from '@/components/AdminChat'
+import { AdminAiChats } from '@/components/AdminAiChats'
 import { AdminLocations } from '@/components/AdminLocations'
 import { AdminDisputes } from '@/components/AdminDisputes'
 import { AdminWithdrawals } from '@/components/AdminWithdrawals'
@@ -34,7 +35,7 @@ export default function AdminPage() {
   
   const [profile, setProfile] = useState<Profile | null>(null)
   const [users, setUsers] = useState<AdminUserResponse[]>([])
-  const [activeTab, setActiveTab] = useState<'users' | 'chats' | 'locations' | 'disputes' | 'withdrawals'>('users')
+  const [activeTab, setActiveTab] = useState<'users' | 'chats' | 'ai-chats' | 'locations' | 'disputes' | 'withdrawals'>('users')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'balance_desc' | 'balance_asc'>('newest')
 
@@ -259,6 +260,14 @@ export default function AdminPage() {
             Поддержка
           </button>
           <button
+            onClick={() => setActiveTab('ai-chats')}
+            className={`px-6 py-2.5 rounded-lg font-bold text-sm transition-all ${
+              activeTab === 'ai-chats' ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+            }`}
+          >
+            ИИ Диалоги
+          </button>
+          <button
             onClick={() => setActiveTab('disputes')}
             className={`px-6 py-2.5 rounded-lg font-bold text-sm transition-all ${
               activeTab === 'disputes' ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
@@ -286,6 +295,7 @@ export default function AdminPage() {
 
         {activeTab === 'locations' && <AdminLocations />}
         {activeTab === 'chats' && <AdminChat />}
+        {activeTab === 'ai-chats' && <AdminAiChats />}
         {activeTab === 'disputes' && <AdminDisputes />}
         {activeTab === 'withdrawals' && <AdminWithdrawals />}
         

@@ -549,3 +549,18 @@ async def process_withdrawal(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/conversations")
+async def get_ai_conversations(
+    admin_user: AuthUser = Depends(get_admin_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    """Get all email lead conversations for admin review."""
+    try:
+        res = supabase.table("email_lead_conversations") \
+            .select("*") \
+            .order("created_at", desc=True) \
+            .execute()
+        return res.data or []
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

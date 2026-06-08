@@ -101,9 +101,11 @@ async def call_gemini_api(system_prompt: str, prompt: str) -> dict | None:
                             "style": {"type": "STRING", "description": "Tattoo style (e.g., realism, sketch, old school, blackwork, watercolor). Null if unknown."},
                             "location": {"type": "STRING", "description": "Location on body (e.g., forearm, back, leg, ribs). Null if unknown."},
                             "size": {"type": "STRING", "description": "Approximate size in cm (e.g., 10x15cm, 15cm). Null if unknown."},
-                            "budget": {"type": "STRING", "description": "Client's budget (e.g., 2000 CZK, 150 EUR). Null if unknown."}
+                            "budget": {"type": "STRING", "description": "Client's budget (e.g., 2000 CZK, 150 EUR). Null if unknown."},
+                            "budget_numeric": {"type": "INTEGER", "description": "The exact integer amount of the budget. Null if unknown or not a number."},
+                            "summary": {"type": "STRING", "description": "A clean, 1-2 sentence description of the tattoo request without any email headers or conversation history."}
                         },
-                        "required": ["style", "location", "size", "budget"]
+                        "required": ["style", "location", "size", "budget", "summary"]
                     }
                 ,
                 },
@@ -281,8 +283,8 @@ async def process_lead_email(sender_name: str | None, sender_email: str, subject
     extracted = ai_response["extracted"]
     
     # Update collected requirements
-    for key in ["style", "location", "size", "budget"]:
-        if extracted.get(key):
+    for key in ["style", "location", "size", "budget", "summary", "budget_numeric"]:
+        if extracted.get(key) is not None:
             collected_data[key] = extracted[key]
             
     # Append the assistant's reply to history
@@ -294,6 +296,15 @@ async def process_lead_email(sender_name: str | None, sender_email: str, subject
     
     # Database Update / Action
     if is_completed:
+        # Dynamic pricing
+        budget_num = collected_data.get("budget_numeric")
+        price_credits = 50
+        if budget_num:
+            if budget_num > 5000:
+                price_credits = int(budget_num * 0.05)
+            else:
+                price_credits = int(budget_num * 0.10)
+
         # Create a lead in the leads table
         title = f"Tattoo request ({collected_data.get('style') or 'Custom'} on {collected_data.get('location') or 'body'})"
         desc = (
@@ -301,7 +312,7 @@ async def process_lead_email(sender_name: str | None, sender_email: str, subject
             f"Location: {collected_data.get('location') or 'TBD'}\n"
             f"Size: {collected_data.get('size') or 'TBD'}\n"
             f"Budget: {collected_data.get('budget') or 'TBD'}\n\n"
-            f"Description:\n{body}"
+            f"Description:\n{collected_data.get('summary') or body}"
         )
         contacts = f"Email: {sender_email}\nName: {sender_name or 'Client'}"
         
@@ -312,7 +323,7 @@ async def process_lead_email(sender_name: str | None, sender_email: str, subject
                 "description": desc,
                 "contacts": contacts,
                 "image_urls": collected_data["images"],
-                "price_credits": 50  # standard price
+                "price_credits": price_credits
             }).execute()
             
             logger.info("Successfully created a new lead in public.leads!")
@@ -387,8 +398,8 @@ def check_lead_emails(loop: asyncio.AbstractEventLoop):
         
         for e_id in email_ids:
             try:
-                # CRITICAL: Using BODY.PEEK[] so the email is NOT marked as read/seen on the server!
-                res, msg_data = mail.fetch(e_id, "(BODY.PEEK[])")
+                # Marking the email as SEEN using (BODY[]) to prevent duplicate processing
+                res, msg_data = mail.fetch(e_id, "(BODY[])")
                 if res != "OK":
                     continue
                     
