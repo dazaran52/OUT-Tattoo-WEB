@@ -1,17 +1,21 @@
 import asyncio
 import imaplib
 import smtplib
+import hashlib
 import email
 from email.message import EmailMessage
 from email.utils import parseaddr
 import re
 import httpx
 import logging
+import time
 from datetime import datetime
 from app.config import get_settings
 from app.database import get_supabase_client
 
 logger = logging.getLogger(__name__)
+
+seen_uids = set()
 
 # Decodes RFC 2047 mail headers securely
 def decode_header_str(s) -> str:
@@ -101,11 +105,13 @@ async def call_gemini_api(system_prompt: str, prompt: str) -> dict | None:
                             "style": {"type": "STRING", "description": "Tattoo style (e.g., realism, sketch, old school, blackwork, watercolor). Null if unknown."},
                             "location": {"type": "STRING", "description": "Location on body (e.g., forearm, back, leg, ribs). Null if unknown."},
                             "size": {"type": "STRING", "description": "Approximate size in cm (e.g., 10x15cm, 15cm). Null if unknown."},
-                            "budget": {"type": "STRING", "description": "Client's budget (e.g., 2000 CZK, 150 EUR). Null if unknown."},
-                            "budget_numeric": {"type": "INTEGER", "description": "The exact integer amount of the budget. Null if unknown or not a number."},
-                            "summary": {"type": "STRING", "description": "A clean, 1-2 sentence description of the tattoo request without any email headers or conversation history."}
+                            "budget_amount": {"type": "NUMBER", "description": "The numeric amount of the budget. Null if unknown."},
+                            "budget_currency": {"type": "STRING", "description": "Currency of the budget (e.g., CZK, EUR, PLN). Null if unknown."},
+                            "has_references": {"type": "BOOLEAN", "description": "Whether the client provided reference images or mentioned them. False by default."},
+                            "idea": {"type": "STRING", "description": "A clean description of the tattoo idea without email headers."},
+                            "client_country_code": {"type": "STRING", "description": "Two-letter country code inferred from language or text. Null if unknown."}
                         },
-                        "required": ["style", "location", "size", "budget", "summary"]
+                        "required": ["style", "location", "size", "budget_amount", "budget_currency", "has_references", "idea", "client_country_code"]
                     }
                 ,
                 },
@@ -162,6 +168,14 @@ def send_smtp_reply(to_email: str, subject: str, body_html: str, original_msg_id
                 server.login(settings.LEAD_REPLY_EMAIL, settings.LEAD_REPLY_PASSWORD)
                 server.send_message(msg)
                 
+        try:
+            imap_host = settings.LEAD_REPLY_SMTP_SERVER.replace("smtp", "imap")
+            with imaplib.IMAP4_SSL(imap_host) as imap_server:
+                imap_server.login(settings.LEAD_REPLY_EMAIL, settings.LEAD_REPLY_PASSWORD)
+                imap_server.append("Sent", '\\Seen', imaplib.Time2Internaldate(time.time()), bytes(msg))
+        except Exception as imap_e:
+            logger.error(f"Failed to append to Sent folder: {imap_e}")
+                
         logger.info(f"Replied to client email: {to_email}")
         return True
     except Exception as e:
@@ -175,9 +189,16 @@ async def process_lead_email(sender_name: str | None, sender_email: str, subject
     # Check if there is an active conversation
     conversation = None
     try:
-        conv_resp = supabase.table("email_lead_conversations").select("*").eq("client_email", sender_email).in_("state", ["initiated", "active"]).execute()
+        conv_resp = supabase.table("email_lead_conversations").select("*").eq("client_email", sender_email).execute()
         if conv_resp.data:
-            conversation = conv_resp.data[0]
+            for c in conv_resp.data:
+                if original_msg_id and original_msg_id in c.get("collected_data", {}).get("processed_message_ids", []):
+                    logger.info(f"Message {original_msg_id} already processed. Skipping.")
+                    return
+            for c in conv_resp.data:
+                if c.get("state") in ["initiated", "active"]:
+                    conversation = c
+                    break
     except Exception as e:
         logger.error(f"Error fetching conversation: {e}")
         return
@@ -189,9 +210,14 @@ async def process_lead_email(sender_name: str | None, sender_email: str, subject
             "style": None,
             "location": None,
             "size": None,
-            "budget": None,
+            "budget_amount": None,
+            "budget_currency": None,
+            "has_references": False,
+            "idea": None,
+            "client_country_code": None,
             "images": [],
-            "history": []
+            "history": [],
+            "processed_message_ids": []
         }
         try:
             insert_resp = supabase.table("email_lead_conversations").insert({
@@ -217,6 +243,8 @@ async def process_lead_email(sender_name: str | None, sender_email: str, subject
         collected_data["images"] = []
     if "history" not in collected_data:
         collected_data["history"] = []
+    if "processed_message_ids" not in collected_data:
+        collected_data["processed_message_ids"] = []
         
     # Upload any attachments to Supabase Storage and track URLs
     new_images = []
@@ -233,6 +261,18 @@ async def process_lead_email(sender_name: str | None, sender_email: str, subject
         "text": body,
         "timestamp": datetime.utcnow().isoformat()
     })
+    
+    if conversation and conversation.get("is_paused"):
+        logger.info(f"Conversation is paused for {sender_email}. Appended history, exiting before AI.")
+        if original_msg_id and original_msg_id not in collected_data["processed_message_ids"]:
+            collected_data["processed_message_ids"].append(original_msg_id)
+        try:
+            supabase.table("email_lead_conversations").update({
+                "collected_data": collected_data
+            }).eq("id", conversation_id).execute()
+        except Exception as e:
+            logger.error(f"Error updating paused conversation: {e}")
+        return
     
     # Build System Prompt and User Prompt for Gemini
     system_prompt = (
@@ -267,7 +307,11 @@ async def process_lead_email(sender_name: str | None, sender_email: str, subject
         f"- Style: {collected_data.get('style')}\n"
         f"- Body Location: {collected_data.get('location')}\n"
         f"- Size: {collected_data.get('size')}\n"
-        f"- Budget: {collected_data.get('budget')}\n"
+        f"- Budget Amount: {collected_data.get('budget_amount')}\n"
+        f"- Budget Currency: {collected_data.get('budget_currency')}\n"
+        f"- Has References: {collected_data.get('has_references')}\n"
+        f"- Idea: {collected_data.get('idea')}\n"
+        f"- Country Code: {collected_data.get('client_country_code')}\n"
         f"- Attachments Uploaded: {len(collected_data['images'])}\n\n"
         "Analyze the last Client message, update the extracted requirements, and generate the response email."
     )
@@ -283,7 +327,7 @@ async def process_lead_email(sender_name: str | None, sender_email: str, subject
     extracted = ai_response["extracted"]
     
     # Update collected requirements
-    for key in ["style", "location", "size", "budget", "summary", "budget_numeric"]:
+    for key in ["style", "location", "size", "budget_amount", "budget_currency", "has_references", "idea", "client_country_code"]:
         if extracted.get(key) is not None:
             collected_data[key] = extracted[key]
             
@@ -297,13 +341,26 @@ async def process_lead_email(sender_name: str | None, sender_email: str, subject
     # Database Update / Action
     if is_completed:
         # Dynamic pricing
-        budget_num = collected_data.get("budget_numeric")
+        budget_num = collected_data.get("budget_amount")
+        currency = collected_data.get("budget_currency", "CZK")
         price_credits = 50
-        if budget_num:
-            if budget_num > 5000:
-                price_credits = int(budget_num * 0.05)
+        if budget_num and currency:
+            curr = currency.upper()
+            if curr == "CZK":
+                threshold = 5000
+                multiplier = 1
+            elif curr == "EUR":
+                threshold = 200
+                multiplier = 25
+            elif curr == "PLN":
+                threshold = 1000
+                multiplier = 5
             else:
-                price_credits = int(budget_num * 0.10)
+                threshold = 5000
+                multiplier = 1
+                
+            percentage = 0.05 if budget_num > threshold else 0.10
+            price_credits = int(budget_num * percentage * multiplier)
 
         # Create a lead in the leads table
         title = f"Tattoo request ({collected_data.get('style') or 'Custom'} on {collected_data.get('location') or 'body'})"
@@ -311,8 +368,8 @@ async def process_lead_email(sender_name: str | None, sender_email: str, subject
             f"Style: {collected_data.get('style') or 'TBD'}\n"
             f"Location: {collected_data.get('location') or 'TBD'}\n"
             f"Size: {collected_data.get('size') or 'TBD'}\n"
-            f"Budget: {collected_data.get('budget') or 'TBD'}\n\n"
-            f"Description:\n{collected_data.get('summary') or body}"
+            f"Budget: {collected_data.get('budget_amount') or 'TBD'} {collected_data.get('budget_currency') or ''}\n\n"
+            f"Description:\n{collected_data.get('idea') or body}"
         )
         contacts = f"Email: {sender_email}\nName: {sender_name or 'Client'}"
         
@@ -337,7 +394,7 @@ async def process_lead_email(sender_name: str | None, sender_email: str, subject
                 f"<li><strong>Стиль:</strong> {collected_data.get('style') or 'не указан'}</li>"
                 f"<li><strong>Место нанесения:</strong> {collected_data.get('location') or 'не указано'}</li>"
                 f"<li><strong>Размер:</strong> {collected_data.get('size') or 'не указан'}</li>"
-                f"<li><strong>Бюджет:</strong> {collected_data.get('budget') or 'не указан'}</li>"
+                f"<li><strong>Бюджет:</strong> {collected_data.get('budget_amount') or 'не указан'} {collected_data.get('budget_currency') or ''}</li>"
                 f"</ul>"
                 f"<p>Наши лучшие мастера скоро ознакомятся с деталями и свяжутся с вами!</p>"
             )
@@ -345,6 +402,9 @@ async def process_lead_email(sender_name: str | None, sender_email: str, subject
             # (In production, you can let Gemini generate the confirmation, but this is a solid fallback)
             send_smtp_reply(sender_email, confirm_subject, confirm_body, original_msg_id)
             
+            if original_msg_id and original_msg_id not in collected_data["processed_message_ids"]:
+                collected_data["processed_message_ids"].append(original_msg_id)
+
             # Set state to completed
             supabase.table("email_lead_conversations").update({
                 "state": "completed",
@@ -363,6 +423,9 @@ async def process_lead_email(sender_name: str | None, sender_email: str, subject
         
         if sent:
             try:
+                if original_msg_id and original_msg_id not in collected_data["processed_message_ids"]:
+                    collected_data["processed_message_ids"].append(original_msg_id)
+
                 supabase.table("email_lead_conversations").update({
                     "state": "active",
                     "collected_data": collected_data
@@ -372,6 +435,12 @@ async def process_lead_email(sender_name: str | None, sender_email: str, subject
 
 def check_lead_emails(loop: asyncio.AbstractEventLoop):
     """Polls the lead capture IMAP mailbox and processes new emails stealthily."""
+    # Supabase sync wrappers require an event loop in the current thread
+    try:
+        asyncio.get_event_loop()
+    except RuntimeError:
+        asyncio.set_event_loop(asyncio.new_event_loop())
+
     settings = get_settings()
     
     # Guard clause for configuration
@@ -387,19 +456,99 @@ def check_lead_emails(loop: asyncio.AbstractEventLoop):
         mail.login(settings.LEAD_CAPTURE_EMAIL, settings.LEAD_CAPTURE_PASSWORD)
         mail.select("INBOX")
         
+        supabase = get_supabase_client()
+
         # Search for all unseen messages
-        status, messages = mail.search(None, "UNSEEN")
+        status, messages = mail.uid('SEARCH', None, "UNSEEN")
         if status != "OK" or not messages[0]:
             mail.logout()
             return
             
-        email_ids = messages[0].split()
-        logger.info(f"Lead Agent: Found {len(email_ids)} new emails to process.")
+        email_uids = messages[0].split()
+        logger.info(f"Lead Agent: Found {len(email_uids)} new emails to process.")
         
-        for e_id in email_ids:
+        # 1. Bulk fetch headers for all UNSEEN emails
+        uids_str = b','.join(email_uids).decode('utf-8')
+        res, fetch_data = mail.uid('FETCH', uids_str, "(BODY.PEEK[HEADER.FIELDS (MESSAGE-ID FROM SUBJECT DATE)])")
+        
+        unique_emails = set()
+        headers_by_uid = {}
+        if res == "OK" and fetch_data:
+            for item in fetch_data:
+                if isinstance(item, tuple):
+                    import re
+                    match = re.search(rb'UID\s+(\d+)', item[0])
+                    if match:
+                        uid_bytes = match.group(1)
+                        raw_headers = item[1]
+                        headers_by_uid[uid_bytes] = raw_headers
+                        
+                        msg_header = email.message_from_bytes(raw_headers)
+                        from_header = msg_header.get("From", "")
+                        _, sender_email = parse_client_details(from_header)
+                        if sender_email:
+                            unique_emails.add(sender_email)
+
+        client_conversations = {}
+        if unique_emails:
             try:
-                # Marking the email as SEEN using (BODY[]) to prevent duplicate processing
-                res, msg_data = mail.fetch(e_id, "(BODY[])")
+                conv_resp = supabase.table("email_lead_conversations").select("id, client_email, is_paused, collected_data, state").in_("client_email", list(unique_emails)).execute()
+                if conv_resp.data:
+                    for row in conv_resp.data:
+                        email_key = row["client_email"]
+                        if email_key not in client_conversations:
+                            client_conversations[email_key] = []
+                        client_conversations[email_key].append(row)
+            except Exception as e:
+                logger.error(f"Error pre-fetching conversations: {e}")
+        
+        for e_uid in email_uids:
+            if e_uid in seen_uids:
+                continue
+            seen_uids.add(e_uid)
+            try:
+                # 1. Get pre-fetched header data
+                raw_headers = headers_by_uid.get(e_uid)
+                if not raw_headers:
+                    continue
+                    
+                msg_header = email.message_from_bytes(raw_headers)
+                msg_id = msg_header.get("Message-ID")
+                from_header = msg_header.get("From", "")
+                subject_header = msg_header.get("Subject", "")
+                date_header = msg_header.get("Date", "")
+                sender_name, sender_email = parse_client_details(from_header)
+                
+                if not sender_email:
+                    logger.warning(f"Could not parse sender email from header: {from_header}")
+                    continue
+                    
+                if not msg_id:
+                    unique_str = f"{sender_email}{subject_header}{date_header}"
+                    msg_id = f"<{hashlib.sha256(unique_str.encode('utf-8')).hexdigest()}@synthetic.outtattoo>"
+                else:
+                    msg_id = str(msg_id).strip()
+                    
+                if sender_email == settings.LEAD_CAPTURE_EMAIL.lower() or sender_email == settings.LEAD_REPLY_EMAIL.lower():
+                    continue
+
+                # Check conversation state for this sender_email using pre-fetched data
+                skip_email = False
+                try:
+                    client_convs = client_conversations.get(sender_email, [])
+                    for conv in client_convs:
+                        if msg_id in (conv.get("collected_data") or {}).get("processed_message_ids", []):
+                            logger.info(f"Skipping already processed message (header check): {msg_id}")
+                            skip_email = True
+                            break
+                except Exception as e:
+                    logger.error(f"Error checking conversation for {sender_email}: {e}")
+                    
+                if skip_email:
+                    continue
+
+                # 2. Marking the email as UNSEEN using (BODY.PEEK[]) to prevent status change
+                res, msg_data = mail.uid('FETCH', e_uid, "(BODY.PEEK[])")
                 if res != "OK":
                     continue
                     
@@ -407,18 +556,7 @@ def check_lead_emails(loop: asyncio.AbstractEventLoop):
                 msg = email.message_from_bytes(raw_email)
                 
                 # Metadata
-                from_header = msg.get("From", "")
                 subject = decode_header_str(msg.get("Subject", ""))
-                msg_id = msg.get("Message-ID", None)
-                
-                sender_name, sender_email = parse_client_details(from_header)
-                if not sender_email:
-                    logger.warning(f"Could not parse sender email from header: {from_header}")
-                    continue
-                    
-                # Skip emails from ourselves or system notifications
-                if sender_email == settings.LEAD_CAPTURE_EMAIL.lower() or sender_email == settings.LEAD_REPLY_EMAIL.lower():
-                    continue
                     
                 # Parse body and attachments
                 body = ""
@@ -460,13 +598,15 @@ def check_lead_emails(loop: asyncio.AbstractEventLoop):
                         logger.error(f"Error parsing single-part email body: {parse_err}")
                 
                 # Execute asynchronously
-                asyncio.run_coroutine_threadsafe(
+                future = asyncio.run_coroutine_threadsafe(
                     process_lead_email(sender_name, sender_email, subject, body, attachments, msg_id),
                     loop
                 )
+                future.result()
                 
             except Exception as email_err:
-                logger.error(f"Error parsing individual email ID {e_id}: {email_err}")
+                seen_uids.discard(e_uid)
+                logger.error(f"Error parsing individual email ID {e_uid}: {email_err}")
                 
         mail.logout()
     except Exception as e:

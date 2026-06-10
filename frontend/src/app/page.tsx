@@ -1,138 +1,145 @@
 'use client'
 
-import { motion } from 'framer-motion'
-import Link from 'next/link'
+import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useRouter } from 'next/navigation'
 import { LeadForm } from '@/components/LeadForm'
-import { ArrowRight, Sparkles, ShieldCheck, Zap } from 'lucide-react'
+import { Logo } from '@/components/Logo'
+import { ArrowRight, Paintbrush, Sparkles, X, UserCircle2 } from 'lucide-react'
 
 export default function HomePage() {
+  const router = useRouter()
+  const [activeSide, setActiveSide] = useState<'none' | 'client'>('none')
+  const [hoveredSide, setHoveredSide] = useState<'none' | 'master' | 'client'>('none')
+  const [showTooltip, setShowTooltip] = useState(true)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowTooltip(false), 5000)
+    return () => clearTimeout(timer)
+  }, [])
+
   return (
-    <div className="min-h-screen bg-[#050505] text-white selection:bg-indigo-500/30 relative overflow-hidden">
-      {/* Dynamic Background Gradients */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-indigo-600/20 blur-[120px]" />
-        <div className="absolute top-[40%] -right-[20%] w-[60%] h-[60%] rounded-full bg-purple-600/10 blur-[150px]" />
-        <div className="absolute -bottom-[20%] left-[20%] w-[50%] h-[50%] rounded-full bg-blue-600/15 blur-[120px]" />
+    <div className="dark min-h-screen bg-[#050505] text-white flex flex-col md:flex-row relative overflow-hidden">
+      
+      {/* Tooltip Onboarding */}
+      <AnimatePresence>
+        {showTooltip && activeSide === 'none' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-white text-black px-6 py-4 rounded-2xl font-bold shadow-2xl flex flex-col items-center gap-2 pointer-events-none"
+          >
+            <span>Кто вы? Выберите свою сторону, чтобы начать.</span>
+            <div className="w-4 h-4 bg-white rotate-45 absolute -bottom-2" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Top Left Logo */}
+      <div className="absolute top-6 left-6 z-50 pointer-events-auto">
+        <Logo />
       </div>
 
-      {/* Navigation */}
-      <nav className="relative z-10 max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-lg">
-            O
+      {/* Master Side (Left / Top) */}
+      <motion.div 
+        className="relative flex-1 cursor-pointer overflow-hidden border-b md:border-b-0 md:border-r border-white/10 flex flex-col items-center justify-center p-8 group"
+        onHoverStart={() => setHoveredSide('master')}
+        onHoverEnd={() => setHoveredSide('none')}
+        onClick={() => router.push('/login')}
+        animate={{
+          flex: hoveredSide === 'master' ? 1.2 : hoveredSide === 'client' ? 0.8 : 1
+        }}
+        transition={{ type: 'spring', stiffness: 200, damping: 30 }}
+      >
+        <div className="absolute inset-0 bg-[#0a0a0a] z-0" />
+        {/* Subtle grid background */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] z-0 opacity-50" />
+        
+        <div className="relative z-10 flex flex-col items-center text-center">
+          <div className="w-20 h-20 rounded-full bg-neutral-900 border border-neutral-800 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 shadow-2xl shadow-black">
+            <Paintbrush className="w-10 h-10 text-neutral-400 group-hover:text-white transition-colors" />
           </div>
-          <span className="font-bold text-xl tracking-tight">Tattoo HUB</span>
+          <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-neutral-300 group-hover:text-white transition-colors">Я тату-мастер</h2>
+          <p className="text-neutral-500 max-w-sm group-hover:text-neutral-400 transition-colors">
+            Получай горячие заявки от клиентов без затрат на рекламу.
+          </p>
+          <div className="mt-8 flex items-center gap-2 text-indigo-400 font-semibold opacity-0 group-hover:opacity-100 transition-opacity translate-y-4 group-hover:translate-y-0 duration-300">
+            Войти в кабинет <ArrowRight className="w-5 h-5" />
+          </div>
         </div>
-        <Link 
-          href="/login" 
-          className="text-sm font-medium text-neutral-300 hover:text-white transition-colors bg-white/5 hover:bg-white/10 px-4 py-2 rounded-full border border-white/10"
-        >
-          Вход для мастеров
-        </Link>
-      </nav>
+      </motion.div>
 
-      <main className="relative z-10">
-        {/* Hero Section */}
-        <section className="pt-20 pb-32 px-6 max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-          >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-sm font-medium mb-6">
-              <Sparkles className="w-4 h-4" />
-              <span>Более 500 мастеров уже с нами</span>
-            </div>
-            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-tight">
-              Найди <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">идеального мастера</span> для своей татуировки.
-            </h1>
-            <p className="text-lg md:text-xl text-neutral-400 mb-10 max-w-xl leading-relaxed">
-              Не нужно писать десяткам студий. Просто опиши свою идею один раз, и лучшие мастера твоего города сами предложат тебе свои услуги, эскизы и цены.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4">
-              <button 
-                onClick={() => document.getElementById('lead-form')?.scrollIntoView({ behavior: 'smooth' })}
-                className="bg-white text-black px-8 py-4 rounded-full font-bold text-lg flex items-center justify-center gap-2 hover:scale-105 transition-transform"
-              >
-                Оставить заявку
-                <ArrowRight className="w-5 h-5" />
-              </button>
-            </div>
-          </motion.div>
+      {/* Client Side (Right / Bottom) */}
+      <motion.div 
+        className="relative flex-1 cursor-pointer overflow-hidden flex flex-col items-center justify-center p-8 group"
+        onHoverStart={() => setHoveredSide('client')}
+        onHoverEnd={() => setHoveredSide('none')}
+        onClick={() => setActiveSide('client')}
+        animate={{
+          flex: hoveredSide === 'client' ? 1.2 : hoveredSide === 'master' ? 0.8 : 1
+        }}
+        transition={{ type: 'spring', stiffness: 200, damping: 30 }}
+      >
+        <div className="absolute inset-0 bg-neutral-950 z-0" />
+        {/* Vibrant gradients */}
+        <div className="absolute inset-0 opacity-40 group-hover:opacity-80 transition-opacity duration-700 pointer-events-none">
+          <div className="absolute top-[20%] left-[20%] w-[60%] h-[60%] rounded-full bg-indigo-600/30 blur-[100px]" />
+          <div className="absolute bottom-[20%] right-[20%] w-[50%] h-[50%] rounded-full bg-purple-600/30 blur-[100px]" />
+        </div>
 
-          {/* Form Widget */}
-          <motion.div
-            id="lead-form"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-            className="relative"
-          >
-            {/* Glow behind form */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/30 to-purple-500/30 blur-[80px] -z-10 rounded-[3rem]" />
-            <LeadForm />
-          </motion.div>
-        </section>
-
-        {/* Features Section */}
-        <section className="py-24 border-t border-white/5 bg-black/50 backdrop-blur-3xl">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-5xl font-bold mb-4">Как это работает?</h2>
-              <p className="text-neutral-400 max-w-2xl mx-auto">Всего 3 простых шага, чтобы воплотить мечту в реальность.</p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="bg-white/5 border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-colors"
-              >
-                <div className="w-14 h-14 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center mb-6">
-                  <Zap className="w-7 h-7" />
-                </div>
-                <h3 className="text-xl font-bold mb-3">1. Опиши идею</h3>
-                <p className="text-neutral-400">Заполни короткую форму. Расскажи, что хочешь набить, прикрепи примеры и укажи город.</p>
-              </motion.div>
-
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.1 }}
-                className="bg-white/5 border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-colors"
-              >
-                <div className="w-14 h-14 rounded-2xl bg-purple-500/20 text-purple-400 flex items-center justify-center mb-6">
-                  <Sparkles className="w-7 h-7" />
-                </div>
-                <h3 className="text-xl font-bold mb-3">2. Получай отклики</h3>
-                <p className="text-neutral-400">Проверенные мастера твоего города увидят заявку и свяжутся с тобой, если готовы взяться за работу.</p>
-              </motion.div>
-
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.2 }}
-                className="bg-white/5 border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-colors"
-              >
-                <div className="w-14 h-14 rounded-2xl bg-green-500/20 text-green-400 flex items-center justify-center mb-6">
-                  <ShieldCheck className="w-7 h-7" />
-                </div>
-                <h3 className="text-xl font-bold mb-3">3. Выбирай лучшего</h3>
-                <p className="text-neutral-400">Сравнивай портфолио, цены и выбирай мастера, который идеально понимает твою идею.</p>
-              </motion.div>
-            </div>
+        <div className="relative z-10 flex flex-col items-center text-center">
+          <div className="w-20 h-20 rounded-full bg-indigo-950 border border-indigo-900 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 shadow-2xl shadow-indigo-900/50">
+            <UserCircle2 className="w-10 h-10 text-indigo-400 group-hover:text-indigo-300 transition-colors" />
           </div>
-        </section>
-      </main>
-      
+          <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-white">Хочу татуировку!</h2>
+          <p className="text-indigo-200/60 max-w-sm group-hover:text-indigo-200/90 transition-colors">
+            Опиши идею один раз, и лучшие мастера города предложат свои эскизы.
+          </p>
+          <div className="mt-8 flex items-center gap-2 text-pink-400 font-semibold opacity-0 group-hover:opacity-100 transition-opacity translate-y-4 group-hover:translate-y-0 duration-300">
+            Оставить заявку <Sparkles className="w-5 h-5" />
+          </div>
+        </div>
+      </motion.div>
+
       {/* Footer */}
-      <footer className="border-t border-white/10 py-12 text-center text-neutral-500 text-sm relative z-10">
-        <p>© 2026 OUT Tattoo Hub. All rights reserved.</p>
-      </footer>
+      <div className="absolute bottom-4 left-0 right-0 z-10 text-center pointer-events-none">
+        <p className="text-neutral-600/50 text-xs">© 2026 Tattoo HUB. All rights reserved.</p>
+      </div>
+
+      {/* Client Modal Overlay */}
+      <AnimatePresence>
+        {activeSide === 'client' && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-4xl my-auto"
+            >
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveSide('none');
+                }}
+                className="absolute -top-12 right-0 text-white/50 hover:text-white flex items-center gap-2 transition-colors"
+              >
+                Закрыть <X className="w-6 h-6" />
+              </button>
+              
+              <div className="relative bg-[#0a0a0a] rounded-3xl border border-white/10 shadow-2xl overflow-hidden p-1">
+                <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/10 to-purple-500/10 blur-[80px] -z-10 pointer-events-none" />
+                <LeadForm />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

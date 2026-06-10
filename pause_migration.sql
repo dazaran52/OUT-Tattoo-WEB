@@ -1,0 +1,1 @@
+ALTER TABLE email_lead_conversations ADD COLUMN IF NOT EXISTS is_paused BOOLEAN DEFAULT FALSE;

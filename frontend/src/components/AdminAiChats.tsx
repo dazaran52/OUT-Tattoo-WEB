@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
-import { MessageCircle, User, Bot, Loader2, CheckCircle2 } from 'lucide-react'
+import { MessageCircle, User, Bot, Loader2, CheckCircle2, PauseCircle, PlayCircle, Filter } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 interface AiConversation {
@@ -11,12 +11,17 @@ interface AiConversation {
   client_name: string | null
   original_subject: string
   state: string
+  is_paused: boolean
   collected_data: {
     history: { role: string; text: string; timestamp: string }[]
     style?: string
     location?: string
     size?: string
-    budget?: string
+    budget_amount?: number
+    budget_currency?: string
+    has_references?: boolean
+    idea?: string
+    client_country_code?: string
     images?: string[]
   }
   created_at: string
@@ -27,6 +32,8 @@ export function AdminAiChats() {
   const [conversations, setConversations] = useState<AiConversation[]>([])
   const [selectedConv, setSelectedConv] = useState<AiConversation | null>(null)
   const [isLoadingChats, setIsLoadingChats] = useState(true)
+  const [isPausing, setIsPausing] = useState(false)
+  const [countryFilter, setCountryFilter] = useState<string>('ALL')
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -65,36 +72,94 @@ export function AdminAiChats() {
     }
   }, [selectedConv])
 
+  const togglePause = async () => {
+    if (!selectedConv || !session) return
+    setIsPausing(true)
+    const newPauseState = !selectedConv.is_paused
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/conversations/${selectedConv.id}/pause`, {
+        method: 'PUT',
+        headers: { 
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ is_paused: newPauseState })
+      })
+      if (!res.ok) throw new Error('Failed to update pause state')
+      
+      const updatedConv = { ...selectedConv, is_paused: newPauseState }
+      setSelectedConv(updatedConv)
+      setConversations(prev => prev.map(c => c.id === selectedConv.id ? updatedConv : c))
+      toast.success(newPauseState ? 'Диалог перехвачен (ИИ на паузе)' : 'ИИ снова включен')
+    } catch (err: any) {
+      toast.error(err.message)
+    } finally {
+      setIsPausing(false)
+    }
+  }
+
+  const uniqueCountries = useMemo(() => {
+    const codes = new Set(conversations.map(c => c.collected_data?.client_country_code).filter(Boolean))
+    return Array.from(codes) as string[]
+  }, [conversations])
+
+  const filteredConversations = useMemo(() => {
+    if (countryFilter === 'ALL') return conversations
+    return conversations.filter(c => c.collected_data?.client_country_code === countryFilter)
+  }, [conversations, countryFilter])
+
   return (
     <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-sm flex h-[600px] animate-fade-in-up">
       {/* Sidebar */}
       <div className="w-1/3 border-r border-neutral-200 dark:border-neutral-800 flex flex-col bg-neutral-50 dark:bg-neutral-900/50">
-        <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between gap-2 font-bold text-neutral-900 dark:text-white">
-          <div className="flex items-center gap-2">
-            <Bot className="w-5 h-5 text-purple-500" />
-            ИИ Парсер
+        <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex flex-col gap-3">
+          <div className="flex items-center justify-between font-bold text-neutral-900 dark:text-white">
+            <div className="flex items-center gap-2">
+              <Bot className="w-5 h-5 text-purple-500" />
+              ИИ Парсер
+            </div>
+            <span className="text-xs bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800 px-2 py-1 rounded-full">{filteredConversations.length}</span>
           </div>
-          <span className="text-xs bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800 px-2 py-1 rounded-full">{conversations.length}</span>
+          {uniqueCountries.length > 0 && (
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4 text-neutral-400" />
+              <select 
+                value={countryFilter}
+                onChange={e => setCountryFilter(e.target.value)}
+                className="flex-1 bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-lg text-xs py-1.5 px-2 outline-none focus:border-purple-500"
+              >
+                <option value="ALL">Все страны</option>
+                {uniqueCountries.map(code => (
+                  <option key={code} value={code}>{code}</option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
         <div className="flex-1 overflow-y-auto">
           {isLoadingChats ? (
             <div className="flex justify-center p-8">
               <Loader2 className="w-6 h-6 animate-spin text-neutral-400" />
             </div>
-          ) : conversations.length === 0 ? (
+          ) : filteredConversations.length === 0 ? (
             <div className="text-center p-8 text-neutral-500 text-sm">
               Нет диалогов
             </div>
           ) : (
-            conversations.map(c => (
+            filteredConversations.map(c => (
               <button
                 key={c.id}
                 onClick={() => setSelectedConv(c)}
                 className={`w-full text-left p-4 border-b border-neutral-100 dark:border-neutral-800/50 hover:bg-white dark:hover:bg-neutral-800 transition-colors ${selectedConv?.id === c.id ? 'bg-white dark:bg-neutral-800 border-l-4 border-l-purple-500' : ''}`}
               >
                 <div className="flex justify-between items-center mb-1">
-                  <div className="font-medium truncate text-neutral-700 dark:text-neutral-300">
+                  <div className="font-medium truncate text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
                     {c.client_name || c.client_email}
+                    {c.collected_data?.client_country_code && (
+                      <span className="px-1.5 py-0.5 bg-neutral-200 dark:bg-neutral-700 text-[9px] rounded font-bold uppercase">
+                        {c.collected_data.client_country_code}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="text-xs text-neutral-500 truncate mb-1">{c.original_subject}</div>
@@ -102,7 +167,11 @@ export function AdminAiChats() {
                   <span className={`px-2 py-0.5 rounded-full ${c.state === 'completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800'}`}>
                     {c.state}
                   </span>
-                  <span className="text-neutral-400">{new Date(c.created_at).toLocaleDateString()}</span>
+                  {c.is_paused && (
+                    <span className="px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800 flex items-center gap-1">
+                      <PauseCircle className="w-3 h-3" /> Перехвачен
+                    </span>
+                  )}
                 </div>
               </button>
             ))
@@ -125,25 +194,46 @@ export function AdminAiChats() {
                   <User className="w-5 h-5 text-neutral-500" />
                 </div>
                 <div>
-                  <div className="font-bold text-neutral-900 dark:text-white leading-tight">
+                  <div className="font-bold text-neutral-900 dark:text-white leading-tight flex items-center gap-2">
                     {selectedConv.client_email}
+                    {selectedConv.collected_data?.client_country_code && (
+                      <span className="px-1.5 py-0.5 bg-neutral-200 dark:bg-neutral-700 text-[10px] rounded font-bold uppercase">
+                        {selectedConv.collected_data.client_country_code}
+                      </span>
+                    )}
                   </div>
                   <div className="text-xs text-neutral-500 flex items-center gap-2 mt-0.5">
                     Статус: <span className={selectedConv.state === 'completed' ? 'text-green-500' : 'text-amber-500'}>{selectedConv.state}</span>
                   </div>
                 </div>
               </div>
+              <div>
+                <button
+                  onClick={togglePause}
+                  disabled={isPausing}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all disabled:opacity-50 ${
+                    selectedConv.is_paused 
+                      ? 'bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-900 dark:text-white' 
+                      : 'bg-red-500 hover:bg-red-600 text-white shadow-sm hover:shadow-md'
+                  }`}
+                >
+                  {isPausing ? <Loader2 className="w-4 h-4 animate-spin" /> : selectedConv.is_paused ? <PlayCircle className="w-4 h-4" /> : <PauseCircle className="w-4 h-4" />}
+                  {selectedConv.is_paused ? 'Включить ИИ' : 'Перехватить диалог'}
+                </button>
+              </div>
             </div>
             
             {/* Context Header */}
-            <div className="bg-purple-50 dark:bg-purple-900/10 border-b border-purple-100 dark:border-purple-900/20 p-3 flex flex-wrap gap-4 text-xs">
+            <div className="bg-purple-50 dark:bg-purple-900/10 border-b border-purple-100 dark:border-purple-900/20 p-3 flex flex-wrap gap-x-6 gap-y-2 text-xs">
               <div className="font-semibold text-purple-700 dark:text-purple-400 w-full mb-1">Собранные данные:</div>
-              <div><span className="text-neutral-500">Стиль:</span> <span className="font-medium dark:text-white">{selectedConv.collected_data.style || '-'}</span></div>
-              <div><span className="text-neutral-500">Место:</span> <span className="font-medium dark:text-white">{selectedConv.collected_data.location || '-'}</span></div>
-              <div><span className="text-neutral-500">Размер:</span> <span className="font-medium dark:text-white">{selectedConv.collected_data.size || '-'}</span></div>
-              <div><span className="text-neutral-500">Бюджет:</span> <span className="font-medium dark:text-white">{selectedConv.collected_data.budget || '-'}</span></div>
+              <div className="flex flex-col"><span className="text-neutral-500 mb-0.5">Стиль:</span> <span className="font-medium dark:text-white">{selectedConv.collected_data.style || '-'}</span></div>
+              <div className="flex flex-col"><span className="text-neutral-500 mb-0.5">Место:</span> <span className="font-medium dark:text-white">{selectedConv.collected_data.location || '-'}</span></div>
+              <div className="flex flex-col"><span className="text-neutral-500 mb-0.5">Размер:</span> <span className="font-medium dark:text-white">{selectedConv.collected_data.size || '-'}</span></div>
+              <div className="flex flex-col"><span className="text-neutral-500 mb-0.5">Бюджет:</span> <span className="font-medium dark:text-white">{selectedConv.collected_data.budget_amount ? `${selectedConv.collected_data.budget_amount} ${selectedConv.collected_data.budget_currency || ''}` : '-'}</span></div>
+              <div className="flex flex-col"><span className="text-neutral-500 mb-0.5">Идея:</span> <span className="font-medium dark:text-white line-clamp-2 max-w-xs" title={selectedConv.collected_data.idea}>{selectedConv.collected_data.idea || '-'}</span></div>
+              <div className="flex flex-col"><span className="text-neutral-500 mb-0.5">Референсы:</span> <span className="font-medium dark:text-white">{selectedConv.collected_data.has_references ? 'Да' : 'Нет'}</span></div>
               {selectedConv.collected_data.images && selectedConv.collected_data.images.length > 0 && (
-                <div><span className="text-neutral-500">Фото:</span> <span className="font-medium dark:text-white">{selectedConv.collected_data.images.length}</span></div>
+                <div className="flex flex-col"><span className="text-neutral-500 mb-0.5">Фото загружено:</span> <span className="font-medium dark:text-white">{selectedConv.collected_data.images.length} шт.</span></div>
               )}
             </div>
 

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Mail, Lock, Loader2, ArrowRight, Link as LinkIcon, Tag, MapPin, Globe } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { getTranslation, Language } from '@/lib/i18n'
+import { Logo } from '@/components/Logo'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -150,13 +151,8 @@ export default function LoginPage() {
       <div className="max-w-md w-full space-y-8 relative z-10 animate-fade-in-up">
         {/* Header/Logo */}
         <div className="text-center">
-          <div className="flex items-center justify-center gap-3 mb-6 transform hover:scale-105 transition-transform duration-300">
-            <h2 className="text-5xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
-              Tattoo
-            </h2>
-            <div className="w-[5.5rem] h-14 bg-gradient-to-tr from-neutral-900 to-neutral-700 dark:from-white dark:to-neutral-300 rounded-2xl flex items-center justify-center shadow-xl">
-              <span className="text-white dark:text-neutral-950 font-black text-2xl tracking-widest">HUB</span>
-            </div>
+          <div className="flex items-center justify-center mb-6 transform hover:scale-105 transition-transform duration-300">
+            <Logo className="text-5xl" />
           </div>
           <p className="text-neutral-500 dark:text-neutral-400 text-lg">
             {t('exclusivePlatform')}

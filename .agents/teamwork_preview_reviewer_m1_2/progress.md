@@ -1,0 +1,4 @@
+- Reviewed `email_lead_agent.py` against Milestone 1 (R1-R4) scope.
+- Found implementation of UNSEEN, Gemini JSON schemas, pricing logic, and IMAP append.
+- Discovered critical robustness flaws: missing `Message-ID` leads to an infinite auto-reply mail loop, and early state-saves lead to lost emails on Gemini API failures.
+- Issued REQUEST_CHANGES verdict.

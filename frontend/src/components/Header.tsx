@@ -10,6 +10,7 @@ import { TransactionHistoryModal } from '@/components/TransactionHistoryModal'
 import { NotificationsMenu } from '@/components/NotificationsMenu'
 import { toast } from 'react-hot-toast'
 import { OnboardingTour } from '@/components/OnboardingTour'
+import { Logo } from '@/components/Logo'
 
 interface HeaderProps {
   profile: Profile
@@ -82,12 +83,7 @@ export function Header({ profile, onLogout }: HeaderProps) {
             onClick={() => router.push('/dashboard')}
             className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
           >
-            <h1 className="text-xl font-bold text-neutral-900 dark:text-neutral-50 tracking-tight">
-              Tattoo
-            </h1>
-            <div className="w-[3.25rem] h-8 bg-gradient-to-br from-neutral-800 to-neutral-900 dark:from-neutral-100 dark:to-neutral-400 rounded-lg flex items-center justify-center shadow-sm">
-              <span className="text-white dark:text-neutral-950 font-bold text-sm tracking-widest">HUB</span>
-            </div>
+            <Logo />
           </button>
 
           {/* Right Section */}

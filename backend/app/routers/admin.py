@@ -564,3 +564,33 @@ async def get_ai_conversations(
         return res.data or []
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+class PauseConversationRequest(BaseModel):
+    is_paused: bool
+
+@router.put("/conversations/{conversation_id}/pause")
+async def pause_conversation(
+    conversation_id: str,
+    pause_data: PauseConversationRequest,
+    admin_user: AuthUser = Depends(get_admin_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    """Pause or unpause an AI email conversation."""
+    try:
+        res = supabase.table("email_lead_conversations") \
+            .update({"is_paused": pause_data.is_paused}) \
+            .eq("id", conversation_id) \
+            .execute()
+            
+        if not res.data:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+            
+        return res.data[0]
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error updating conversation pause status: {str(e)}"
+        )
+
