@@ -1,81 +1,96 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { LeadForm } from '@/components/LeadForm'
 import { Logo } from '@/components/Logo'
-import { ArrowRight, Paintbrush, Sparkles, X, UserCircle2 } from 'lucide-react'
+import { Sparkles, X, UserCircle2, PenTool, HelpCircle, LogIn, UserPlus } from 'lucide-react'
+import { OnboardingCarousel } from '@/components/OnboardingCarousel'
 
 export default function HomePage() {
   const router = useRouter()
   const [activeSide, setActiveSide] = useState<'none' | 'client'>('none')
   const [hoveredSide, setHoveredSide] = useState<'none' | 'master' | 'client'>('none')
-  const [showTooltip, setShowTooltip] = useState(true)
-
-  useEffect(() => {
-    const timer = setTimeout(() => setShowTooltip(false), 5000)
-    return () => clearTimeout(timer)
-  }, [])
+  const [forceShowOnboarding, setForceShowOnboarding] = useState(false)
 
   return (
     <div className="dark min-h-screen bg-[#050505] text-white flex flex-col md:flex-row relative overflow-hidden">
       
-      {/* Tooltip Onboarding */}
-      <AnimatePresence>
-        {showTooltip && activeSide === 'none' && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-white text-black px-6 py-4 rounded-2xl font-bold shadow-2xl flex flex-col items-center gap-2 pointer-events-none"
-          >
-            <span>Кто вы? Выберите свою сторону, чтобы начать.</span>
-            <div className="w-4 h-4 bg-white rotate-45 absolute -bottom-2" />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <OnboardingCarousel 
+        forceShow={forceShowOnboarding}
+        onComplete={() => setForceShowOnboarding(false)} 
+      />
+
+      {/* Top Center Title (Mobile friendly) */}
+      <div className="absolute top-8 left-1/2 -translate-x-1/2 z-40 pointer-events-none">
+        <h1 className="text-2xl font-bold tracking-widest uppercase text-white/50">Кто ты?</h1>
+      </div>
 
       {/* Top Left Logo */}
       <div className="absolute top-6 left-6 z-50 pointer-events-auto">
         <Logo />
       </div>
 
+      {/* Replay Onboarding Button */}
+      <button 
+        onClick={() => setForceShowOnboarding(true)}
+        className="absolute top-6 right-6 z-50 text-neutral-500 hover:text-white transition-colors"
+        title="Как это работает?"
+      >
+        <HelpCircle className="w-6 h-6" />
+      </button>
+
       {/* Master Side (Left / Top) */}
       <motion.div 
-        className="relative flex-1 cursor-pointer overflow-hidden border-b md:border-b-0 md:border-r border-white/10 flex flex-col items-center justify-center p-8 group"
+        className="relative flex-1 overflow-hidden border-b md:border-b-0 md:border-r border-white/10 flex flex-col items-center justify-center p-8 group"
         onHoverStart={() => setHoveredSide('master')}
         onHoverEnd={() => setHoveredSide('none')}
-        onClick={() => router.push('/login')}
         animate={{
           flex: hoveredSide === 'master' ? 1.2 : hoveredSide === 'client' ? 0.8 : 1
         }}
         transition={{ type: 'spring', stiffness: 200, damping: 30 }}
       >
         <div className="absolute inset-0 bg-[#0a0a0a] z-0" />
-        {/* Subtle grid background */}
+        
+        {/* Orange glow for Master */}
+        <div className="absolute inset-0 opacity-20 group-hover:opacity-60 transition-opacity duration-700 pointer-events-none">
+          <div className="absolute top-[30%] left-[30%] w-[50%] h-[50%] rounded-full bg-orange-600/20 blur-[120px]" />
+        </div>
+
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] z-0 opacity-50" />
         
         <div className="relative z-10 flex flex-col items-center text-center">
-          <div className="w-20 h-20 rounded-full bg-neutral-900 border border-neutral-800 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 shadow-2xl shadow-black">
-            <Paintbrush className="w-10 h-10 text-neutral-400 group-hover:text-white transition-colors" />
+          <div className="w-20 h-20 rounded-full bg-orange-950/30 border border-orange-900/50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 shadow-2xl shadow-orange-900/20">
+            <PenTool className="w-10 h-10 text-orange-500/80 group-hover:text-orange-400 transition-colors" />
           </div>
           <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-neutral-300 group-hover:text-white transition-colors">Я тату-мастер</h2>
-          <p className="text-neutral-500 max-w-sm group-hover:text-neutral-400 transition-colors">
+          <p className="text-neutral-500 max-w-sm group-hover:text-neutral-400 transition-colors mb-8">
             Получай горячие заявки от клиентов без затрат на рекламу.
           </p>
-          <div className="mt-8 flex items-center gap-2 text-indigo-400 font-semibold opacity-0 group-hover:opacity-100 transition-opacity translate-y-4 group-hover:translate-y-0 duration-300">
-            Войти в кабинет <ArrowRight className="w-5 h-5" />
+          
+          <div className="flex flex-col sm:flex-row gap-4 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity md:translate-y-4 md:group-hover:translate-y-0 duration-300">
+            <button 
+              onClick={() => router.push('/login')}
+              className="flex items-center gap-2 px-6 py-3 rounded-full bg-neutral-900 hover:bg-neutral-800 text-white font-medium transition-colors border border-neutral-800"
+            >
+              <LogIn className="w-4 h-4" /> Вход
+            </button>
+            <button 
+              onClick={() => router.push('/login?register=master')}
+              className="flex items-center gap-2 px-6 py-3 rounded-full bg-orange-600 hover:bg-orange-500 text-white font-medium transition-colors"
+            >
+              <UserPlus className="w-4 h-4" /> Регистрация мастера
+            </button>
           </div>
         </div>
       </motion.div>
 
       {/* Client Side (Right / Bottom) */}
       <motion.div 
-        className="relative flex-1 cursor-pointer overflow-hidden flex flex-col items-center justify-center p-8 group"
+        className="relative flex-1 overflow-hidden flex flex-col items-center justify-center p-8 group"
         onHoverStart={() => setHoveredSide('client')}
         onHoverEnd={() => setHoveredSide('none')}
-        onClick={() => setActiveSide('client')}
         animate={{
           flex: hoveredSide === 'client' ? 1.2 : hoveredSide === 'master' ? 0.8 : 1
         }}
@@ -93,11 +108,23 @@ export default function HomePage() {
             <UserCircle2 className="w-10 h-10 text-indigo-400 group-hover:text-indigo-300 transition-colors" />
           </div>
           <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-white">Хочу татуировку!</h2>
-          <p className="text-indigo-200/60 max-w-sm group-hover:text-indigo-200/90 transition-colors">
+          <p className="text-indigo-200/60 max-w-sm group-hover:text-indigo-200/90 transition-colors mb-8">
             Опиши идею один раз, и лучшие мастера города предложат свои эскизы.
           </p>
-          <div className="mt-8 flex items-center gap-2 text-pink-400 font-semibold opacity-0 group-hover:opacity-100 transition-opacity translate-y-4 group-hover:translate-y-0 duration-300">
-            Оставить заявку <Sparkles className="w-5 h-5" />
+          
+          <div className="flex flex-col sm:flex-row gap-4 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity md:translate-y-4 md:group-hover:translate-y-0 duration-300">
+            <button 
+              onClick={() => router.push('/login?register=client')}
+              className="flex items-center gap-2 px-6 py-3 rounded-full bg-indigo-950 hover:bg-indigo-900 text-indigo-300 font-medium transition-colors border border-indigo-900"
+            >
+              <UserCircle2 className="w-4 h-4" /> Аккаунт клиента
+            </button>
+            <button 
+              onClick={() => setActiveSide('client')}
+              className="flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white font-bold transition-all shadow-lg shadow-indigo-500/25"
+            >
+              <Sparkles className="w-4 h-4" /> Быстрая заявка
+            </button>
           </div>
         </div>
       </motion.div>
