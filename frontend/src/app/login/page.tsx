@@ -32,6 +32,7 @@ export default function LoginPage() {
         setRole('master')
       }
     }
+  }, [])
 
   useEffect(() => {
     const savedLang = localStorage.getItem('language')
