@@ -19,10 +19,28 @@ export default function HomePage() {
   const [role, setRole] = useState<Role>('none')
   const [guideSlide, setGuideSlide] = useState(0)
   const [hoveredSide, setHoveredSide] = useState<Role>('none')
+  const [tilt, setTilt] = useState({ x: 0, y: 0 })
 
   // Prevent hydration errors by not rendering until client is ready
   const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
+  useEffect(() => {
+    setMounted(true)
+    
+    // Add gyroscope listener for mobile parallax
+    const handleTilt = (e: DeviceOrientationEvent) => {
+      if (e.gamma !== null && e.beta !== null) {
+        // limit the tilt to reasonable degrees (-30 to 30)
+        const x = Math.min(Math.max(e.gamma, -30), 30)
+        const y = Math.min(Math.max(e.beta - 45, -30), 30) // assume user holds phone at ~45 deg
+        setTilt({ x: x, y: y })
+      }
+    }
+
+    if (typeof window !== 'undefined' && window.DeviceOrientationEvent && !window.matchMedia('(hover: hover)').matches) {
+      window.addEventListener('deviceorientation', handleTilt)
+    }
+    return () => window.removeEventListener('deviceorientation', handleTilt)
+  }, [])
 
   if (!mounted) return null
 
@@ -66,7 +84,11 @@ export default function HomePage() {
             exit={{ opacity: 0, y: -20 }}
             className="absolute inset-0 z-40 flex flex-col items-center justify-center p-6 text-center"
           >
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(79,70,229,0.15)_0%,transparent_70%)] pointer-events-none" />
+            <motion.div 
+              animate={{ x: tilt.x * 2, y: tilt.y * 2 }}
+              transition={{ type: "tween", ease: "linear", duration: 0.1 }}
+              className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(79,70,229,0.15)_0%,transparent_70%)] pointer-events-none scale-110" 
+            />
             <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6">
               {t('landing.welcome')}
             </h1>
@@ -111,10 +133,13 @@ export default function HomePage() {
               transition={{ type: 'spring', stiffness: 200, damping: 30 }}
             >
               <div className="absolute inset-0 bg-[#0a0a0a] z-0" />
-              <div className="absolute inset-0 opacity-40 group-hover:opacity-80 transition-opacity duration-700 pointer-events-none">
+              <motion.div 
+                animate={{ x: tilt.x * -1, y: tilt.y * -1 }}
+                className="absolute inset-0 opacity-40 group-hover:opacity-80 transition-opacity duration-700 pointer-events-none scale-110"
+              >
                 <div className="absolute top-[20%] right-[20%] w-[60%] h-[60%] rounded-full bg-orange-600/30 blur-[100px]" />
                 <div className="absolute bottom-[20%] left-[20%] w-[50%] h-[50%] rounded-full bg-amber-600/30 blur-[100px]" />
-              </div>
+              </motion.div>
               <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] z-0 opacity-50 pointer-events-none" />
               
               <div className="relative z-10 flex flex-col items-center text-center">
@@ -140,10 +165,13 @@ export default function HomePage() {
               transition={{ type: 'spring', stiffness: 200, damping: 30 }}
             >
               <div className="absolute inset-0 bg-neutral-950 z-0" />
-              <div className="absolute inset-0 opacity-40 group-hover:opacity-80 transition-opacity duration-700 pointer-events-none">
+              <motion.div 
+                animate={{ x: tilt.x * -1, y: tilt.y * -1 }}
+                className="absolute inset-0 opacity-40 group-hover:opacity-80 transition-opacity duration-700 pointer-events-none scale-110"
+              >
                 <div className="absolute top-[20%] left-[20%] w-[60%] h-[60%] rounded-full bg-indigo-600/30 blur-[100px]" />
                 <div className="absolute bottom-[20%] right-[20%] w-[50%] h-[50%] rounded-full bg-purple-600/30 blur-[100px]" />
-              </div>
+              </motion.div>
               <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] z-0 opacity-50 pointer-events-none" />
               
               <div className="relative z-10 flex flex-col items-center text-center">
@@ -168,15 +196,20 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             className={`absolute inset-0 z-40 flex flex-col items-center justify-center p-6 ${role === 'master' ? 'bg-[#0a0a0a]' : 'bg-neutral-950'}`}
           >
-            {/* Background identical to chosen side */}
-            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] z-0 opacity-50 pointer-events-none" />
-            <div className="absolute inset-0 opacity-40 pointer-events-none">
+            <motion.div 
+              animate={{ x: tilt.x * 1.5, y: tilt.y * 1.5 }}
+              className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] z-0 opacity-50 pointer-events-none scale-[1.1]" 
+            />
+            <motion.div 
+              animate={{ x: tilt.x * -2, y: tilt.y * -2 }}
+              className="absolute inset-0 opacity-40 pointer-events-none scale-110"
+            >
               {role === 'master' ? (
                  <div className="absolute top-[20%] right-[20%] w-[60%] h-[60%] rounded-full bg-orange-600/20 blur-[120px]" />
               ) : (
                  <div className="absolute top-[20%] left-[20%] w-[60%] h-[60%] rounded-full bg-indigo-600/20 blur-[120px]" />
               )}
-            </div>
+            </motion.div>
 
             <div className="relative z-10 max-w-md w-full flex flex-col items-center text-center pb-24 md:pb-0">
               

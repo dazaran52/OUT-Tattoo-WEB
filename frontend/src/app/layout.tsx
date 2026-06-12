@@ -7,6 +7,7 @@ import { Toaster } from 'react-hot-toast'
 import { InstallPrompt } from '@/components/InstallPrompt'
 import { LanguageProvider } from '@/i18n/LanguageContext'
 import { CustomCursor } from '@/components/CustomCursor'
+import { TouchEffect } from '@/components/TouchEffect'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
@@ -45,6 +46,7 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans`}>
         <LanguageProvider>
           <CustomCursor />
+          <TouchEffect />
           <ThemeProvider />
           <Toaster position="top-center" reverseOrder={false} />
           {children}
