@@ -1,9 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import { X, Download } from 'lucide-react'
 
 export function InstallPrompt() {
+  const pathname = usePathname()
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
   const [showPrompt, setShowPrompt] = useState(false)
 
@@ -45,6 +47,9 @@ export function InstallPrompt() {
     setDeferredPrompt(null)
     setShowPrompt(false)
   }
+
+  // Don't show on landing or login pages
+  if (pathname === '/' || pathname === '/login') return null
 
   if (!showPrompt) return null
 
