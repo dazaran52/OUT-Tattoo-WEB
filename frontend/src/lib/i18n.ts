@@ -391,9 +391,9 @@ const translations: Translations = {
     createAccount: 'Создать аккаунт',
     signIn: 'Войти в систему',
     termsAgreement: 'Входя в систему, вы соглашаетесь с эксклюзивными условиями платформы',
-    termsOfService: 'Условия использования',
-    privacyPolicy: 'Политика конфиденциальности',
-    refundPolicy: 'Политика возвратов',
+    termsOfService: 'Terms of Service',
+    privacyPolicy: 'Privacy Policy',
+    refundPolicy: 'Refund Policy',
     exclusivePlatform: 'Эксклюзивная платформа для топ-мастеров',
     
     // Chat & Top-Up

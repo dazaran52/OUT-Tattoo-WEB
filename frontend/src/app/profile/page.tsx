@@ -697,9 +697,9 @@ export default function ProfilePage() {
 
         <div className="mt-12 mb-8 border-t border-neutral-200 dark:border-neutral-800 pt-8 pb-4 text-center">
           <div className="flex flex-wrap justify-center gap-6 text-sm font-medium text-neutral-500 dark:text-neutral-500">
-            <a href="/terms" className="hover:text-neutral-900 dark:hover:text-white transition-colors">Условия использования</a>
-            <a href="/privacy" className="hover:text-neutral-900 dark:hover:text-white transition-colors">Конфиденциальность</a>
-            <a href="/refunds" className="hover:text-neutral-900 dark:hover:text-white transition-colors">Возвраты</a>
+            <a href="/terms" className="hover:text-neutral-900 dark:hover:text-white transition-colors">Terms of Service</a>
+            <a href="/privacy" className="hover:text-neutral-900 dark:hover:text-white transition-colors">Privacy Policy</a>
+            <a href="/refunds" className="hover:text-neutral-900 dark:hover:text-white transition-colors">Refund Policy</a>
           </div>
           <p className="mt-4 text-xs text-neutral-400 dark:text-neutral-600">
             &copy; 2026 Tattoo HUB. Все права защищены.

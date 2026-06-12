@@ -1,6 +1,6 @@
 {
   "landing": {
-    "welcome": "OUT Tattoo",
+    "welcome": "Tattoo HUB",
     "description": "A platform to quickly find tattoo artists based on your ideas. Describe your design, and the best artists will offer you their prices.",
     "start_btn": "Start!",
     "who_are_you": "Who are you?",
@@ -21,6 +21,8 @@
     "client_slide1_desc": "You don't need to text every artist separately. Just describe your idea here.",
     "client_slide2_title": "Choose the best",
     "client_slide2_desc": "Artists will contact you themselves. Check their portfolios, reviews, and prices to pick the perfect candidate.",
+    "shield_title": "Quality Mark",
+    "shield_desc": "Verified artists receive a special trust badge. Upload your portfolio and certificates to get verified.",
     "next": "Next",
     "skip": "Skip",
     "understand": "Got it"

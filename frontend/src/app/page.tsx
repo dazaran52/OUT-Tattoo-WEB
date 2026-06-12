@@ -28,12 +28,14 @@ export default function HomePage() {
 
   const masterSlides = [
     { title: t('guide.master_slide1_title'), desc: t('guide.master_slide1_desc'), icon: <Sparkles className="w-16 h-16 text-orange-400" /> },
-    { title: t('guide.master_slide2_title'), desc: t('guide.master_slide2_desc'), icon: <ShieldCheck className="w-16 h-16 text-amber-400" /> }
+    { title: t('guide.master_slide2_title'), desc: t('guide.master_slide2_desc'), icon: <CheckCircle2 className="w-16 h-16 text-amber-400" /> },
+    { title: t('guide.shield_title'), desc: t('guide.shield_desc'), icon: <ShieldCheck className="w-16 h-16 text-yellow-400" /> }
   ]
 
   const clientSlides = [
     { title: t('guide.client_slide1_title'), desc: t('guide.client_slide1_desc'), icon: <CheckCircle2 className="w-16 h-16 text-indigo-400" /> },
-    { title: t('guide.client_slide2_title'), desc: t('guide.client_slide2_desc'), icon: <ArrowRight className="w-16 h-16 text-purple-400" /> }
+    { title: t('guide.client_slide2_title'), desc: t('guide.client_slide2_desc'), icon: <ArrowRight className="w-16 h-16 text-purple-400" /> },
+    { title: t('guide.shield_title'), desc: t('guide.shield_desc'), icon: <ShieldCheck className="w-16 h-16 text-yellow-400" /> }
   ]
 
   const currentSlides = role === 'master' ? masterSlides : clientSlides

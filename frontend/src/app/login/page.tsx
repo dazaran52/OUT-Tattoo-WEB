@@ -147,37 +147,39 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-x-hidden overflow-y-auto transition-colors duration-500">
+    <div className="min-h-screen bg-neutral-950 text-neutral-50 flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-x-hidden overflow-y-auto">
       
+      {/* Premium Background */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(120,0,255,0.15),transparent_50%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(79,70,229,0.15),transparent_50%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-5" />
+      </div>
+
       {/* Language Switcher */}
       <div className="absolute top-6 right-6 z-50">
         <button
           onClick={toggleLanguage}
-          className="flex items-center gap-2 px-3 py-2 bg-white/50 dark:bg-neutral-900/50 backdrop-blur-md border border-neutral-200 dark:border-neutral-800 rounded-xl text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
+          className="flex items-center gap-2 px-3 py-2 bg-neutral-900/50 backdrop-blur-md border border-neutral-800 rounded-xl text-neutral-400 hover:text-white transition-colors"
         >
           <Globe className="w-4 h-4" />
           <span className="uppercase text-sm font-semibold">{language === 'cs' ? 'cz' : language}</span>
         </button>
       </div>
 
-      {/* Animated Background Blobs */}
-      <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-2xl opacity-20 dark:opacity-10 animate-blob pointer-events-none"></div>
-      <div className="absolute top-0 -right-4 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-2xl opacity-20 dark:opacity-10 animate-blob animation-delay-2000 pointer-events-none"></div>
-      <div className="absolute -bottom-8 left-20 w-72 h-72 bg-emerald-500 rounded-full mix-blend-multiply filter blur-2xl opacity-20 dark:opacity-10 animate-blob animation-delay-4000 pointer-events-none"></div>
-
       <div className="max-w-md w-full space-y-8 relative z-10 animate-fade-in-up">
         {/* Header/Logo */}
         <div className="text-center">
-          <div className="flex items-center justify-center mb-4 transform hover:scale-105 transition-transform duration-300">
+          <div className="flex items-center justify-center mb-6 transform hover:scale-105 transition-transform duration-300">
             <Logo className="text-5xl" />
           </div>
-          <div className="flex justify-center items-center gap-2 mb-6">
-            <div className={`px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 ${role === 'master' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 border border-orange-200 dark:border-orange-800/50' : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800/50'}`}>
+          <div className="flex justify-center items-center gap-3 mb-6">
+            <div className={`px-5 py-2 rounded-full text-sm font-bold flex items-center gap-2 border shadow-lg ${role === 'master' ? 'bg-indigo-900/30 text-indigo-400 border-indigo-500/30 shadow-indigo-900/20' : 'bg-purple-900/30 text-purple-400 border-purple-500/30 shadow-purple-900/20'}`}>
               {role === 'master' ? '🔥 Аккаунт Мастера' : '✨ Аккаунт Клиента'}
             </div>
             <button 
               onClick={() => setRole(r => r === 'master' ? 'client' : 'master')}
-              className="text-xs text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 underline underline-offset-2 transition-colors"
+              className="text-xs text-neutral-500 hover:text-neutral-300 underline underline-offset-4 transition-colors"
             >
               (сменить)
             </button>
@@ -185,20 +187,20 @@ export default function LoginPage() {
         </div>
 
         {/* Glassmorphism Form Container */}
-        <div className="bg-white/70 dark:bg-neutral-900/60 backdrop-blur-xl border border-white/20 dark:border-neutral-800/50 shadow-2xl rounded-3xl">
+        <div className="bg-neutral-900/60 backdrop-blur-2xl border border-neutral-800/60 shadow-[0_0_40px_rgba(0,0,0,0.5)] rounded-[2rem] overflow-hidden">
           {/* Tabs */}
-          <div className="flex border-b border-neutral-200/50 dark:border-neutral-800/50">
+          <div className="flex border-b border-neutral-800/60 bg-neutral-950/30">
             <button
               type="button"
               onClick={() => setIsSignUp(false)}
-              className={`flex-1 py-4 text-sm font-bold transition-colors ${!isSignUp ? 'bg-white/50 dark:bg-neutral-800/50 text-neutral-900 dark:text-white border-b-2 border-neutral-900 dark:border-white' : 'text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800/30'}`}
+              className={`flex-1 py-5 text-sm font-bold transition-all ${!isSignUp ? 'bg-neutral-800/40 text-white border-b-2 border-indigo-500 shadow-[inset_0_-2px_10px_rgba(99,102,241,0.1)]' : 'text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/20'}`}
             >
               {t('loginTab')}
             </button>
             <button
               type="button"
               onClick={() => setIsSignUp(true)}
-              className={`flex-1 py-4 text-sm font-bold transition-colors ${isSignUp ? 'bg-white/50 dark:bg-neutral-800/50 text-neutral-900 dark:text-white border-b-2 border-neutral-900 dark:border-white' : 'text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800/30'}`}
+              className={`flex-1 py-5 text-sm font-bold transition-all ${isSignUp ? 'bg-neutral-800/40 text-white border-b-2 border-indigo-500 shadow-[inset_0_-2px_10px_rgba(99,102,241,0.1)]' : 'text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/20'}`}
             >
               {t('registerTab')}
             </button>
@@ -215,36 +217,36 @@ export default function LoginPage() {
 
             <div className="space-y-5">
               <div>
-                <label htmlFor="email" className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
+                <label htmlFor="email" className="block text-sm font-semibold text-neutral-300 mb-2">
                   {t('email')}
                 </label>
                 <div className="relative group">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 group-focus-within:text-neutral-900 dark:group-focus-within:text-white transition-colors" />
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 group-focus-within:text-indigo-400 transition-colors" />
                   <input
                     id="email"
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="block w-full pl-12 pr-4 py-3.5 bg-white/50 dark:bg-neutral-950/50 border border-neutral-200 dark:border-neutral-800 rounded-xl text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white focus:border-transparent transition-all backdrop-blur-sm"
+                    className="block w-full pl-12 pr-4 py-4 bg-neutral-950/50 border border-neutral-800 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all backdrop-blur-sm shadow-inner"
                     placeholder="you@example.com"
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
+                <label htmlFor="password" className="block text-sm font-semibold text-neutral-300 mb-2">
                   {t('passwordAuth')}
                 </label>
                 <div className="relative group">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 group-focus-within:text-neutral-900 dark:group-focus-within:text-white transition-colors" />
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 group-focus-within:text-indigo-400 transition-colors" />
                   <input
                     id="password"
                     type="password"
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="block w-full pl-12 pr-4 py-3.5 bg-white/50 dark:bg-neutral-950/50 border border-neutral-200 dark:border-neutral-800 rounded-xl text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white focus:border-transparent transition-all backdrop-blur-sm"
+                    className="block w-full pl-12 pr-4 py-4 bg-neutral-950/50 border border-neutral-800 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all backdrop-blur-sm shadow-inner"
                     placeholder="••••••••"
                   />
                 </div>
@@ -253,55 +255,55 @@ export default function LoginPage() {
               {isSignUp && role === 'master' && (
                 <>
                   <div className="animate-fade-in-up">
-                    <label htmlFor="portfolioUrl" className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
+                    <label htmlFor="portfolioUrl" className="block text-sm font-semibold text-neutral-300 mb-2">
                       {t('portfolioUrl')}
                     </label>
                     <div className="relative group">
-                      <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 group-focus-within:text-neutral-900 dark:group-focus-within:text-white transition-colors" />
+                      <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 group-focus-within:text-indigo-400 transition-colors" />
                       <input
                         id="portfolioUrl"
                         type="url"
                         required={isSignUp && role === 'master'}
                         value={portfolioUrl}
                         onChange={(e) => setPortfolioUrl(e.target.value)}
-                        className="block w-full pl-12 pr-4 py-3.5 bg-white/50 dark:bg-neutral-950/50 border border-neutral-200 dark:border-neutral-800 rounded-xl text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white focus:border-transparent transition-all backdrop-blur-sm"
+                        className="block w-full pl-12 pr-4 py-4 bg-neutral-950/50 border border-neutral-800 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all backdrop-blur-sm shadow-inner"
                         placeholder="https://instagram.com/..."
                       />
                     </div>
                   </div>
 
                   <div className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-                    <label htmlFor="referralCode" className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
+                    <label htmlFor="referralCode" className="block text-sm font-semibold text-neutral-300 mb-2">
                       {t('referralCode')}
                     </label>
                     <div className="relative group">
-                      <Tag className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 group-focus-within:text-neutral-900 dark:group-focus-within:text-white transition-colors" />
+                      <Tag className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 group-focus-within:text-indigo-400 transition-colors" />
                       <input
                         id="referralCode"
                         type="text"
                         value={referralCode}
                         onChange={(e) => setReferralCode(e.target.value)}
-                        className="block w-full pl-12 pr-4 py-3.5 bg-white/50 dark:bg-neutral-950/50 border border-neutral-200 dark:border-neutral-800 rounded-xl text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white focus:border-transparent transition-all backdrop-blur-sm"
+                        className="block w-full pl-12 pr-4 py-4 bg-neutral-950/50 border border-neutral-800 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all backdrop-blur-sm shadow-inner"
                         placeholder="OUT-12345"
                       />
                     </div>
                   </div>
 
                   <div className="animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-                    <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
+                    <label className="block text-sm font-semibold text-neutral-300 mb-2">
                       {t('country')}
                     </label>
                     <div className="relative group">
-                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 group-focus-within:text-neutral-900 dark:group-focus-within:text-white transition-colors" />
+                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 group-focus-within:text-indigo-400 transition-colors" />
                       <select
                         required={isSignUp}
                         value={selectedCountry}
                         onChange={(e) => setSelectedCountry(e.target.value)}
-                        className="block w-full pl-12 pr-4 py-3.5 bg-white/50 dark:bg-neutral-950/50 border border-neutral-200 dark:border-neutral-800 rounded-xl text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white focus:border-transparent transition-all backdrop-blur-sm appearance-none"
+                        className="block w-full pl-12 pr-4 py-4 bg-neutral-950/50 border border-neutral-800 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all backdrop-blur-sm appearance-none shadow-inner"
                       >
-                        <option value="" disabled>{t('selectCountry')}</option>
+                        <option value="" disabled className="bg-neutral-900">{t('selectCountry')}</option>
                         {countries.map(c => (
-                          <option key={c.id} value={c.id}>{c.name_ru}</option>
+                          <option key={c.id} value={c.id} className="bg-neutral-900">{c.name_ru}</option>
                         ))}
                       </select>
                     </div>
@@ -309,27 +311,27 @@ export default function LoginPage() {
 
                   {cities.length > 0 && (
                     <div className="animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-                      <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
+                      <label className="block text-sm font-semibold text-neutral-300 mb-2">
                         {t('city')}
                       </label>
                       <div className="relative group">
                         <div 
-                          className="w-full flex items-center min-h-[50px] pl-12 pr-4 py-2 bg-white/50 dark:bg-neutral-950/50 border border-neutral-200 dark:border-neutral-800 rounded-xl cursor-pointer backdrop-blur-sm"
+                          className="w-full flex items-center min-h-[56px] pl-12 pr-4 py-2 bg-neutral-950/50 border border-neutral-800 rounded-xl cursor-pointer backdrop-blur-sm shadow-inner group-hover:border-neutral-700 transition-colors"
                           onClick={() => setIsCityDropdownOpen(!isCityDropdownOpen)}
                         >
-                          <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 group-focus-within:text-neutral-900 dark:group-focus-within:text-white transition-colors" />
-                          <div className="flex-1 flex flex-wrap gap-1">
+                          <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 group-focus-within:text-indigo-400 transition-colors" />
+                          <div className="flex-1 flex flex-wrap gap-2">
                             {selectedCities.length === 0 ? (
-                              <span className="text-neutral-400">{t('selectCity')}</span>
+                              <span className="text-neutral-500">{t('selectCity')}</span>
                             ) : (
                               selectedCities.map(cityId => {
                                 const city = cities.find(c => c.id === cityId)
                                 return city ? (
-                                  <span key={city.id} className="text-xs bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 px-2 py-1 rounded-md flex items-center gap-1">
+                                  <span key={city.id} className="text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 backdrop-blur-md">
                                     {city.name_ru}
                                     <button 
                                       type="button" 
-                                      className="hover:text-red-400"
+                                      className="hover:text-white hover:bg-indigo-500/50 rounded-full w-4 h-4 flex items-center justify-center transition-colors"
                                       onClick={(e) => {
                                         e.stopPropagation()
                                         setSelectedCities(prev => prev.filter(id => id !== city.id))
@@ -345,12 +347,12 @@ export default function LoginPage() {
                         </div>
 
                         {isCityDropdownOpen && (
-                          <div className="absolute z-50 w-full mt-2 max-h-60 overflow-y-auto bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-xl">
+                          <div className="absolute z-50 w-full mt-2 max-h-60 overflow-y-auto bg-neutral-900 border border-neutral-800 rounded-xl shadow-2xl">
                             {cities.map(c => (
-                              <label key={c.id} className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer border-b border-neutral-100 dark:border-neutral-800/50 last:border-0">
+                              <label key={c.id} className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-800/80 cursor-pointer border-b border-neutral-800/50 last:border-0 transition-colors">
                                 <input 
                                   type="checkbox" 
-                                  className="w-4 h-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900 dark:border-neutral-700 dark:bg-neutral-950 dark:checked:bg-white"
+                                  className="w-4 h-4 rounded border-neutral-700 text-indigo-600 focus:ring-indigo-500 bg-neutral-950 checked:bg-indigo-500"
                                   checked={selectedCities.includes(c.id)}
                                   onChange={(e) => {
                                     if (e.target.checked) {
@@ -360,7 +362,7 @@ export default function LoginPage() {
                                     }
                                   }}
                                 />
-                                <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{c.name_ru}</span>
+                                <span className="text-sm font-medium text-neutral-300">{c.name_ru}</span>
                               </label>
                             ))}
                           </div>
@@ -375,7 +377,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full flex items-center justify-center gap-2 py-4 px-4 bg-neutral-900 dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-neutral-950 font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              className="w-full flex items-center justify-center gap-2 py-4 px-6 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold rounded-xl shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:shadow-[0_0_30px_rgba(99,102,241,0.5)] transform hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
               {isLoading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -390,16 +392,16 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <p className="text-center text-xs font-medium text-neutral-400 dark:text-neutral-500 mb-4">
+        <p className="text-center text-xs font-medium text-neutral-500 mb-4">
           {t('termsAgreement')}
         </p>
 
-        <div className="flex flex-wrap justify-center gap-4 text-xs font-medium text-neutral-500 dark:text-neutral-500">
-          <a href="/terms" className="hover:text-neutral-900 dark:hover:text-white transition-colors">{t('termsOfService')}</a>
+        <div className="flex flex-wrap justify-center gap-4 text-xs font-medium text-neutral-500">
+          <a href="/terms" className="hover:text-white transition-colors">{t('termsOfService')}</a>
           <span>&middot;</span>
-          <a href="/privacy" className="hover:text-neutral-900 dark:hover:text-white transition-colors">{t('privacyPolicy')}</a>
+          <a href="/privacy" className="hover:text-white transition-colors">{t('privacyPolicy')}</a>
           <span>&middot;</span>
-          <a href="/refunds" className="hover:text-neutral-900 dark:hover:text-white transition-colors">{t('refundPolicy')}</a>
+          <a href="/refunds" className="hover:text-white transition-colors">{t('refundPolicy')}</a>
         </div>
       </div>
     </div>
