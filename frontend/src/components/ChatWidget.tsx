@@ -196,9 +196,9 @@ export function ChatWidget() {
   // If not logged in, show Email pre-chat form
   if (!session?.user) {
     return (
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none">
         <div 
-          className={`mb-4 w-72 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl transition-all duration-300 origin-bottom-right ${
+          className={`mb-4 w-72 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl transition-all duration-300 origin-bottom-right pointer-events-auto ${
             isOpen ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 translate-y-4 pointer-events-none'
           }`}
         >
@@ -235,7 +235,7 @@ export function ChatWidget() {
 
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="w-14 h-14 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-full flex items-center justify-center shadow-lg hover:scale-105 transition-transform border-4 border-neutral-50 dark:border-neutral-950"
+          className="w-14 h-14 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-full flex items-center justify-center shadow-lg hover:scale-105 transition-transform border-4 border-neutral-50 dark:border-neutral-950 pointer-events-auto"
         >
           {isOpen ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
         </button>
@@ -245,9 +245,9 @@ export function ChatWidget() {
 
   // Full Live Chat
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none">
       <div 
-        className={`mb-4 w-80 sm:w-96 h-[500px] flex flex-col bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl transition-all duration-300 origin-bottom-right overflow-hidden ${
+        className={`mb-4 w-80 sm:w-96 h-[500px] flex flex-col bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl transition-all duration-300 origin-bottom-right overflow-hidden pointer-events-auto ${
           isOpen ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 translate-y-4 pointer-events-none'
         }`}
       >
@@ -330,7 +330,7 @@ export function ChatWidget() {
 
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative w-14 h-14 bg-cyan-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-cyan-500/30 hover:scale-105 transition-transform border-4 border-white dark:border-neutral-950"
+        className="relative w-14 h-14 bg-cyan-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-cyan-500/30 hover:scale-105 transition-transform border-4 border-white dark:border-neutral-950 pointer-events-auto"
       >
         {isOpen ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
         {!isOpen && unreadCount > 0 && (
