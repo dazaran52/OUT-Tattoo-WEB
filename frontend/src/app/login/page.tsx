@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Mail, Lock, Loader2, ArrowRight, Link as LinkIcon, Tag, MapPin, Globe } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { getTranslation, Language } from '@/lib/i18n'
@@ -17,7 +18,25 @@ export default function LoginPage() {
   const [referralCode, setReferralCode] = useState('')
   const [role, setRole] = useState<'master' | 'client'>('master')
   const [error, setError] = useState('')
+  const [error, setError] = useState('')
   const [language, setLanguage] = useState<string>('cs')
+  const [tilt, setTilt] = useState({ x: 0, y: 0 })
+
+  useEffect(() => {
+    // Add gyroscope listener for mobile parallax
+    const handleTilt = (e: DeviceOrientationEvent) => {
+      if (e.gamma !== null && e.beta !== null) {
+        const x = Math.min(Math.max(e.gamma, -30), 30)
+        const y = Math.min(Math.max(e.beta - 45, -30), 30) 
+        setTilt({ x: x, y: y })
+      }
+    }
+
+    if (typeof window !== 'undefined' && window.DeviceOrientationEvent && !window.matchMedia('(hover: hover)').matches) {
+      window.addEventListener('deviceorientation', handleTilt)
+    }
+    return () => window.removeEventListener('deviceorientation', handleTilt)
+  }, [])
 
   useEffect(() => {
     // Read from URL if available
@@ -147,13 +166,30 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-50 flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-x-hidden overflow-y-auto">
+    <div className={`min-h-[100dvh] text-neutral-50 flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-x-hidden overflow-y-auto pb-safe ${role === 'master' ? 'bg-[#0a0a0a]' : 'bg-neutral-950'}`}>
       
       {/* Premium Background */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(120,0,255,0.15),transparent_50%)] pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(79,70,229,0.15),transparent_50%)] pointer-events-none" />
-        <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-5" />
+      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        <motion.div 
+          animate={{ x: tilt.x * 1.5, y: tilt.y * 1.5 }}
+          className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] z-0 opacity-50 scale-[1.1]" 
+        />
+        <motion.div 
+          animate={{ x: tilt.x * -2, y: tilt.y * -2 }}
+          className="absolute inset-0 opacity-40 scale-110"
+        >
+          {role === 'master' ? (
+             <>
+               <div className="absolute top-[10%] right-[20%] w-[60%] h-[60%] rounded-full bg-orange-600/20 blur-[120px]" />
+               <div className="absolute bottom-[10%] left-[20%] w-[50%] h-[50%] rounded-full bg-amber-600/20 blur-[120px]" />
+             </>
+          ) : (
+             <>
+               <div className="absolute top-[10%] left-[20%] w-[60%] h-[60%] rounded-full bg-indigo-600/20 blur-[120px]" />
+               <div className="absolute bottom-[10%] right-[20%] w-[50%] h-[50%] rounded-full bg-purple-600/20 blur-[120px]" />
+             </>
+          )}
+        </motion.div>
       </div>
 
       {/* Language Switcher */}
@@ -193,14 +229,14 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => setIsSignUp(false)}
-              className={`flex-1 py-5 text-sm font-bold transition-all ${!isSignUp ? 'bg-neutral-800/40 text-white border-b-2 border-indigo-500 shadow-[inset_0_-2px_10px_rgba(99,102,241,0.1)]' : 'text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/20'}`}
+              className={`flex-1 py-5 text-sm font-bold transition-all ${!isSignUp ? `bg-neutral-800/40 text-white border-b-2 ${role === 'master' ? 'border-orange-500 shadow-[inset_0_-2px_10px_rgba(234,88,12,0.1)]' : 'border-indigo-500 shadow-[inset_0_-2px_10px_rgba(99,102,241,0.1)]'}` : 'text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/20'}`}
             >
               {t('loginTab')}
             </button>
             <button
               type="button"
               onClick={() => setIsSignUp(true)}
-              className={`flex-1 py-5 text-sm font-bold transition-all ${isSignUp ? 'bg-neutral-800/40 text-white border-b-2 border-indigo-500 shadow-[inset_0_-2px_10px_rgba(99,102,241,0.1)]' : 'text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/20'}`}
+              className={`flex-1 py-5 text-sm font-bold transition-all ${isSignUp ? `bg-neutral-800/40 text-white border-b-2 ${role === 'master' ? 'border-orange-500 shadow-[inset_0_-2px_10px_rgba(234,88,12,0.1)]' : 'border-indigo-500 shadow-[inset_0_-2px_10px_rgba(99,102,241,0.1)]'}` : 'text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/20'}`}
             >
               {t('registerTab')}
             </button>
@@ -221,14 +257,14 @@ export default function LoginPage() {
                   {t('email')}
                 </label>
                 <div className="relative group">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 group-focus-within:text-indigo-400 transition-colors" />
+                  <Mail className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-colors ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-indigo-400'}`} />
                   <input
                     id="email"
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="block w-full pl-12 pr-4 py-4 bg-neutral-950/50 border border-neutral-800 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all backdrop-blur-sm shadow-inner"
+                    className={`block w-full pl-12 pr-4 py-4 bg-neutral-950/50 border border-neutral-800 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 transition-all backdrop-blur-sm shadow-inner ${role === 'master' ? 'focus:ring-orange-500/50 focus:border-orange-500' : 'focus:ring-indigo-500/50 focus:border-indigo-500'}`}
                     placeholder="you@example.com"
                   />
                 </div>
@@ -239,14 +275,14 @@ export default function LoginPage() {
                   {t('passwordAuth')}
                 </label>
                 <div className="relative group">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 group-focus-within:text-indigo-400 transition-colors" />
+                  <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-colors ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-indigo-400'}`} />
                   <input
                     id="password"
                     type="password"
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="block w-full pl-12 pr-4 py-4 bg-neutral-950/50 border border-neutral-800 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all backdrop-blur-sm shadow-inner"
+                    className={`block w-full pl-12 pr-4 py-4 bg-neutral-950/50 border border-neutral-800 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 transition-all backdrop-blur-sm shadow-inner ${role === 'master' ? 'focus:ring-orange-500/50 focus:border-orange-500' : 'focus:ring-indigo-500/50 focus:border-indigo-500'}`}
                     placeholder="••••••••"
                   />
                 </div>
@@ -259,14 +295,14 @@ export default function LoginPage() {
                       {t('portfolioUrl')}
                     </label>
                     <div className="relative group">
-                      <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 group-focus-within:text-indigo-400 transition-colors" />
+                      <LinkIcon className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-colors ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-indigo-400'}`} />
                       <input
                         id="portfolioUrl"
                         type="url"
                         required={isSignUp && role === 'master'}
                         value={portfolioUrl}
                         onChange={(e) => setPortfolioUrl(e.target.value)}
-                        className="block w-full pl-12 pr-4 py-4 bg-neutral-950/50 border border-neutral-800 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all backdrop-blur-sm shadow-inner"
+                        className={`block w-full pl-12 pr-4 py-4 bg-neutral-950/50 border border-neutral-800 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 transition-all backdrop-blur-sm shadow-inner ${role === 'master' ? 'focus:ring-orange-500/50 focus:border-orange-500' : 'focus:ring-indigo-500/50 focus:border-indigo-500'}`}
                         placeholder="https://instagram.com/..."
                       />
                     </div>
@@ -277,13 +313,13 @@ export default function LoginPage() {
                       {t('referralCode')}
                     </label>
                     <div className="relative group">
-                      <Tag className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 group-focus-within:text-indigo-400 transition-colors" />
+                      <Tag className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-colors ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-indigo-400'}`} />
                       <input
                         id="referralCode"
                         type="text"
                         value={referralCode}
                         onChange={(e) => setReferralCode(e.target.value)}
-                        className="block w-full pl-12 pr-4 py-4 bg-neutral-950/50 border border-neutral-800 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all backdrop-blur-sm shadow-inner"
+                        className={`block w-full pl-12 pr-4 py-4 bg-neutral-950/50 border border-neutral-800 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 transition-all backdrop-blur-sm shadow-inner ${role === 'master' ? 'focus:ring-orange-500/50 focus:border-orange-500' : 'focus:ring-indigo-500/50 focus:border-indigo-500'}`}
                         placeholder="OUT-12345"
                       />
                     </div>
@@ -294,12 +330,12 @@ export default function LoginPage() {
                       {t('country')}
                     </label>
                     <div className="relative group">
-                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 group-focus-within:text-indigo-400 transition-colors" />
+                      <MapPin className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-colors ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-indigo-400'}`} />
                       <select
                         required={isSignUp}
                         value={selectedCountry}
                         onChange={(e) => setSelectedCountry(e.target.value)}
-                        className="block w-full pl-12 pr-4 py-4 bg-neutral-950/50 border border-neutral-800 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all backdrop-blur-sm appearance-none shadow-inner"
+                        className={`block w-full pl-12 pr-4 py-4 bg-neutral-950/50 border border-neutral-800 rounded-xl text-white focus:outline-none focus:ring-2 transition-all backdrop-blur-sm appearance-none shadow-inner ${role === 'master' ? 'focus:ring-orange-500/50 focus:border-orange-500' : 'focus:ring-indigo-500/50 focus:border-indigo-500'}`}
                       >
                         <option value="" disabled className="bg-neutral-900">{t('selectCountry')}</option>
                         {countries.map(c => (
@@ -319,7 +355,7 @@ export default function LoginPage() {
                           className="w-full flex items-center min-h-[56px] pl-12 pr-4 py-2 bg-neutral-950/50 border border-neutral-800 rounded-xl cursor-pointer backdrop-blur-sm shadow-inner group-hover:border-neutral-700 transition-colors"
                           onClick={() => setIsCityDropdownOpen(!isCityDropdownOpen)}
                         >
-                          <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 group-focus-within:text-indigo-400 transition-colors" />
+                          <MapPin className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-colors ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-indigo-400'}`} />
                           <div className="flex-1 flex flex-wrap gap-2">
                             {selectedCities.length === 0 ? (
                               <span className="text-neutral-500">{t('selectCity')}</span>
@@ -327,11 +363,11 @@ export default function LoginPage() {
                               selectedCities.map(cityId => {
                                 const city = cities.find(c => c.id === cityId)
                                 return city ? (
-                                  <span key={city.id} className="text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 backdrop-blur-md">
+                                  <span key={city.id} className={`text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 backdrop-blur-md border ${role === 'master' ? 'bg-orange-500/20 text-orange-300 border-orange-500/30' : 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30'}`}>
                                     {city.name_ru}
                                     <button 
                                       type="button" 
-                                      className="hover:text-white hover:bg-indigo-500/50 rounded-full w-4 h-4 flex items-center justify-center transition-colors"
+                                      className={`hover:text-white rounded-full w-4 h-4 flex items-center justify-center transition-colors ${role === 'master' ? 'hover:bg-orange-500/50' : 'hover:bg-indigo-500/50'}`}
                                       onClick={(e) => {
                                         e.stopPropagation()
                                         setSelectedCities(prev => prev.filter(id => id !== city.id))
@@ -377,7 +413,11 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full flex items-center justify-center gap-2 py-4 px-6 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold rounded-xl shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:shadow-[0_0_30px_rgba(99,102,241,0.5)] transform hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              className={`w-full flex items-center justify-center gap-2 py-4 px-6 text-white font-bold rounded-xl transform hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none ${
+                role === 'master' 
+                  ? 'bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 shadow-[0_0_20px_rgba(234,88,12,0.3)] hover:shadow-[0_0_30px_rgba(234,88,12,0.5)]' 
+                  : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:shadow-[0_0_30px_rgba(99,102,241,0.5)]'
+              }`}
             >
               {isLoading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />

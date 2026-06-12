@@ -112,7 +112,7 @@ export default function HomePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-30 flex flex-col md:flex-row"
+            className="absolute inset-0 z-30 flex flex-col-reverse md:flex-row overflow-y-auto overflow-x-hidden"
           >
             {/* Center delimiter */}
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none hidden md:flex flex-col items-center gap-6">
@@ -194,7 +194,7 @@ export default function HomePage() {
             key="step2"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`absolute inset-0 z-40 flex flex-col items-center justify-center p-6 ${role === 'master' ? 'bg-[#0a0a0a]' : 'bg-neutral-950'}`}
+            className={`absolute inset-0 z-40 flex flex-col items-center justify-center p-6 overflow-y-auto overflow-x-hidden ${role === 'master' ? 'bg-[#0a0a0a]' : 'bg-neutral-950'}`}
           >
             <motion.div 
               animate={{ x: tilt.x * 1.5, y: tilt.y * 1.5 }}
