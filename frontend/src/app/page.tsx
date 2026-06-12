@@ -67,18 +67,18 @@ export default function HomePage() {
             Получай горячие заявки от клиентов без затрат на рекламу.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 transition-transform duration-300">
-            <button 
-              onClick={() => router.push('/login')}
-              className="flex items-center gap-2 px-6 py-3 rounded-full bg-neutral-900 hover:bg-neutral-800 text-white font-medium transition-colors border border-neutral-800"
-            >
-              <LogIn className="w-4 h-4" /> Вход
-            </button>
+          <div className="flex flex-col gap-3 w-full max-w-[320px] transition-transform duration-300">
             <button 
               onClick={() => router.push('/login?register=master')}
-              className="flex items-center gap-2 px-6 py-3 rounded-full bg-orange-600 hover:bg-orange-500 text-white font-medium transition-colors"
+              className="flex items-center justify-center gap-2 px-6 py-4 rounded-full bg-orange-600 hover:bg-orange-500 text-white font-bold transition-colors shadow-lg shadow-orange-900/20"
             >
-              <UserPlus className="w-4 h-4" /> Регистрация мастера
+              <UserPlus className="w-5 h-5" /> Стать мастером
+            </button>
+            <button 
+              onClick={() => router.push('/login')}
+              className="flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-neutral-900/80 hover:bg-neutral-800 text-white font-medium transition-colors border border-neutral-800"
+            >
+              <LogIn className="w-4 h-4" /> Войти в кабинет
             </button>
           </div>
         </div>
@@ -119,19 +119,27 @@ export default function HomePage() {
             Опиши идею один раз, и лучшие мастера города предложат свои эскизы.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 transition-transform duration-300">
-            <button 
-              onClick={() => router.push('/login?register=client')}
-              className="flex items-center gap-2 px-6 py-3 rounded-full bg-indigo-950 hover:bg-indigo-900 text-indigo-300 font-medium transition-colors border border-indigo-900"
-            >
-              <UserCircle2 className="w-4 h-4" /> Аккаунт клиента
-            </button>
+          <div className="flex flex-col gap-3 w-full max-w-[320px] transition-transform duration-300">
             <button 
               onClick={() => setActiveSide('client')}
-              className="flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white font-bold transition-all shadow-lg shadow-indigo-500/25"
+              className="flex items-center justify-center gap-2 px-6 py-4 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white font-bold transition-all shadow-lg shadow-indigo-500/25"
             >
-              <Sparkles className="w-4 h-4" /> Быстрая заявка
+              <Sparkles className="w-5 h-5" /> Быстрая заявка
             </button>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => router.push('/login')}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-indigo-950/40 hover:bg-indigo-900/60 text-indigo-200 font-medium transition-colors border border-indigo-800/30"
+              >
+                <LogIn className="w-4 h-4" /> Вход
+              </button>
+              <button 
+                onClick={() => router.push('/login?register=client')}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-indigo-950 hover:bg-indigo-900 text-indigo-300 font-medium transition-colors border border-indigo-800"
+              >
+                <UserPlus className="w-4 h-4" /> Рега
+              </button>
+            </div>
           </div>
         </div>
       </motion.div>
