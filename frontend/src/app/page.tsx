@@ -52,9 +52,9 @@ export default function HomePage() {
     <div className="dark min-h-[100dvh] bg-[#050505] text-white flex flex-col md:flex-row relative overflow-hidden pb-safe">
       
       {/* Top Bar */}
-      <div className="absolute top-6 left-6 right-6 z-50 flex justify-between items-center pointer-events-auto">
-        <Logo />
-        <LanguageSelector />
+      <div className="absolute top-6 left-6 right-6 z-50 flex justify-between items-center pointer-events-none">
+        <div className="pointer-events-auto"><Logo /></div>
+        <div className="pointer-events-auto"><LanguageSelector /></div>
       </div>
 
       <AnimatePresence mode="wait">
@@ -113,7 +113,7 @@ export default function HomePage() {
                 <div className="absolute top-[20%] right-[20%] w-[60%] h-[60%] rounded-full bg-orange-600/30 blur-[100px]" />
                 <div className="absolute bottom-[20%] left-[20%] w-[50%] h-[50%] rounded-full bg-amber-600/30 blur-[100px]" />
               </div>
-              <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] z-0 opacity-50" />
+              <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] z-0 opacity-50 pointer-events-none" />
               
               <div className="relative z-10 flex flex-col items-center text-center">
                 <div className="w-24 h-24 rounded-full bg-orange-950 border border-orange-900 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 shadow-2xl shadow-orange-900/50">
@@ -142,7 +142,7 @@ export default function HomePage() {
                 <div className="absolute top-[20%] left-[20%] w-[60%] h-[60%] rounded-full bg-indigo-600/30 blur-[100px]" />
                 <div className="absolute bottom-[20%] right-[20%] w-[50%] h-[50%] rounded-full bg-purple-600/30 blur-[100px]" />
               </div>
-              <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] z-0 opacity-50" />
+              <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] z-0 opacity-50 pointer-events-none" />
               
               <div className="relative z-10 flex flex-col items-center text-center">
                 <div className="w-24 h-24 rounded-full bg-indigo-950 border border-indigo-900 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 shadow-2xl shadow-indigo-900/50">
@@ -167,7 +167,7 @@ export default function HomePage() {
             className={`absolute inset-0 z-40 flex flex-col items-center justify-center p-6 ${role === 'master' ? 'bg-[#0a0a0a]' : 'bg-neutral-950'}`}
           >
             {/* Background identical to chosen side */}
-            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] z-0 opacity-50" />
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] z-0 opacity-50 pointer-events-none" />
             <div className="absolute inset-0 opacity-40 pointer-events-none">
               {role === 'master' ? (
                  <div className="absolute top-[20%] right-[20%] w-[60%] h-[60%] rounded-full bg-orange-600/20 blur-[120px]" />
