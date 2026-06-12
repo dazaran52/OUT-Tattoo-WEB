@@ -73,12 +73,14 @@ export default function HomePage() {
             <p className="text-lg md:text-xl text-neutral-400 max-w-2xl mb-12 leading-relaxed">
               {t('landing.description')}
             </p>
-            <button
-              onClick={() => setStep(1)}
-              className="px-10 py-5 rounded-full bg-white text-black font-bold text-xl hover:scale-105 transition-transform shadow-[0_0_40px_rgba(255,255,255,0.3)]"
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onTap={() => setStep(1)}
+              className="px-10 py-5 rounded-full bg-white text-black font-bold text-xl transition-shadow shadow-[0_0_40px_rgba(255,255,255,0.3)]"
             >
               {t('landing.start_btn')}
-            </button>
+            </motion.button>
           </motion.div>
         )}
 
@@ -102,9 +104,9 @@ export default function HomePage() {
             {/* Master Side */}
             <motion.div 
               className="relative flex-1 overflow-hidden flex flex-col items-center justify-center p-8 group cursor-pointer"
-              onClick={() => { setRole('master'); setStep(2); }}
-              onHoverStart={() => setHoveredSide('master')}
-              onHoverEnd={() => setHoveredSide('none')}
+              onTap={() => { setRole('master'); setStep(2); }}
+              onHoverStart={() => { if (window.matchMedia('(hover: hover)').matches) setHoveredSide('master') }}
+              onHoverEnd={() => { if (window.matchMedia('(hover: hover)').matches) setHoveredSide('none') }}
               animate={{ flex: hoveredSide === 'master' ? 1.2 : hoveredSide === 'client' ? 0.8 : 1 }}
               transition={{ type: 'spring', stiffness: 200, damping: 30 }}
             >
@@ -131,9 +133,9 @@ export default function HomePage() {
             {/* Client Side */}
             <motion.div 
               className="relative flex-1 overflow-hidden flex flex-col items-center justify-center p-8 group cursor-pointer"
-              onClick={() => { setRole('client'); setStep(2); }}
-              onHoverStart={() => setHoveredSide('client')}
-              onHoverEnd={() => setHoveredSide('none')}
+              onTap={() => { setRole('client'); setStep(2); }}
+              onHoverStart={() => { if (window.matchMedia('(hover: hover)').matches) setHoveredSide('client') }}
+              onHoverEnd={() => { if (window.matchMedia('(hover: hover)').matches) setHoveredSide('none') }}
               animate={{ flex: hoveredSide === 'client' ? 1.2 : hoveredSide === 'master' ? 0.8 : 1 }}
               transition={{ type: 'spring', stiffness: 200, damping: 30 }}
             >
