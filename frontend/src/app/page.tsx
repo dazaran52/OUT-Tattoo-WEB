@@ -51,8 +51,9 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-[#0a0a0a] z-0" />
         
         {/* Orange glow for Master */}
-        <div className="absolute inset-0 opacity-20 group-hover:opacity-60 transition-opacity duration-700 pointer-events-none">
-          <div className="absolute top-[30%] left-[30%] w-[50%] h-[50%] rounded-full bg-orange-600/20 blur-[120px]" />
+        <div className="absolute inset-0 opacity-40 group-hover:opacity-80 transition-opacity duration-700 pointer-events-none">
+          <div className="absolute top-[20%] right-[20%] w-[60%] h-[60%] rounded-full bg-orange-600/30 blur-[100px]" />
+          <div className="absolute bottom-[20%] left-[20%] w-[50%] h-[50%] rounded-full bg-amber-600/30 blur-[100px]" />
         </div>
 
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] z-0 opacity-50" />
@@ -82,6 +83,15 @@ export default function HomePage() {
           </div>
         </div>
       </motion.div>
+
+      {/* Center delimiter / Delicate text */}
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none hidden md:flex flex-col items-center gap-6">
+        <div className="w-px h-24 bg-gradient-to-b from-transparent via-white/20 to-transparent" />
+        <div className="px-5 py-2 rounded-full border border-white/5 bg-black/40 backdrop-blur-xl text-white/40 text-xs tracking-[0.2em] uppercase font-medium shadow-2xl">
+          Кто ты?
+        </div>
+        <div className="w-px h-24 bg-gradient-to-b from-transparent via-white/20 to-transparent" />
+      </div>
 
       {/* Client Side (Right / Bottom) */}
       <motion.div 
