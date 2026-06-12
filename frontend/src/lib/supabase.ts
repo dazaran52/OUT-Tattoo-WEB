@@ -26,6 +26,9 @@ export type Profile = {
   unlocked_leads_count?: number
   gamification_level?: string
   withdrawable_credits?: number
+  role?: string
+  is_verified_master?: boolean
+  certificate_url?: string | null
 }
 
 export type SupportMessage = {
