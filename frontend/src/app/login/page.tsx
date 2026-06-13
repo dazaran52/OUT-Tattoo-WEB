@@ -18,7 +18,6 @@ export default function LoginPage() {
   const [referralCode, setReferralCode] = useState('')
   const [role, setRole] = useState<'master' | 'client'>('master')
   const [error, setError] = useState('')
-  const [error, setError] = useState('')
   const [language, setLanguage] = useState<string>('cs')
   const [tilt, setTilt] = useState({ x: 0, y: 0 })
 
