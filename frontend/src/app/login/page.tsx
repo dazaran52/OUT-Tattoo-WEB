@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Mail, Lock, Loader2, ArrowRight, Link as LinkIcon, Tag, MapPin, Globe } from 'lucide-react'
+import { Mail, Lock, Loader2, ArrowRight, Link as LinkIcon, Tag, MapPin, Globe, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { getTranslation, Language } from '@/lib/i18n'
 import { Logo } from '@/components/Logo'
@@ -165,282 +165,364 @@ export default function LoginPage() {
   }
 
   return (
-    <div className={`min-h-[100dvh] text-neutral-50 flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-x-hidden overflow-y-auto pb-safe ${role === 'master' ? 'bg-[#0a0a0a]' : 'bg-neutral-950'}`}>
+    <div className={`min-h-[100dvh] flex flex-col md:flex-row overflow-hidden relative ${role === 'master' ? 'bg-[#0a0a0a]' : 'bg-neutral-950'} transition-colors duration-1000`}>
       
-      {/* Premium Background */}
-      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-        <motion.div 
-          animate={{ x: tilt.x * 1.5, y: tilt.y * 1.5 }}
-          className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] z-0 opacity-50 scale-[1.1]" 
-        />
-        <motion.div 
-          animate={{ x: tilt.x * -2, y: tilt.y * -2 }}
-          className="absolute inset-0 opacity-40 scale-110"
-        >
-          {role === 'master' ? (
-             <>
-               <div className="absolute top-[10%] right-[20%] w-[60%] h-[60%] rounded-full bg-orange-600/20 blur-[120px]" />
-               <div className="absolute bottom-[10%] left-[20%] w-[50%] h-[50%] rounded-full bg-amber-600/20 blur-[120px]" />
-             </>
-          ) : (
-             <>
-               <div className="absolute top-[10%] left-[20%] w-[60%] h-[60%] rounded-full bg-indigo-600/20 blur-[120px]" />
-               <div className="absolute bottom-[10%] right-[20%] w-[50%] h-[50%] rounded-full bg-purple-600/20 blur-[120px]" />
-             </>
-          )}
-        </motion.div>
-      </div>
-
-      {/* Language Switcher */}
-      <div className="absolute top-6 right-6 z-50">
-        <button
-          onClick={toggleLanguage}
-          className="flex items-center gap-2 px-3 py-2 bg-neutral-900/50 backdrop-blur-md border border-neutral-800 rounded-xl text-neutral-400 hover:text-white transition-colors"
-        >
-          <Globe className="w-4 h-4" />
-          <span className="uppercase text-sm font-semibold">{language === 'cs' ? 'cz' : language}</span>
-        </button>
-      </div>
-
-      <div className="max-w-md w-full space-y-8 relative z-10 animate-fade-in-up">
-        {/* Header/Logo */}
-        <div className="text-center">
-          <div className="flex items-center justify-center mb-6 transform hover:scale-105 transition-transform duration-300">
-            <Logo className="text-5xl" />
-          </div>
-          <div className="flex justify-center items-center gap-3 mb-6">
-            <div className={`px-5 py-2 rounded-full text-sm font-bold flex items-center gap-2 border shadow-lg ${role === 'master' ? 'bg-indigo-900/30 text-indigo-400 border-indigo-500/30 shadow-indigo-900/20' : 'bg-purple-900/30 text-purple-400 border-purple-500/30 shadow-purple-900/20'}`}>
-              {role === 'master' ? '🔥 Аккаунт Мастера' : '✨ Аккаунт Клиента'}
-            </div>
-            <button 
-              onClick={() => setRole(r => r === 'master' ? 'client' : 'master')}
-              className="text-xs text-neutral-500 hover:text-neutral-300 underline underline-offset-4 transition-colors"
-            >
-              (сменить)
-            </button>
-          </div>
+      {/* LEFT SIDE: Visuals & Branding (Hidden on small mobile, stacked on tablet, split on desktop) */}
+      <div className="relative w-full md:w-1/2 min-h-[30vh] md:min-h-screen flex flex-col items-center justify-center p-8 lg:p-16 overflow-hidden border-b md:border-b-0 md:border-r border-white/5 z-0">
+        
+        {/* Dynamic Abstract Background Orb */}
+        <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center">
+          <motion.div 
+            animate={{ 
+              x: tilt.x * 2, 
+              y: tilt.y * 2,
+              scale: [1, 1.05, 1],
+            }}
+            transition={{
+              scale: { duration: 10, repeat: Infinity, ease: "easeInOut" },
+              x: { type: "spring", damping: 30, stiffness: 50 },
+              y: { type: "spring", damping: 30, stiffness: 50 }
+            }}
+            className="relative w-full h-full max-w-2xl max-h-2xl opacity-60 mix-blend-screen"
+          >
+            <AnimatePresence mode="wait">
+              {role === 'master' ? (
+                <motion.div
+                  key="master-orb"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 1.1 }}
+                  transition={{ duration: 1 }}
+                  className="absolute inset-0 rounded-full bg-gradient-to-tr from-orange-600 via-amber-500 to-yellow-400 blur-[100px] md:blur-[140px]"
+                />
+              ) : (
+                <motion.div
+                  key="client-orb"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 1.1 }}
+                  transition={{ duration: 1 }}
+                  className="absolute inset-0 rounded-full bg-gradient-to-tr from-indigo-600 via-purple-500 to-fuchsia-400 blur-[100px] md:blur-[140px]"
+                />
+              )}
+            </AnimatePresence>
+          </motion.div>
         </div>
 
-        {/* Glassmorphism Form Container */}
-        <div className="bg-neutral-900/60 backdrop-blur-2xl border border-neutral-800/60 shadow-[0_0_40px_rgba(0,0,0,0.5)] rounded-[2rem] overflow-hidden">
-          {/* Tabs */}
-          <div className="flex border-b border-neutral-800/60 bg-neutral-950/30">
-            <button
-              type="button"
-              onClick={() => setIsSignUp(false)}
-              className={`flex-1 py-5 text-sm font-bold transition-all ${!isSignUp ? `bg-neutral-800/40 text-white border-b-2 ${role === 'master' ? 'border-orange-500 shadow-[inset_0_-2px_10px_rgba(234,88,12,0.1)]' : 'border-indigo-500 shadow-[inset_0_-2px_10px_rgba(99,102,241,0.1)]'}` : 'text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/20'}`}
+        {/* Premium Grid Overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:64px_64px] z-0 pointer-events-none" />
+
+        {/* Branding Content */}
+        <div className="relative z-10 flex flex-col items-center md:items-start text-center md:text-left w-full max-w-lg">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 transform hover:scale-105 transition-transform duration-500 cursor-pointer"
+            onClick={() => router.push('/')}
+          >
+            <Logo className="text-6xl md:text-7xl lg:text-8xl drop-shadow-2xl" />
+          </motion.div>
+          
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={role}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.5 }}
+              className="space-y-4"
             >
-              {t('loginTab')}
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tighter text-white drop-shadow-lg">
+                {role === 'master' ? 'Управляйте своим бизнесом.' : 'Найдите идеального мастера.'}
+              </h1>
+              <p className="text-lg md:text-xl text-neutral-300 font-light">
+                {role === 'master' 
+                  ? 'Premium платформа для тату-мастеров. Получайте клиентов, ведите запись и масштабируйтесь.' 
+                  : 'Сотни проверенных профессионалов, удобный поиск и безопасная запись на сеанс.'}
+              </p>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* RIGHT SIDE: Interactive Form */}
+      <div className="relative w-full md:w-1/2 flex flex-col items-center justify-center p-4 sm:p-8 lg:p-16 z-10 pb-safe overflow-y-auto">
+        
+        {/* Language Switcher */}
+        <div className="absolute top-6 right-6 z-50">
+          <button
+            onClick={toggleLanguage}
+            className="flex items-center gap-2 px-3 py-2 bg-neutral-900/50 backdrop-blur-md border border-neutral-800 rounded-full text-neutral-400 hover:text-white transition-colors"
+          >
+            <Globe className="w-4 h-4" />
+            <span className="uppercase text-sm font-semibold tracking-wider">{language === 'cs' ? 'cz' : language}</span>
+          </button>
+        </div>
+
+        <div className="w-full max-w-md space-y-8 animate-fade-in-up">
+          
+          {/* Premium Role Toggle */}
+          <div className="relative flex p-1.5 bg-neutral-900/80 backdrop-blur-xl rounded-full border border-neutral-800/60 shadow-inner">
+            <motion.div
+              className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] rounded-full shadow-lg ${role === 'master' ? 'bg-gradient-to-r from-orange-600 to-amber-500' : 'bg-gradient-to-r from-indigo-600 to-purple-500'}`}
+              animate={{
+                left: role === 'master' ? '6px' : 'calc(50%)',
+              }}
+              transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            />
+            
+            <button
+              onClick={() => {
+                setRole('master');
+                setIsSignUp(false); // Reset to login on switch for cleaner flow
+              }}
+              className={`relative z-10 flex-1 py-3 text-sm font-bold tracking-wide transition-colors duration-300 flex items-center justify-center gap-2 ${role === 'master' ? 'text-white' : 'text-neutral-500 hover:text-neutral-300'}`}
+            >
+              🔥 Мастер
             </button>
             <button
-              type="button"
-              onClick={() => setIsSignUp(true)}
-              className={`flex-1 py-5 text-sm font-bold transition-all ${isSignUp ? `bg-neutral-800/40 text-white border-b-2 ${role === 'master' ? 'border-orange-500 shadow-[inset_0_-2px_10px_rgba(234,88,12,0.1)]' : 'border-indigo-500 shadow-[inset_0_-2px_10px_rgba(99,102,241,0.1)]'}` : 'text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/20'}`}
+              onClick={() => {
+                setRole('client');
+                setIsSignUp(false);
+              }}
+              className={`relative z-10 flex-1 py-3 text-sm font-bold tracking-wide transition-colors duration-300 flex items-center justify-center gap-2 ${role === 'client' ? 'text-white' : 'text-neutral-500 hover:text-neutral-300'}`}
             >
-              {t('registerTab')}
+              ✨ Клиент
             </button>
           </div>
 
-          <div className="p-8">
-            <form className="space-y-6" onSubmit={handleSubmit}>
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-sm text-red-600 dark:text-red-400 flex items-center gap-3">
-                <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></div>
-                {error}
-              </div>
-            )}
+          {/* Glassmorphism Form Container */}
+          <div className="bg-neutral-900/40 backdrop-blur-2xl border border-white/5 shadow-[0_8px_32px_rgba(0,0,0,0.4)] rounded-3xl overflow-hidden">
+            
+            {/* Mode Switcher (Login / Register) */}
+            <div className="flex border-b border-white/5">
+              <button
+                type="button"
+                onClick={() => setIsSignUp(false)}
+                className={`flex-1 py-5 text-sm font-bold uppercase tracking-widest transition-all ${!isSignUp ? `text-white bg-white/5 border-b-2 ${role === 'master' ? 'border-orange-500' : 'border-indigo-500'}` : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'}`}
+              >
+                {t('loginTab')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsSignUp(true)}
+                className={`flex-1 py-5 text-sm font-bold uppercase tracking-widest transition-all ${isSignUp ? `text-white bg-white/5 border-b-2 ${role === 'master' ? 'border-orange-500' : 'border-indigo-500'}` : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'}`}
+              >
+                {t('registerTab')}
+              </button>
+            </div>
 
-            <div className="space-y-5">
-              <div>
-                <label htmlFor="email" className="block text-sm font-semibold text-neutral-300 mb-2">
-                  {t('email')}
-                </label>
-                <div className="relative group">
-                  <Mail className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-colors ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-indigo-400'}`} />
-                  <input
-                    id="email"
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className={`block w-full pl-12 pr-4 py-4 bg-neutral-950/50 border border-neutral-800 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 transition-all backdrop-blur-sm shadow-inner ${role === 'master' ? 'focus:ring-orange-500/50 focus:border-orange-500' : 'focus:ring-indigo-500/50 focus:border-indigo-500'}`}
-                    placeholder="you@example.com"
-                  />
-                </div>
-              </div>
+            <div className="p-6 sm:p-8">
+              <form className="space-y-6" onSubmit={handleSubmit}>
+                <AnimatePresence mode="popLayout">
+                  {error && (
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0, y: -10 }}
+                      animate={{ opacity: 1, height: 'auto', y: 0 }}
+                      exit={{ opacity: 0, height: 0, y: -10 }}
+                      className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 text-sm text-red-400 flex items-center gap-3 overflow-hidden"
+                    >
+                      <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0" />
+                      {error}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
-              <div>
-                <label htmlFor="password" className="block text-sm font-semibold text-neutral-300 mb-2">
-                  {t('passwordAuth')}
-                </label>
-                <div className="relative group">
-                  <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-colors ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-indigo-400'}`} />
-                  <input
-                    id="password"
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className={`block w-full pl-12 pr-4 py-4 bg-neutral-950/50 border border-neutral-800 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 transition-all backdrop-blur-sm shadow-inner ${role === 'master' ? 'focus:ring-orange-500/50 focus:border-orange-500' : 'focus:ring-indigo-500/50 focus:border-indigo-500'}`}
-                    placeholder="••••••••"
-                  />
-                </div>
-              </div>
-              
-              {isSignUp && role === 'master' && (
-                <>
-                  <div className="animate-fade-in-up">
-                    <label htmlFor="portfolioUrl" className="block text-sm font-semibold text-neutral-300 mb-2">
-                      {t('portfolioUrl')}
-                    </label>
+                <div className="space-y-5">
+                  <motion.div layout>
                     <div className="relative group">
-                      <LinkIcon className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-colors ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-indigo-400'}`} />
+                      <Mail className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-all duration-300 ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-indigo-400'}`} />
                       <input
-                        id="portfolioUrl"
-                        type="url"
-                        required={isSignUp && role === 'master'}
-                        value={portfolioUrl}
-                        onChange={(e) => setPortfolioUrl(e.target.value)}
-                        className={`block w-full pl-12 pr-4 py-4 bg-neutral-950/50 border border-neutral-800 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 transition-all backdrop-blur-sm shadow-inner ${role === 'master' ? 'focus:ring-orange-500/50 focus:border-orange-500' : 'focus:ring-indigo-500/50 focus:border-indigo-500'}`}
-                        placeholder="https://instagram.com/..."
+                        id="email"
+                        type="email"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className={`block w-full pl-12 pr-4 py-4 bg-neutral-950/40 border border-white/10 rounded-2xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all backdrop-blur-md shadow-inner ${role === 'master' ? 'focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10' : 'focus:border-indigo-500 focus:ring-indigo-500/20 focus:bg-indigo-950/10'}`}
+                        placeholder="E-mail"
                       />
                     </div>
-                  </div>
+                  </motion.div>
 
-                  <div className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-                    <label htmlFor="referralCode" className="block text-sm font-semibold text-neutral-300 mb-2">
-                      {t('referralCode')}
-                    </label>
+                  <motion.div layout>
                     <div className="relative group">
-                      <Tag className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-colors ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-indigo-400'}`} />
+                      <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-all duration-300 ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-indigo-400'}`} />
                       <input
-                        id="referralCode"
-                        type="text"
-                        value={referralCode}
-                        onChange={(e) => setReferralCode(e.target.value)}
-                        className={`block w-full pl-12 pr-4 py-4 bg-neutral-950/50 border border-neutral-800 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 transition-all backdrop-blur-sm shadow-inner ${role === 'master' ? 'focus:ring-orange-500/50 focus:border-orange-500' : 'focus:ring-indigo-500/50 focus:border-indigo-500'}`}
-                        placeholder="OUT-12345"
+                        id="password"
+                        type="password"
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className={`block w-full pl-12 pr-4 py-4 bg-neutral-950/40 border border-white/10 rounded-2xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all backdrop-blur-md shadow-inner ${role === 'master' ? 'focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10' : 'focus:border-indigo-500 focus:ring-indigo-500/20 focus:bg-indigo-950/10'}`}
+                        placeholder={t('passwordAuth')}
                       />
                     </div>
-                  </div>
-
-                  <div className="animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-                    <label className="block text-sm font-semibold text-neutral-300 mb-2">
-                      {t('country')}
-                    </label>
-                    <div className="relative group">
-                      <MapPin className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-colors ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-indigo-400'}`} />
-                      <select
-                        required={isSignUp}
-                        value={selectedCountry}
-                        onChange={(e) => setSelectedCountry(e.target.value)}
-                        className={`block w-full pl-12 pr-4 py-4 bg-neutral-950/50 border border-neutral-800 rounded-xl text-white focus:outline-none focus:ring-2 transition-all backdrop-blur-sm appearance-none shadow-inner ${role === 'master' ? 'focus:ring-orange-500/50 focus:border-orange-500' : 'focus:ring-indigo-500/50 focus:border-indigo-500'}`}
+                  </motion.div>
+                  
+                  <AnimatePresence mode="popLayout">
+                    {isSignUp && role === 'master' && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0, y: -20 }}
+                        animate={{ opacity: 1, height: 'auto', y: 0 }}
+                        exit={{ opacity: 0, height: 0, y: -20 }}
+                        transition={{ duration: 0.3 }}
+                        className="space-y-5 overflow-hidden"
                       >
-                        <option value="" disabled className="bg-neutral-900">{t('selectCountry')}</option>
-                        {countries.map(c => (
-                          <option key={c.id} value={c.id} className="bg-neutral-900">{c.name_ru}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  {cities.length > 0 && (
-                    <div className="animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-                      <label className="block text-sm font-semibold text-neutral-300 mb-2">
-                        {t('city')}
-                      </label>
-                      <div className="relative group">
-                        <div 
-                          className="w-full flex items-center min-h-[56px] pl-12 pr-4 py-2 bg-neutral-950/50 border border-neutral-800 rounded-xl cursor-pointer backdrop-blur-sm shadow-inner group-hover:border-neutral-700 transition-colors"
-                          onClick={() => setIsCityDropdownOpen(!isCityDropdownOpen)}
-                        >
-                          <MapPin className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-colors ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-indigo-400'}`} />
-                          <div className="flex-1 flex flex-wrap gap-2">
-                            {selectedCities.length === 0 ? (
-                              <span className="text-neutral-500">{t('selectCity')}</span>
-                            ) : (
-                              selectedCities.map(cityId => {
-                                const city = cities.find(c => c.id === cityId)
-                                return city ? (
-                                  <span key={city.id} className={`text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 backdrop-blur-md border ${role === 'master' ? 'bg-orange-500/20 text-orange-300 border-orange-500/30' : 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30'}`}>
-                                    {city.name_ru}
-                                    <button 
-                                      type="button" 
-                                      className={`hover:text-white rounded-full w-4 h-4 flex items-center justify-center transition-colors ${role === 'master' ? 'hover:bg-orange-500/50' : 'hover:bg-indigo-500/50'}`}
-                                      onClick={(e) => {
-                                        e.stopPropagation()
-                                        setSelectedCities(prev => prev.filter(id => id !== city.id))
-                                      }}
-                                    >
-                                      &times;
-                                    </button>
-                                  </span>
-                                ) : null
-                              })
-                            )}
-                          </div>
+                        <div className="relative group pt-1">
+                          <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-colors group-focus-within:text-orange-400" />
+                          <input
+                            id="portfolioUrl"
+                            type="url"
+                            required={isSignUp && role === 'master'}
+                            value={portfolioUrl}
+                            onChange={(e) => setPortfolioUrl(e.target.value)}
+                            className="block w-full pl-12 pr-4 py-4 bg-neutral-950/40 border border-white/10 rounded-2xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10 transition-all backdrop-blur-md shadow-inner"
+                            placeholder="Instagram / Portfolio URL"
+                          />
                         </div>
 
-                        {isCityDropdownOpen && (
-                          <div className="absolute z-50 w-full mt-2 max-h-60 overflow-y-auto bg-neutral-900 border border-neutral-800 rounded-xl shadow-2xl">
-                            {cities.map(c => (
-                              <label key={c.id} className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-800/80 cursor-pointer border-b border-neutral-800/50 last:border-0 transition-colors">
-                                <input 
-                                  type="checkbox" 
-                                  className="w-4 h-4 rounded border-neutral-700 text-indigo-600 focus:ring-indigo-500 bg-neutral-950 checked:bg-indigo-500"
-                                  checked={selectedCities.includes(c.id)}
-                                  onChange={(e) => {
-                                    if (e.target.checked) {
-                                      setSelectedCities(prev => [...prev, c.id])
-                                    } else {
-                                      setSelectedCities(prev => prev.filter(id => id !== c.id))
-                                    }
-                                  }}
-                                />
-                                <span className="text-sm font-medium text-neutral-300">{c.name_ru}</span>
-                              </label>
+                        <div className="relative group">
+                          <Tag className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-colors group-focus-within:text-orange-400" />
+                          <input
+                            id="referralCode"
+                            type="text"
+                            value={referralCode}
+                            onChange={(e) => setReferralCode(e.target.value)}
+                            className="block w-full pl-12 pr-4 py-4 bg-neutral-950/40 border border-white/10 rounded-2xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10 transition-all backdrop-blur-md shadow-inner"
+                            placeholder="Referral Code (Optional)"
+                          />
+                        </div>
+
+                        <div className="relative group">
+                          <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-colors group-focus-within:text-orange-400 z-10 pointer-events-none" />
+                          <select
+                            required={isSignUp}
+                            value={selectedCountry}
+                            onChange={(e) => setSelectedCountry(e.target.value)}
+                            className="block w-full pl-12 pr-4 py-4 bg-neutral-950/40 border border-white/10 rounded-2xl text-white focus:outline-none focus:ring-2 focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10 transition-all backdrop-blur-md appearance-none shadow-inner cursor-pointer"
+                          >
+                            <option value="" disabled className="bg-neutral-900">{t('selectCountry')}</option>
+                            {countries.map(c => (
+                              <option key={c.id} value={c.id} className="bg-neutral-900">{c.name_ru}</option>
                             ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                          </select>
+                        </div>
+
+                        <AnimatePresence>
+                          {cities.length > 0 && (
+                            <motion.div 
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto' }}
+                              exit={{ opacity: 0, height: 0 }}
+                              className="relative group overflow-hidden"
+                            >
+                              <div 
+                                className="w-full flex items-center min-h-[56px] pl-12 pr-4 py-3 bg-neutral-950/40 border border-white/10 rounded-2xl cursor-pointer backdrop-blur-md shadow-inner hover:border-orange-500/50 transition-colors"
+                                onClick={() => setIsCityDropdownOpen(!isCityDropdownOpen)}
+                              >
+                                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-colors group-focus-within:text-orange-400" />
+                                <div className="flex-1 flex flex-wrap gap-2">
+                                  {selectedCities.length === 0 ? (
+                                    <span className="text-neutral-500">{t('selectCity')}</span>
+                                  ) : (
+                                    selectedCities.map(cityId => {
+                                      const city = cities.find(c => c.id === cityId)
+                                      return city ? (
+                                        <span key={city.id} className="text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 bg-orange-500/20 text-orange-300 border border-orange-500/30">
+                                          {city.name_ru}
+                                          <button 
+                                            type="button" 
+                                            className="hover:text-white rounded-full transition-colors hover:bg-orange-500/50 p-0.5"
+                                            onClick={(e) => {
+                                              e.stopPropagation()
+                                              setSelectedCities(prev => prev.filter(id => id !== city.id))
+                                            }}
+                                          >
+                                            <X className="w-3 h-3" />
+                                          </button>
+                                        </span>
+                                      ) : null
+                                    })
+                                  )}
+                                </div>
+                              </div>
+
+                              <AnimatePresence>
+                                {isCityDropdownOpen && (
+                                  <motion.div 
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    className="absolute z-50 w-full mt-2 max-h-60 overflow-y-auto bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl p-2"
+                                  >
+                                    {cities.map(c => (
+                                      <label key={c.id} className="flex items-center gap-3 px-3 py-3 hover:bg-neutral-800 rounded-xl cursor-pointer transition-colors">
+                                        <div className="relative flex items-center justify-center w-5 h-5">
+                                          <input 
+                                            type="checkbox" 
+                                            className="peer appearance-none w-5 h-5 border-2 border-neutral-700 rounded-md checked:bg-orange-500 checked:border-orange-500 focus:ring-0 focus:ring-offset-0 bg-neutral-950 transition-all cursor-pointer"
+                                            checked={selectedCities.includes(c.id)}
+                                            onChange={(e) => {
+                                              if (e.target.checked) {
+                                                setSelectedCities(prev => [...prev, c.id])
+                                              } else {
+                                                setSelectedCities(prev => prev.filter(id => id !== c.id))
+                                              }
+                                            }}
+                                          />
+                                          <svg className="absolute w-3 h-3 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M1 5L5 9L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                          </svg>
+                                        </div>
+                                        <span className="text-sm font-medium text-neutral-300">{c.name_ru}</span>
+                                      </label>
+                                    ))}
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  type="submit"
+                  disabled={isLoading}
+                  className={`w-full flex items-center justify-center gap-3 py-4 px-6 text-white text-lg font-bold rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${
+                    role === 'master' 
+                      ? 'bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 shadow-[0_10px_30px_rgba(234,88,12,0.3)] hover:shadow-[0_10px_40px_rgba(234,88,12,0.5)] border border-orange-500/50' 
+                      : 'bg-gradient-to-r from-indigo-600 to-purple-500 hover:from-indigo-500 hover:to-purple-400 shadow-[0_10px_30px_rgba(99,102,241,0.3)] hover:shadow-[0_10px_40px_rgba(99,102,241,0.5)] border border-indigo-500/50'
+                  }`}
+                >
+                  {isLoading ? (
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                  ) : (
+                    <>
+                      {isSignUp ? t('createAccount') : t('signIn')}
+                      <ArrowRight className="w-5 h-5" />
+                    </>
                   )}
-                </>
-              )}
+                </motion.button>
+              </form>
             </div>
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className={`w-full flex items-center justify-center gap-2 py-4 px-6 text-white font-bold rounded-xl transform hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none ${
-                role === 'master' 
-                  ? 'bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 shadow-[0_0_20px_rgba(234,88,12,0.3)] hover:shadow-[0_0_30px_rgba(234,88,12,0.5)]' 
-                  : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:shadow-[0_0_30px_rgba(99,102,241,0.5)]'
-              }`}
-            >
-              {isLoading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <>
-                  {isSignUp ? t('createAccount') : t('signIn')}
-                  <ArrowRight className="w-5 h-5" />
-                </>
-              )}
-            </button>
-          </form>
           </div>
-        </div>
 
-        <p className="text-center text-xs font-medium text-neutral-500 mb-4">
-          {t('termsAgreement')}
-        </p>
+          <p className="text-center text-xs font-medium text-neutral-500 px-4 leading-relaxed">
+            {t('termsAgreement')}
+          </p>
 
-        <div className="flex flex-wrap justify-center gap-4 text-xs font-medium text-neutral-500">
-          <a href="/terms" className="hover:text-white transition-colors">{t('termsOfService')}</a>
-          <span>&middot;</span>
-          <a href="/privacy" className="hover:text-white transition-colors">{t('privacyPolicy')}</a>
-          <span>&middot;</span>
-          <a href="/refunds" className="hover:text-white transition-colors">{t('refundPolicy')}</a>
+          <div className="flex flex-wrap justify-center gap-4 text-xs font-semibold text-neutral-600">
+            <a href="/terms" className="hover:text-white transition-colors uppercase tracking-wider">{t('termsOfService')}</a>
+            <span>&middot;</span>
+            <a href="/privacy" className="hover:text-white transition-colors uppercase tracking-wider">{t('privacyPolicy')}</a>
+            <span>&middot;</span>
+            <a href="/refunds" className="hover:text-white transition-colors uppercase tracking-wider">{t('refundPolicy')}</a>
+          </div>
         </div>
       </div>
     </div>
