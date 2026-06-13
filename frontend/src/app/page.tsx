@@ -257,7 +257,7 @@ export default function HomePage() {
                   
                   {role === 'client' && (
                     <button 
-                      onClick={() => router.push('/login?register=client')}
+                      onClick={() => router.push('/new-lead')}
                       className="w-full flex items-center justify-center gap-2 px-6 py-5 md:py-4 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white font-bold text-lg transition-all shadow-lg shadow-indigo-500/25"
                     >
                       <Sparkles className="w-5 h-5" /> {t('landing.btn_apply')}
