@@ -53,7 +53,7 @@ export default function HomePage() {
   const clientSlides = [
     { title: t('guide.client_slide1_title'), desc: t('guide.client_slide1_desc'), icon: <CheckCircle2 className="w-16 h-16 text-indigo-400" /> },
     { title: t('guide.client_slide2_title'), desc: t('guide.client_slide2_desc'), icon: <ArrowRight className="w-16 h-16 text-purple-400" /> },
-    { title: t('guide.shield_title'), desc: t('guide.shield_desc'), icon: <ShieldCheck className="w-16 h-16 text-yellow-400" /> }
+    { title: t('guide.shield_title'), desc: t('guide.client_shield_desc'), icon: <ShieldCheck className="w-16 h-16 text-yellow-400" /> }
   ]
 
   const currentSlides = role === 'master' ? masterSlides : clientSlides
@@ -149,7 +149,7 @@ export default function HomePage() {
                 <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-neutral-300 group-hover:text-white transition-colors">
                   {t('landing.master_title')}
                 </h2>
-                <p className="text-neutral-500 max-w-sm group-hover:text-neutral-400 transition-colors">
+                <p className="text-lg md:text-xl text-neutral-500 max-w-sm group-hover:text-neutral-300 transition-colors">
                   {t('landing.master_desc')}
                 </p>
               </div>
@@ -166,7 +166,7 @@ export default function HomePage() {
             >
               <div className="absolute inset-0 bg-neutral-950 z-0" />
               <motion.div 
-                animate={{ x: tilt.x * -1, y: tilt.y * -1 }}
+                animate={{ x: tilt.x * -1.5, y: tilt.y * -1.5 }}
                 className="absolute inset-0 opacity-40 group-hover:opacity-80 transition-opacity duration-700 pointer-events-none scale-110"
               >
                 <div className="absolute top-[20%] left-[20%] w-[60%] h-[60%] rounded-full bg-indigo-600/30 blur-[100px]" />
@@ -178,10 +178,10 @@ export default function HomePage() {
                 <div className="w-24 h-24 rounded-full bg-indigo-950 border border-indigo-900 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 shadow-2xl shadow-indigo-900/50">
                   <UserCircle2 className="w-12 h-12 text-indigo-400 group-hover:text-indigo-300 transition-colors" />
                 </div>
-                <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-white">
+                <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-neutral-300 group-hover:text-white transition-colors">
                   {t('landing.client_title')}
                 </h2>
-                <p className="text-indigo-200/60 max-w-sm group-hover:text-indigo-200/90 transition-colors">
+                <p className="text-lg md:text-xl text-neutral-500 max-w-sm group-hover:text-neutral-300 transition-colors">
                   {t('landing.client_desc')}
                 </p>
               </div>
@@ -192,10 +192,12 @@ export default function HomePage() {
         {step === 2 && (
           <motion.div
             key="step2"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={`absolute inset-0 z-40 flex flex-col items-center justify-center p-6 overflow-y-auto overflow-x-hidden ${role === 'master' ? 'bg-[#0a0a0a]' : 'bg-neutral-950'}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-30 flex flex-col items-center justify-center p-6"
           >
+            {/* Dynamic Background */}
             <motion.div 
               animate={{ x: tilt.x * 1.5, y: tilt.y * 1.5 }}
               className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] z-0 opacity-50 pointer-events-none scale-[1.1]" 
@@ -255,7 +257,7 @@ export default function HomePage() {
                   
                   {role === 'client' && (
                     <button 
-                      onClick={() => router.push('/new-lead')} // Or to a fast lead modal
+                      onClick={() => router.push('/login?register=client')}
                       className="w-full flex items-center justify-center gap-2 px-6 py-5 md:py-4 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white font-bold text-lg transition-all shadow-lg shadow-indigo-500/25"
                     >
                       <Sparkles className="w-5 h-5" /> {t('landing.btn_apply')}
