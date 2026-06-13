@@ -8,6 +8,10 @@ import { useRouter } from 'next/navigation'
 export default function NewLeadPage() {
   const router = useRouter()
   const [step, setStep] = useState(1)
+  const [description, setDescription] = useState('')
+  const [selectedSize, setSelectedSize] = useState('')
+
+  const canContinue = description.trim().length > 0 && selectedSize !== ''
 
   return (
     <div className="min-h-[100dvh] bg-[#050505] text-white flex flex-col relative overflow-x-hidden">
@@ -54,6 +58,8 @@ export default function NewLeadPage() {
                 <div>
                   <label className="block text-sm font-medium text-neutral-400 mb-2">Что будем бить?</label>
                   <textarea 
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
                     rows={4}
                     className="w-full bg-black/50 border border-white/10 rounded-2xl p-4 text-white placeholder-neutral-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all resize-none"
                     placeholder="Опиши идею, стиль, место нанесения..."
@@ -64,7 +70,11 @@ export default function NewLeadPage() {
                   <label className="block text-sm font-medium text-neutral-400 mb-2">Примерный размер</label>
                   <div className="grid grid-cols-3 gap-3">
                     {['Мини', 'Средняя', 'Большая'].map(size => (
-                      <button key={size} className="py-3 px-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-indigo-500/50 transition-all text-sm font-medium text-center">
+                      <button 
+                        key={size}
+                        onClick={() => setSelectedSize(size)}
+                        className={`py-3 px-4 rounded-xl border transition-all text-sm font-medium text-center ${selectedSize === size ? 'border-indigo-500 bg-indigo-500/20 text-white shadow-[0_0_15px_rgba(99,102,241,0.3)]' : 'border-white/10 bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white'}`}
+                      >
                         {size}
                       </button>
                     ))}
@@ -80,8 +90,9 @@ export default function NewLeadPage() {
                 </div>
 
                 <button 
-                  onClick={() => setStep(2)}
-                  className="w-full py-4 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold text-lg hover:from-indigo-400 hover:to-purple-400 transition-all shadow-lg shadow-indigo-500/25 flex items-center justify-center gap-2 mt-8"
+                  onClick={() => canContinue && setStep(2)}
+                  disabled={!canContinue}
+                  className={`w-full py-4 rounded-full font-bold text-lg transition-all flex items-center justify-center gap-2 mt-8 ${canContinue ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-400 hover:to-purple-400 shadow-lg shadow-indigo-500/25' : 'bg-white/5 text-neutral-500 cursor-not-allowed'}`}
                 >
                   Продолжить <ArrowLeft className="w-5 h-5 rotate-180" />
                 </button>

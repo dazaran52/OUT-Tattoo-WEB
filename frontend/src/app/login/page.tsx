@@ -42,6 +42,12 @@ export default function LoginPage() {
     if (typeof window !== 'undefined') {
       const searchParams = new URLSearchParams(window.location.search)
       const registerParam = searchParams.get('register')
+      const roleParam = searchParams.get('role')
+
+      if (roleParam === 'client' || roleParam === 'master') {
+        setRole(roleParam)
+      }
+
       if (registerParam === 'client') {
         setIsSignUp(true)
         setRole('client')
