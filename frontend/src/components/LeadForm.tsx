@@ -195,7 +195,7 @@ export function LeadForm() {
           onClick={() => { 
             setStep(1)
             setIsSuccess(false)
-            setFormData({description: '', style: '', location: '', size: '', budget: '5000 CZK', city: '', name: '', contact: '', images: []}) 
+            setFormData({description: '', style: '', location: '', size: '', budget: '5000 CZK', city: '', name: '', contact: '', priority: 'quality', images: []}) 
             setCurrency('CZK')
             setBudgetVal(5000)
             setSelectedCountry('')
