@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Plus, Trash2, Loader2, Globe, MapPin } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import toast from 'react-hot-toast'
+import { ConfirmModal } from '@/components/ConfirmModal'
 
 export function AdminLocations() {
   const [countries, setCountries] = useState<any[]>([])
@@ -17,6 +18,16 @@ export function AdminLocations() {
   
   const [isLoading, setIsLoading] = useState(true)
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
+  
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean
+    title: string
+    message: string
+    confirmText?: string
+    cancelText?: string
+    onConfirm: () => void
+    type: 'danger' | 'info' | 'warning'
+  } | null>(null)
 
   const fetchData = async () => {
     setIsLoading(true)
@@ -70,25 +81,38 @@ export function AdminLocations() {
     }
   }
 
-  const handleDeleteCountry = async (id: string) => {
-    if (!confirm('Are you sure? This might delete associated cities.')) return
-    setActionLoadingId(id)
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/locations/countries/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${session?.access_token}`
+  const handleDeleteCountry = (id: string) => {
+    const country = countries.find(c => c.id === id)
+    const countryName = country ? country.name_ru : 'эту страну'
+
+    setConfirmModal({
+      isOpen: true,
+      title: 'Удалить страну',
+      message: `Вы уверены, что хотите удалить страну ${countryName}? Это также может удалить связанные города.`,
+      confirmText: 'Удалить',
+      cancelText: 'Отмена',
+      type: 'danger',
+      onConfirm: async () => {
+        setConfirmModal(null)
+        setActionLoadingId(id)
+        try {
+          const { data: { session } } = await supabase.auth.getSession()
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/locations/countries/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${session?.access_token}`
+            }
+          })
+          if (!res.ok) throw new Error('Failed to delete country')
+          toast.success('Country deleted')
+          fetchData()
+        } catch (err) {
+          toast.error('Error deleting country')
+        } finally {
+          setActionLoadingId(null)
         }
-      })
-      if (!res.ok) throw new Error('Failed to delete country')
-      toast.success('Country deleted')
-      fetchData()
-    } catch (err) {
-      toast.error('Error deleting country')
-    } finally {
-      setActionLoadingId(null)
-    }
+      }
+    })
   }
 
   const handleAddCity = async (e: React.FormEvent) => {
@@ -121,25 +145,38 @@ export function AdminLocations() {
     }
   }
 
-  const handleDeleteCity = async (id: string) => {
-    if (!confirm('Are you sure?')) return
-    setActionLoadingId(id)
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/locations/cities/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${session?.access_token}`
+  const handleDeleteCity = (id: string) => {
+    const city = cities.find(c => c.id === id)
+    const cityName = city ? city.name_ru : 'этот город'
+
+    setConfirmModal({
+      isOpen: true,
+      title: 'Удалить город',
+      message: `Вы уверены, что хотите удалить город ${cityName}?`,
+      confirmText: 'Удалить',
+      cancelText: 'Отмена',
+      type: 'danger',
+      onConfirm: async () => {
+        setConfirmModal(null)
+        setActionLoadingId(id)
+        try {
+          const { data: { session } } = await supabase.auth.getSession()
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/locations/cities/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${session?.access_token}`
+            }
+          })
+          if (!res.ok) throw new Error('Failed to delete city')
+          toast.success('City deleted')
+          fetchData()
+        } catch (err) {
+          toast.error('Error deleting city')
+        } finally {
+          setActionLoadingId(null)
         }
-      })
-      if (!res.ok) throw new Error('Failed to delete city')
-      toast.success('City deleted')
-      fetchData()
-    } catch (err) {
-      toast.error('Error deleting city')
-    } finally {
-      setActionLoadingId(null)
-    }
+      }
+    })
   }
 
   if (isLoading) {
@@ -227,6 +264,19 @@ export function AdminLocations() {
           })}
         </div>
       </div>
+
+      {confirmModal && (
+        <ConfirmModal
+          isOpen={confirmModal.isOpen}
+          title={confirmModal.title}
+          message={confirmModal.message}
+          confirmText={confirmModal.confirmText}
+          cancelText={confirmModal.cancelText}
+          type={confirmModal.type}
+          onConfirm={confirmModal.onConfirm}
+          onCancel={() => setConfirmModal(null)}
+        />
+      )}
     </div>
   )
 }

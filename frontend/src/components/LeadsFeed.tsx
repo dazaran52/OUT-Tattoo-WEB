@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { playSuccessSound, playErrorSound, triggerHaptic } from '@/lib/sounds'
 import imageCompression from 'browser-image-compression'
 import { api } from '@/lib/api'
+import { ConfirmModal } from '@/components/ConfirmModal'
 
 export interface Lead {
   id: string
@@ -46,6 +47,17 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
   const [filterText, setFilterText] = useState('')
   const [showOtherCities, setShowOtherCities] = useState(false)
   const [language, setLanguage] = useState<string>('cs')
+  
+  // Custom Confirm Modal State
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean
+    title: string
+    message: string
+    confirmText?: string
+    cancelText?: string
+    onConfirm: () => void
+    type: 'danger' | 'info' | 'warning'
+  } | null>(null)
   
   // Modal & Admin State
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -329,30 +341,42 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
     }
   }
 
-  const deleteLead = async (leadId: string) => {
-    if (!confirm(t('confirmDeleteLead'))) return
-    
-    try {
-      setActionLoadingId(leadId)
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
+  const deleteLead = (leadId: string) => {
+    const lead = leads.find(l => l.id === leadId)
+    const leadTitle = lead ? lead.title : 'этот лид'
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/leads/${leadId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
+    setConfirmModal({
+      isOpen: true,
+      title: 'Удалить лид',
+      message: `${t('confirmDeleteLead')} "${leadTitle}"?`,
+      confirmText: 'Удалить',
+      cancelText: 'Отмена',
+      type: 'danger',
+      onConfirm: async () => {
+        setConfirmModal(null)
+        try {
+          setActionLoadingId(leadId)
+          const { data: { session } } = await supabase.auth.getSession()
+          if (!session) return
+
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/leads/${leadId}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`,
+            }
+          })
+
+          if (!res.ok) throw new Error('Failed to delete lead')
+
+          setLeads(leads.filter(l => l.id !== leadId))
+          toast.success('Lead deleted')
+        } catch (err: any) {
+          toast.error(err.message)
+        } finally {
+          setActionLoadingId(null)
         }
-      })
-
-      if (!res.ok) throw new Error('Failed to delete lead')
-
-      setLeads(leads.filter(l => l.id !== leadId))
-      toast.success('Lead deleted')
-    } catch (err: any) {
-      toast.error(err.message)
-    } finally {
-      setActionLoadingId(null)
-    }
+      }
+    })
   }
 
   const handleNextImage = (leadId: string, totalImages: number, e: React.MouseEvent) => {
@@ -873,6 +897,19 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
             </form>
           </div>
         </div>
+      )}
+
+      {confirmModal && (
+        <ConfirmModal
+          isOpen={confirmModal.isOpen}
+          title={confirmModal.title}
+          message={confirmModal.message}
+          confirmText={confirmModal.confirmText}
+          cancelText={confirmModal.cancelText}
+          type={confirmModal.type}
+          onConfirm={confirmModal.onConfirm}
+          onCancel={() => setConfirmModal(null)}
+        />
       )}
     </div>
   )

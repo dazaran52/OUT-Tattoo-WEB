@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Upload, ChevronRight, ChevronLeft, Check, AlertCircle, Sparkles, Image as ImageIcon, MapPin, Send } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 export function LeadForm() {
   const [step, setStep] = useState(1)
@@ -61,7 +62,7 @@ export function LeadForm() {
       setIsSuccess(true)
     } catch (error) {
       console.error(error)
-      alert('Произошла ошибка при отправке. Пожалуйста, попробуйте еще раз.')
+      toast.error('Произошла ошибка при отправке. Пожалуйста, попробуйте еще раз.')
     } finally {
       setIsSubmitting(false)
     }

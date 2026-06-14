@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { supabase, SupportMessage } from '@/lib/supabase'
-import { MessageCircle, Send, Loader2, User, Trash2, Ban, CheckCircle2, Coins } from 'lucide-react'
+import { MessageCircle, Send, Loader2, User, Trash2, Ban, CheckCircle2, Coins, X } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { ConfirmModal } from '@/components/ConfirmModal'
 
 export function AdminChat() {
   const [session, setSession] = useState<any>(null)
@@ -15,6 +16,19 @@ export function AdminChat() {
   const [isLoadingChats, setIsLoadingChats] = useState(true)
   const [isLoadingMessages, setIsLoadingMessages] = useState(false)
   const [isSending, setIsSending] = useState(false)
+  
+  // Custom Modals State
+  const [creditsModalUser, setCreditsModalUser] = useState<{ id: string, email: string, credits: number } | null>(null)
+  const [newCreditsValue, setNewCreditsValue] = useState<string>('')
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean
+    title: string
+    message: string
+    confirmText?: string
+    cancelText?: string
+    onConfirm: () => void
+    type: 'danger' | 'info' | 'warning'
+  } | null>(null)
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -157,10 +171,17 @@ export function AdminChat() {
     setIsSending(false)
   }
 
-  const handleUpdateBalance = async (userId: string) => {
-    const amount = prompt('Введите новый баланс для пользователя:')
-    if (amount === null) return
-    const num = parseInt(amount)
+  const handleUpdateBalance = (userId: string) => {
+    const user = usersMap[userId]
+    if (!user) return
+    setCreditsModalUser({ id: userId, email: user.email, credits: user.credits || 0 })
+    setNewCreditsValue((user.credits || 0).toString())
+  }
+
+  const submitUpdateBalance = async () => {
+    if (!creditsModalUser || !session) return
+    const userId = creditsModalUser.id
+    const num = parseInt(newCreditsValue)
     if (isNaN(num) || num < 0) {
       toast.error('Неверная сумма')
       return
@@ -178,51 +199,76 @@ export function AdminChat() {
       if (!res.ok) throw new Error('Failed to update credits')
       toast.success('Баланс обновлен')
       setUsersMap(prev => ({ ...prev, [userId]: { ...prev[userId], credits: num } }))
+      setCreditsModalUser(null)
     } catch (err: any) {
       toast.error(err.message)
     }
   }
 
-  const handleToggleBan = async (userId: string) => {
-    const isBanned = usersMap[userId]?.status === 'rejected'
+  const handleToggleBan = (userId: string) => {
+    const user = usersMap[userId]
+    if (!user) return
+    const isBanned = user.status === 'rejected'
     const newStatus = isBanned ? 'approved' : 'rejected'
-    if (!confirm(`Вы уверены, что хотите ${isBanned ? 'разблокировать' : 'заблокировать'} пользователя?`)) return
 
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/users/${userId}/status`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ status: newStatus })
-      })
-      if (!res.ok) throw new Error('Failed to update status')
-      toast.success(isBanned ? 'Пользователь разблокирован' : 'Пользователь заблокирован')
-      setUsersMap(prev => ({ ...prev, [userId]: { ...prev[userId], status: newStatus } }))
-    } catch (err: any) {
-      toast.error(err.message)
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: isBanned ? 'Разблокировать пользователя' : 'Заблокировать пользователя',
+      message: `Вы уверены, что хотите ${isBanned ? 'разблокировать' : 'заблокировать'} пользователя ${user.email}?`,
+      confirmText: isBanned ? 'Разблокировать' : 'Заблокировать',
+      cancelText: 'Отмена',
+      type: isBanned ? 'info' : 'danger',
+      onConfirm: async () => {
+        setConfirmModal(null)
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/users/${userId}/status`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status: newStatus })
+          })
+          if (!res.ok) throw new Error('Failed to update status')
+          toast.success(isBanned ? 'Пользователь разблокирован' : 'Пользователь заблокирован')
+          setUsersMap(prev => ({ ...prev, [userId]: { ...prev[userId], status: newStatus } }))
+        } catch (err: any) {
+          toast.error(err.message)
+        }
+      }
+    })
   }
 
-  const handleClearChat = async (userId: string) => {
-    if (!confirm('Вы уверены, что хотите полностью очистить историю этого чата? Действие необратимо.')) return
+  const handleClearChat = (userId: string) => {
+    const user = usersMap[userId]
+    const userEmail = user?.email || 'этого пользователя'
 
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/chat/${userId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`
+    setConfirmModal({
+      isOpen: true,
+      title: 'Очистить историю чата',
+      message: `Вы уверены, что хотите полностью очистить историю этого чата с ${userEmail}? Действие необратимо.`,
+      confirmText: 'Очистить',
+      cancelText: 'Отмена',
+      type: 'danger',
+      onConfirm: async () => {
+        setConfirmModal(null)
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/chat/${userId}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`
+            }
+          })
+          if (!res.ok) throw new Error('Failed to clear chat')
+          toast.success('Чат очищен')
+          setMessages([])
+          setChatList(prev => prev.filter(c => c.id !== userId))
+          setSelectedUserId(null)
+        } catch (err: any) {
+          toast.error(err.message)
         }
-      })
-      if (!res.ok) throw new Error('Failed to clear chat')
-      toast.success('Чат очищен')
-      setMessages([])
-      setChatList(prev => prev.filter(c => c.id !== userId))
-      setSelectedUserId(null)
-    } catch (err: any) {
-      toast.error(err.message)
-    }
+      }
+    })
   }
 
   return (
@@ -379,6 +425,62 @@ export function AdminChat() {
           </>
         )}
       </div>
+
+      {creditsModalUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-neutral-900 w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 p-6 border border-neutral-200 dark:border-neutral-800">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold text-neutral-900 dark:text-white">Изменить баланс пользователя</h3>
+              <button 
+                onClick={() => setCreditsModalUser(null)}
+                className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">{creditsModalUser.email}</p>
+            
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">Новый баланс (кредитов)</label>
+              <input
+                type="number"
+                min="0"
+                className="w-full bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 outline-none"
+                value={newCreditsValue}
+                onChange={(e) => setNewCreditsValue(e.target.value)}
+              />
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setCreditsModalUser(null)}
+                className="px-4 py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+              >
+                Отмена
+              </button>
+              <button
+                onClick={submitUpdateBalance}
+                className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded-lg transition-colors"
+              >
+                Сохранить
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {confirmModal && (
+        <ConfirmModal
+          isOpen={confirmModal.isOpen}
+          title={confirmModal.title}
+          message={confirmModal.message}
+          confirmText={confirmModal.confirmText}
+          cancelText={confirmModal.cancelText}
+          type={confirmModal.type}
+          onConfirm={confirmModal.onConfirm}
+          onCancel={() => setConfirmModal(null)}
+        />
+      )}
     </div>
   )
 }
