@@ -137,7 +137,41 @@ export default function LoginPage() {
         if (signUpError) throw signUpError
 
         if (data.user) {
-          window.location.href = '/dashboard'
+          const token = data.session?.access_token
+          if (token) {
+            const maxAge = 60 * 60 * 24 * 7 // 7 days
+            document.cookie = `sb-access-token=${token};path=/;max-age=${maxAge};SameSite=Lax${window.location.protocol === 'https:' ? ';Secure' : ''}`
+          }
+
+          let redirectUrl = '/dashboard'
+          const pendingLeadStr = localStorage.getItem('pending_lead')
+          
+          if (pendingLeadStr && role === 'client' && token) {
+            try {
+              const pendingLead = JSON.parse(pendingLeadStr)
+              const payload = {
+                description: pendingLead.description,
+                size: pendingLead.size,
+              }
+              const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+              const res = await fetch(`${apiUrl}/api/leads/client`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+              })
+              if (res.ok) {
+                localStorage.removeItem('pending_lead')
+                redirectUrl = '/dashboard?lead_created=true'
+              }
+            } catch (e) {
+              console.error('Failed to submit pending lead', e)
+            }
+          }
+
+          window.location.href = redirectUrl
         }
       } else {
         // Sign in
@@ -157,7 +191,35 @@ export default function LoginPage() {
           const maxAge = 60 * 60 * 24 * 7 // 7 days
           document.cookie = `sb-access-token=${token};path=/;max-age=${maxAge};SameSite=Lax${window.location.protocol === 'https:' ? ';Secure' : ''}`
 
-          window.location.href = '/dashboard'
+          let redirectUrl = '/dashboard'
+          const pendingLeadStr = localStorage.getItem('pending_lead')
+          
+          if (pendingLeadStr && role === 'client') {
+            try {
+              const pendingLead = JSON.parse(pendingLeadStr)
+              const payload = {
+                description: pendingLead.description,
+                size: pendingLead.size,
+              }
+              const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+              const res = await fetch(`${apiUrl}/api/leads/client`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+              })
+              if (res.ok) {
+                localStorage.removeItem('pending_lead')
+                redirectUrl = '/dashboard?lead_created=true'
+              }
+            } catch (e) {
+              console.error('Failed to submit pending lead', e)
+            }
+          }
+
+          window.location.href = redirectUrl
         } else {
           throw new Error('No session returned')
         }
@@ -267,35 +329,42 @@ export default function LoginPage() {
 
         <div className="w-full max-w-md space-y-8 animate-fade-in-up">
           
-          {/* Premium Role Toggle */}
-          <div className="relative flex p-1.5 bg-neutral-900/80 backdrop-blur-xl rounded-full border border-neutral-800/60 shadow-inner">
-            <motion.div
-              className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] rounded-full shadow-lg ${role === 'master' ? 'bg-gradient-to-r from-orange-600 to-amber-500' : 'bg-gradient-to-r from-indigo-600 to-purple-500'}`}
-              animate={{
-                left: role === 'master' ? '6px' : 'calc(50%)',
-              }}
-              transition={{ type: "spring", stiffness: 400, damping: 30 }}
-            />
-            
-            <button
-              onClick={() => {
-                setRole('master');
-                setIsSignUp(false); // Reset to login on switch for cleaner flow
-              }}
-              className={`relative z-10 flex-1 py-3 text-sm font-bold tracking-wide transition-colors duration-300 flex items-center justify-center gap-2 ${role === 'master' ? 'text-white' : 'text-neutral-500 hover:text-neutral-300'}`}
+          {/* Premium Role Toggle - Only shown during registration */}
+          {isSignUp && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0, y: -20 }}
+              animate={{ opacity: 1, height: 'auto', y: 0 }}
+              exit={{ opacity: 0, height: 0, y: -20 }}
+              className="relative flex p-1.5 bg-neutral-900/80 backdrop-blur-xl rounded-full border border-neutral-800/60 shadow-inner overflow-hidden"
             >
-              🔥 Мастер
-            </button>
-            <button
-              onClick={() => {
-                setRole('client');
-                setIsSignUp(false);
-              }}
-              className={`relative z-10 flex-1 py-3 text-sm font-bold tracking-wide transition-colors duration-300 flex items-center justify-center gap-2 ${role === 'client' ? 'text-white' : 'text-neutral-500 hover:text-neutral-300'}`}
-            >
-              ✨ Клиент
-            </button>
-          </div>
+              <motion.div
+                className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] rounded-full shadow-lg ${role === 'master' ? 'bg-gradient-to-r from-orange-600 to-amber-500' : 'bg-gradient-to-r from-indigo-600 to-purple-500'}`}
+                animate={{
+                  left: role === 'master' ? '6px' : 'calc(50%)',
+                }}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              />
+              
+              <button
+                onClick={() => {
+                  setRole('master');
+                  setIsSignUp(true); 
+                }}
+                className={`relative z-10 flex-1 py-3 text-sm font-bold tracking-wide transition-colors duration-300 flex items-center justify-center gap-2 ${role === 'master' ? 'text-white' : 'text-neutral-500 hover:text-neutral-300'}`}
+              >
+                🔥 Мастер
+              </button>
+              <button
+                onClick={() => {
+                  setRole('client');
+                  setIsSignUp(true);
+                }}
+                className={`relative z-10 flex-1 py-3 text-sm font-bold tracking-wide transition-colors duration-300 flex items-center justify-center gap-2 ${role === 'client' ? 'text-white' : 'text-neutral-500 hover:text-neutral-300'}`}
+              >
+                ✨ Клиент
+              </button>
+            </motion.div>
+          )}
 
           {/* Glassmorphism Form Container */}
           <div className="bg-neutral-900/40 backdrop-blur-2xl border border-white/5 shadow-[0_8px_32px_rgba(0,0,0,0.4)] rounded-3xl overflow-hidden">

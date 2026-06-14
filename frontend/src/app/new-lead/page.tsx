@@ -115,13 +115,19 @@ export default function NewLeadPage() {
 
                 <div className="space-y-4">
                   <button 
-                    onClick={() => router.push('/login?register=client')}
+                    onClick={() => {
+                      localStorage.setItem('pending_lead', JSON.stringify({ description, size: selectedSize }))
+                      router.push('/login?register=client')
+                    }}
                     className="w-full py-4 rounded-full bg-white text-black font-bold text-lg hover:scale-105 transition-transform"
                   >
                     Зарегистрироваться
                   </button>
                   <button 
-                    onClick={() => router.push('/login?role=client')}
+                    onClick={() => {
+                      localStorage.setItem('pending_lead', JSON.stringify({ description, size: selectedSize }))
+                      router.push('/login?role=client')
+                    }}
                     className="w-full py-4 rounded-full bg-white/5 text-white font-bold text-lg hover:bg-white/10 transition-colors border border-white/10"
                   >
                     Уже есть аккаунт
