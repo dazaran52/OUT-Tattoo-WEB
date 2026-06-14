@@ -254,6 +254,8 @@ class ClientLeadCreate(BaseModel):
     location: str | None = None
     size: str | None = None
     budget: str | None = None
+    budget_val: int | None = None
+    budget_currency: str | None = None
     city: str | None = None
     name: str | None = None
     contact: str
@@ -278,11 +280,23 @@ async def create_client_lead(
             
         contacts = f"Имя: {lead_data.name or 'Без имени'}, Контакт: {lead_data.contact}"
 
+        # Calculate dynamic price based on 5% of normalized budget in base currency (CZK)
+        price_credits = 50 # Default baseline
+        if lead_data.budget_val and lead_data.budget_currency:
+            base_val = lead_data.budget_val
+            if lead_data.budget_currency == 'EUR':
+                base_val = base_val * 25
+            elif lead_data.budget_currency == 'PLN':
+                base_val = base_val * 5
+            
+            # 5% of the total budget, but at least 10 credits
+            price_credits = max(10, int(base_val * 0.05))
+
         db_lead = {
             "title": title[:255],
             "description": full_description,
             "contacts": contacts,
-            "price_credits": 50, # default price
+            "price_credits": price_credits,
             "trust_score": 100
         }
 

@@ -116,6 +116,8 @@ export function LeadForm() {
         location: formData.location || null,
         size: formData.size || null,
         budget: formData.budget || null,
+        budget_val: budgetVal,
+        budget_currency: currency,
         city: formData.city || null,
         name: formData.name || null,
         contact: formData.contact,
