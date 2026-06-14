@@ -38,6 +38,8 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<'users' | 'chats' | 'ai-chats' | 'locations' | 'disputes' | 'withdrawals'>('users')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'balance_desc' | 'balance_asc'>('newest')
+  const [creditsModalUser, setCreditsModalUser] = useState<{ id: string, email: string, credits: number } | null>(null)
+  const [newCreditsValue, setNewCreditsValue] = useState<string>('')
 
 
   const checkAdminAndFetchData = async () => {
@@ -149,17 +151,23 @@ export default function AdminPage() {
     }
   }
 
-  const handleUpdateCredits = async (userId: string, currentCredits: number) => {
-    const amount = prompt('Введите новый баланс для пользователя:', currentCredits.toString())
-    if (amount === null) return
-    const num = parseInt(amount)
+  const handleUpdateCredits = (userId: string, currentCredits: number, userEmail: string) => {
+    setCreditsModalUser({ id: userId, email: userEmail, credits: currentCredits })
+    setNewCreditsValue(currentCredits.toString())
+  }
+
+  const submitUpdateCredits = async () => {
+    if (!creditsModalUser) return
+    const num = parseInt(newCreditsValue)
     if (isNaN(num) || num < 0) {
       toast.error('Неверная сумма')
       return
     }
 
     try {
+      const userId = creditsModalUser.id
       setActionLoadingId(userId)
+      setCreditsModalUser(null)
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
 
@@ -182,7 +190,7 @@ export default function AdminPage() {
           user.id === userId ? { ...user, credits: num } : user
         )
       )
-      toast.success('Баланс обновлен')
+      toast.success('Баланс успешно обновлен!')
     } catch (err: any) {
       toast.error(err.message)
     } finally {
@@ -390,7 +398,7 @@ export default function AdminPage() {
                         ) : (
                           <div className="flex justify-end gap-2">
                             <button
-                              onClick={() => handleUpdateCredits(user.id, user.credits)}
+                              onClick={() => handleUpdateCredits(user.id, user.credits, user.email)}
                               className="px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-lg text-xs font-medium transition-colors"
                               title="Изменить баланс"
                             >
@@ -430,6 +438,41 @@ export default function AdminPage() {
           </div>
         )}
       </main>
+
+      {creditsModalUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-neutral-900 w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 p-6 border border-neutral-200 dark:border-neutral-800">
+            <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">Изменить баланс пользователя</h3>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">{creditsModalUser.email}</p>
+            
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">Новый баланс (кредитов)</label>
+              <input
+                type="number"
+                min="0"
+                className="w-full bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 outline-none"
+                value={newCreditsValue}
+                onChange={(e) => setNewCreditsValue(e.target.value)}
+              />
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setCreditsModalUser(null)}
+                className="px-4 py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+              >
+                Отмена
+              </button>
+              <button
+                onClick={submitUpdateCredits}
+                className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded-lg transition-colors"
+              >
+                Сохранить
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
