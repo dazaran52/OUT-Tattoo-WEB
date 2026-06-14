@@ -215,8 +215,10 @@ async def create_master_lead(
 ):
     """Allow a master to create their own lead (C2C)."""
     try:
-        # Insert lead
-        lead_insert = supabase.table("leads").insert(lead_data.model_dump()).execute()
+        # Insert lead (exclude country_id as it doesn't exist in DB)
+        data = lead_data.model_dump()
+        data.pop("country_id", None)
+        lead_insert = supabase.table("leads").insert(data).execute()
         if not lead_insert.data:
             raise HTTPException(status_code=400, detail="Failed to create lead")
             

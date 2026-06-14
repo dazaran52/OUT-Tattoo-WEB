@@ -32,7 +32,8 @@ export function MasterLeadModal({ isOpen, onClose, onSuccess, language, cities, 
     setLoading(true)
     
     try {
-      const res = await fetch('/api/leads/master', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const res = await fetch(`${apiUrl}/api/leads/master`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

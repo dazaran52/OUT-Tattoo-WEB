@@ -454,7 +454,7 @@ export default function ProfilePage() {
                   className="flex items-center gap-2 px-4 py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-lg hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50"
                 >
                   <X className="w-4 h-4" />
-                  Zrušit
+                  {t('cancel')}
                 </button>
               </div>
             </div>
@@ -636,7 +636,7 @@ export default function ProfilePage() {
                       }}
                       className="px-4 py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-lg hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-colors text-sm"
                     >
-                      Zrušit
+                      {t('cancel')}
                     </button>
                   </div>
                 </div>
