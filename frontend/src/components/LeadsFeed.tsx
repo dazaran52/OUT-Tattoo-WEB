@@ -9,6 +9,7 @@ import { LowBalanceModal } from '@/components/LowBalanceModal'
 import { DisputeModal } from '@/components/DisputeModal'
 import { AuctionModal } from '@/components/AuctionModal'
 import { MasterLeadModal } from '@/components/MasterLeadModal'
+import { ProposalModal } from '@/components/ProposalModal'
 import toast from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
 import { playSuccessSound, playErrorSound, triggerHaptic } from '@/lib/sounds'
@@ -31,6 +32,8 @@ export interface Lead {
   unlock_status?: string
   unlock_count?: number
   max_unlocks?: number
+  client_priority?: string
+  lowest_bid?: number
 }
 
 interface LeadsFeedProps {
@@ -97,6 +100,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
 
   const [selectedDisputeLead, setSelectedDisputeLead] = useState<Lead | null>(null)
   const [selectedAuctionLead, setSelectedAuctionLead] = useState<Lead | null>(null)
+  const [selectedProposalLead, setSelectedProposalLead] = useState<Lead | null>(null)
   const [isMasterModalOpen, setIsMasterModalOpen] = useState(false)
   const [pushEnabled, setPushEnabled] = useState(false)
 
@@ -516,6 +520,29 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
         countries={countries}
       />
 
+      <ProposalModal 
+        isOpen={!!selectedProposalLead}
+        onClose={() => setSelectedProposalLead(null)}
+        lead={selectedProposalLead}
+        language={language}
+        onUnlockSuccess={(newCredits) => {
+          onUnlockSuccess(newCredits)
+        }}
+        onSuccess={(contacts, newCredits) => {
+          // Success callback means the proposal was submitted and contacts revealed
+          setLeads(currentLeads => 
+            currentLeads.map(l => 
+              l.id === selectedProposalLead?.id 
+                ? { ...l, contacts, is_unlocked: true } 
+                : l
+            )
+          )
+          setSelectedProposalLead(null)
+          playSuccessSound()
+          triggerHaptic('success')
+        }}
+      />
+
       {selectedAuctionLead && (
         <AuctionModal
           isOpen={!!selectedAuctionLead}
@@ -712,6 +739,21 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
               <div className="p-6 flex-1 relative z-10">
                 <div className="flex-1 flex justify-between items-start gap-4">
                   <div>
+                    {lead.client_priority === 'fast' && (
+                      <div className="inline-flex items-center gap-1 mb-2 px-2 py-0.5 bg-rose-500/10 text-rose-600 dark:text-rose-400 text-[10px] font-bold uppercase rounded-md border border-rose-500/20">
+                        <span>⚡ Как можно быстрее</span>
+                      </div>
+                    )}
+                    {lead.client_priority === 'cheap' && (
+                      <div className="inline-flex items-center gap-1 mb-2 px-2 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold uppercase rounded-md border border-emerald-500/20">
+                        <span>💸 Важна цена</span>
+                      </div>
+                    )}
+                    {lead.client_priority === 'quality' && (
+                      <div className="inline-flex items-center gap-1 mb-2 px-2 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[10px] font-bold uppercase rounded-md border border-amber-500/20">
+                        <span>💎 Максимальное качество</span>
+                      </div>
+                    )}
                     <h3 className="font-bold text-lg text-neutral-900 dark:text-white leading-tight mb-2 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
                       {lead.title}
                     </h3>
@@ -826,7 +868,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
                   </div>
                 ) : (
                   <button 
-                    onClick={() => handleUnlock(lead.id)}
+                    onClick={() => setSelectedProposalLead(lead)}
                     disabled={unlockingId === lead.id || ((lead.unlock_count || 0) >= (lead.max_unlocks || 3) && !lead.is_unlocked)}
                     className="w-full py-3 px-4 bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 hover:bg-neutral-800 dark:hover:bg-neutral-200 rounded-xl text-sm font-bold transition-all shadow-md hover:shadow-lg disabled:opacity-50 flex items-center justify-center gap-2 group-hover:scale-[1.02]"
                   >

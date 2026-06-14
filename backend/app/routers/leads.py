@@ -23,6 +23,8 @@ class LeadResponse(BaseModel):
     unlock_status: str | None = None
     unlock_count: int = 0
     max_unlocks: int = 3
+    client_priority: str = 'quality'
+    lowest_bid: int | None = None
 
 class UnlockResponse(BaseModel):
     contacts: str
@@ -46,6 +48,15 @@ async def get_leads(
         # Fetch ALL unlocks
         all_unlocks_res = supabase.table("lead_unlocks").select("lead_id, user_id, status").execute()
         all_unlocks = all_unlocks_res.data or []
+
+        # Fetch ALL proposals for lowest_bid calculation
+        proposals_res = supabase.table("lead_proposals").select("lead_id, price_offer").execute()
+        proposals = proposals_res.data or []
+        lowest_bids = {}
+        for p in proposals:
+            lid = p["lead_id"]
+            if lid not in lowest_bids or p["price_offer"] < lowest_bids[lid]:
+                lowest_bids[lid] = p["price_offer"]
         
         unlocked_by_me = {u["lead_id"]: u["status"] for u in all_unlocks if u["user_id"] == current_user.user_id}
         
@@ -93,7 +104,9 @@ async def get_leads(
                 trust_score=lead.get("trust_score", 100),
                 unlock_status=unlock_status,
                 unlock_count=lead_unlock_count,
-                max_unlocks=3
+                max_unlocks=3,
+                client_priority=lead.get("client_priority", "quality"),
+                lowest_bid=lowest_bids.get(lead["id"]) if lead.get("client_priority") == 'cheap' else None
             ))
             
         return processed_leads
@@ -256,6 +269,7 @@ class ClientLeadCreate(BaseModel):
     budget: str | None = None
     budget_val: int | None = None
     budget_currency: str | None = None
+    client_priority: str | None = None
     city: str | None = None
     name: str | None = None
     contact: str
@@ -297,6 +311,7 @@ async def create_client_lead(
             "description": full_description,
             "contacts": contacts,
             "price_credits": price_credits,
+            "client_priority": lead_data.client_priority or 'quality',
             "trust_score": 100
         }
 
@@ -306,4 +321,42 @@ async def create_client_lead(
             
         return {"success": True, "lead": lead_insert.data[0]}
     except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+class ProposalCreate(BaseModel):
+    price_offer: int
+    proposed_dates: str
+
+@router.post("/{lead_id}/proposals")
+async def create_proposal(
+    lead_id: str,
+    proposal: ProposalCreate,
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    """
+    Submit a proposal (price & dates) after unlocking a lead.
+    """
+    try:
+        # Check if user unlocked the lead
+        unlock_res = supabase.table("lead_unlocks").select("id").eq("lead_id", lead_id).eq("user_id", current_user.user_id).execute()
+        if not unlock_res.data:
+            raise HTTPException(status_code=403, detail="You must unlock the lead first")
+
+        db_proposal = {
+            "lead_id": lead_id,
+            "user_id": current_user.user_id,
+            "price_offer": proposal.price_offer,
+            "proposed_dates": proposal.proposed_dates
+        }
+
+        # Use upsert in case they update their proposal
+        insert_res = supabase.table("lead_proposals").upsert(db_proposal, on_conflict="lead_id,user_id").execute()
+        if not insert_res.data:
+            raise HTTPException(status_code=400, detail="Failed to submit proposal")
+
+        return {"success": True, "proposal": insert_res.data[0]}
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
         raise HTTPException(status_code=500, detail=str(e))

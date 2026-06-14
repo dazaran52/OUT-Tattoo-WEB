@@ -19,6 +19,7 @@ export function LeadForm() {
     city: '',
     name: '',
     contact: '', // email or phone
+    priority: 'quality', // fast, cheap, quality
     images: [] as File[]
   })
 
@@ -118,6 +119,7 @@ export function LeadForm() {
         budget: formData.budget || null,
         budget_val: budgetVal,
         budget_currency: currency,
+        client_priority: formData.priority,
         city: formData.city || null,
         name: formData.name || null,
         contact: formData.contact,
@@ -347,6 +349,31 @@ export function LeadForm() {
                 transition={{ duration: 0.3 }}
                 className="space-y-6"
               >
+                <div className="mb-8">
+                  <label className={labelClasses}>Что для вас важнее всего?</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {[
+                      { id: 'fast', icon: '⚡', label: 'В кратчайшие сроки', desc: 'Хочу сделать как можно быстрее' },
+                      { id: 'quality', icon: '💎', label: 'Максимальное качество', desc: 'Готов(а) подождать ради лучшего результата' },
+                      { id: 'cheap', icon: '💸', label: 'Уложиться в бюджет', desc: 'Ищу самое выгодное предложение' }
+                    ].map(p => (
+                      <div 
+                        key={p.id}
+                        onClick={() => setFormData({ ...formData, priority: p.id })}
+                        className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col items-center text-center gap-2 ${
+                          formData.priority === p.id 
+                            ? 'border-violet-500 bg-violet-500/10' 
+                            : 'border-transparent bg-white/40 dark:bg-neutral-800/40 hover:bg-white/60 dark:hover:bg-neutral-800/60'
+                        }`}
+                      >
+                        <span className="text-2xl">{p.icon}</span>
+                        <span className="font-bold text-sm text-neutral-800 dark:text-white">{p.label}</span>
+                        <span className="text-xs text-neutral-500">{p.desc}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 <div>
                   <label className={labelClasses}>Ваш бюджет: {budgetVal} {currency}</label>
                   <div className="flex gap-2 mb-4 p-1.5 bg-white/20 dark:bg-neutral-900/20 backdrop-blur-md border border-neutral-200 dark:border-white/5 rounded-2xl w-fit">
