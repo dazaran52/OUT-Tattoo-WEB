@@ -21,6 +21,8 @@ class LeadResponse(BaseModel):
     city_id: str | None = None
     trust_score: int = 100
     unlock_status: str | None = None
+    unlock_count: int = 0
+    max_unlocks: int = 3
 
 class UnlockResponse(BaseModel):
     contacts: str
@@ -34,18 +36,24 @@ async def get_leads(
 ):
     """
     Get all leads. Contacts are masked if the user hasn't unlocked them.
+    Leads are limited to 3 unlocks maximum.
     """
     try:
         # Fetch all leads
         leads_res = supabase.table("leads").select("*").order("created_at", desc=True).execute()
         leads = leads_res.data or []
 
-        # Fetch ALL unlocks to enforce exclusivity
+        # Fetch ALL unlocks
         all_unlocks_res = supabase.table("lead_unlocks").select("lead_id, user_id, status").execute()
         all_unlocks = all_unlocks_res.data or []
         
         unlocked_by_me = {u["lead_id"]: u["status"] for u in all_unlocks if u["user_id"] == current_user.user_id}
-        unlocked_by_anyone = {u["lead_id"] for u in all_unlocks}
+        
+        # Calculate unlocks count per lead
+        unlocks_count = {}
+        for u in all_unlocks:
+            lid = u["lead_id"]
+            unlocks_count[lid] = unlocks_count.get(lid, 0) + 1
 
         # Fetch active auctions to hide contacts
         auctions_res = supabase.table("auctions") \
@@ -57,16 +65,17 @@ async def get_leads(
         processed_leads = []
         for lead in leads:
             is_unlocked = lead["id"] in unlocked_by_me
+            lead_unlock_count = unlocks_count.get(lead["id"], 0)
             
-            # EXCLUSIVE LEADS: If someone else bought it, hide it completely.
-            if lead["id"] in unlocked_by_anyone and not is_unlocked:
+            # If lead has been unlocked by 3 or more masters, and this master hasn't unlocked it, hide it.
+            if lead_unlock_count >= 3 and not is_unlocked:
                 continue
                 
             unlock_status = unlocked_by_me.get(lead["id"]) if is_unlocked else None
             
             # Hide contacts if lead is currently on auction, even if unlocked
             if lead["id"] in auction_lead_ids:
-                contact_info = "******** [Лид на аукционе]"
+                contacts = "******** [Лид на аукционе]"
             else:
                 contacts = lead["contacts"] if is_unlocked else "******** [Skryto. Odemkněte za credits]"
                 
@@ -82,7 +91,9 @@ async def get_leads(
                 country_id=lead.get("country_id"),
                 city_id=lead.get("city_id"),
                 trust_score=lead.get("trust_score", 100),
-                unlock_status=unlock_status
+                unlock_status=unlock_status,
+                unlock_count=lead_unlock_count,
+                max_unlocks=3
             ))
             
         return processed_leads
@@ -127,6 +138,8 @@ async def unlock_lead(
         except Exception as e:
             if "INSUFFICIENT_CREDITS" in str(e):
                 raise HTTPException(status_code=400, detail="INSUFFICIENT_CREDITS")
+            elif "MAX_UNLOCKS_REACHED" in str(e):
+                raise HTTPException(status_code=400, detail="MAX_UNLOCKS_REACHED")
             elif "Already unlocked" in str(e):
                 # We need to fetch contacts since RPC might just return the text
                 pass

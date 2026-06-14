@@ -257,34 +257,40 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 transition-colors duration-200">
+    <div className="min-h-screen bg-neutral-50 dark:bg-[#050505] text-neutral-900 dark:text-white transition-colors duration-300 relative overflow-hidden">
+      {/* Premium ambient glows */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-cyan-500/5 dark:bg-cyan-500/10 blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-500/5 dark:bg-purple-500/10 blur-[120px]" />
+      </div>
+
       <Header profile={profile} onLogout={handleLogout} />
       
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
         <div className="flex items-center gap-4 mb-8">
           <button
             onClick={() => router.push('/dashboard')}
-            className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:text-white transition-colors"
+            className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-white transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
             {t('back')}
           </button>
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">{t('profileAndSettings')}</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">{t('profileAndSettings')}</h1>
         </div>
 
         {error && (
-          <div className="bg-red-900/50 border border-red-500 text-red-200 p-4 rounded-lg mb-6">
+          <div className="bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 p-4 rounded-2xl mb-6 backdrop-blur-md">
             {error}
           </div>
         )}
 
         <div className="space-y-6">
           {/* Profile Card */}
-          <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-6">
+          <div className="bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 shadow-xl rounded-3xl p-6">
             <div className="flex flex-col md:flex-row gap-6">
               {/* Avatar and main info */}
               <div className="flex-shrink-0 text-center md:text-left">
-                <div className="w-24 h-24 bg-gradient-to-br from-neutral-300 dark:from-neutral-700 to-neutral-400 dark:to-neutral-600 rounded-full mx-auto md:mx-0 mb-4 flex items-center justify-center">
+                <div className="w-24 h-24 bg-gradient-to-br from-neutral-200 dark:from-neutral-800 to-neutral-300 dark:to-neutral-700 rounded-full mx-auto md:mx-0 mb-4 flex items-center justify-center border border-neutral-200/50 dark:border-white/5 shadow-inner">
                   <User className="w-12 h-12 text-neutral-600 dark:text-neutral-400" />
                 </div>
                 <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
@@ -292,7 +298,7 @@ export default function ProfilePage() {
                     {profile.display_name || t('user')}
                   </h2>
                   {profile.gamification_level && profile.gamification_level !== 'Newbie' && (
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
                       profile.gamification_level === 'Elite' 
                         ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-200 dark:border-amber-500/30'
                         : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/30'
@@ -301,47 +307,47 @@ export default function ProfilePage() {
                     </span>
                   )}
                 </div>
-                <p className="text-neutral-600 dark:text-neutral-400 text-sm mb-2">{profile.email}</p>
+                <p className="text-neutral-500 dark:text-neutral-400 text-sm mb-3">{profile.email}</p>
                 
 
-                <div className="flex items-center justify-center md:justify-start gap-2 text-cyan-500">
-                  <Gem className="w-5 h-5" />
-                  <span className="font-bold text-lg">{profile.credits}</span>
-                  <span className="text-sm text-neutral-600 dark:text-neutral-400">{t('credits')}</span>
+                <div className="flex items-center justify-center md:justify-start gap-2 text-cyan-600 dark:text-cyan-400">
+                  <Gem className="w-5 h-5 animate-pulse" />
+                  <span className="font-extrabold text-xl tracking-tight">{profile.credits}</span>
+                  <span className="text-sm text-neutral-500 dark:text-neutral-400 font-medium">{t('credits')}</span>
                 </div>
               </div>
 
               {/* Stats */}
               <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="bg-neutral-100 dark:bg-neutral-800 rounded-lg p-4 text-center">
-                  <Unlock className="w-5 h-5 text-neutral-600 dark:text-neutral-400 mx-auto mb-2" />
-                  <p className="text-neutral-900 dark:text-white font-medium">{profile.unlocked_leads_count || 0}</p>
-                  <p className="text-neutral-600 dark:text-neutral-400 text-xs">{t('unlocked')}</p>
+                <div className="bg-white/50 dark:bg-neutral-800/40 border border-neutral-200/30 dark:border-white/5 backdrop-blur-md rounded-2xl p-4 text-center shadow-sm hover:scale-[1.02] transition-all duration-300">
+                  <Unlock className="w-5 h-5 text-neutral-500 dark:text-neutral-400 mx-auto mb-2" />
+                  <p className="text-neutral-900 dark:text-white font-bold text-lg">{profile.unlocked_leads_count || 0}</p>
+                  <p className="text-neutral-500 dark:text-neutral-400 text-xs font-medium">{t('unlocked')}</p>
                 </div>
-                <div className="bg-neutral-100 dark:bg-neutral-800 rounded-lg p-4 text-center">
-                  <CreditCard className="w-5 h-5 text-neutral-600 dark:text-neutral-400 mx-auto mb-2" />
-                  <p className="text-neutral-900 dark:text-white font-medium">{profile.total_spent || 0}</p>
-                  <p className="text-neutral-600 dark:text-neutral-400 text-xs">{t('spent')}</p>
+                <div className="bg-white/50 dark:bg-neutral-800/40 border border-neutral-200/30 dark:border-white/5 backdrop-blur-md rounded-2xl p-4 text-center shadow-sm hover:scale-[1.02] transition-all duration-300">
+                  <CreditCard className="w-5 h-5 text-neutral-500 dark:text-neutral-400 mx-auto mb-2" />
+                  <p className="text-neutral-900 dark:text-white font-bold text-lg">{profile.total_spent || 0}</p>
+                  <p className="text-neutral-500 dark:text-neutral-400 text-xs font-medium">{t('spent')}</p>
                 </div>
-                <div className="bg-neutral-100 dark:bg-neutral-800 rounded-lg p-4 text-center">
-                  <Tag className="w-5 h-5 text-neutral-600 dark:text-neutral-400 mx-auto mb-2" />
-                  <p className="text-neutral-900 dark:text-white font-medium">{profile.discount_tokens || 0}</p>
-                  <p className="text-neutral-600 dark:text-neutral-400 text-xs">Скидки</p>
+                <div className="bg-white/50 dark:bg-neutral-800/40 border border-neutral-200/30 dark:border-white/5 backdrop-blur-md rounded-2xl p-4 text-center shadow-sm hover:scale-[1.02] transition-all duration-300">
+                  <Tag className="w-5 h-5 text-neutral-500 dark:text-neutral-400 mx-auto mb-2" />
+                  <p className="text-neutral-900 dark:text-white font-bold text-lg">{profile.discount_tokens || 0}</p>
+                  <p className="text-neutral-500 dark:text-neutral-400 text-xs font-medium">Скидки</p>
                 </div>
-                <div className="bg-neutral-100 dark:bg-neutral-800 rounded-lg p-4 text-center">
-                  <Calendar className="w-5 h-5 text-neutral-600 dark:text-neutral-400 mx-auto mb-2" />
-                  <p className="text-neutral-900 dark:text-white font-medium text-sm">
+                <div className="bg-white/50 dark:bg-neutral-800/40 border border-neutral-200/30 dark:border-white/5 backdrop-blur-md rounded-2xl p-4 text-center shadow-sm hover:scale-[1.02] transition-all duration-300">
+                  <Calendar className="w-5 h-5 text-neutral-500 dark:text-neutral-400 mx-auto mb-2" />
+                  <p className="text-neutral-900 dark:text-white font-bold text-sm leading-6">
                     {new Date(profile.created_at).toLocaleDateString('cs-CZ')}
                   </p>
-                  <p className="text-neutral-600 dark:text-neutral-400 text-xs">{t('memberSince')}</p>
+                  <p className="text-neutral-500 dark:text-neutral-400 text-xs font-medium">{t('memberSince')}</p>
                 </div>
               </div>
             </div>
 
             {/* Referral Card */}
-            <div className="mt-6 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 border border-purple-200 dark:border-purple-500/30 rounded-xl p-5 relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
-                <Gift className="w-24 h-24" />
+            <div className="mt-6 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 border border-purple-200 dark:border-purple-500/20 rounded-2xl p-5 relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+                <Gift className="w-24 h-24 text-purple-500" />
               </div>
               <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
@@ -349,14 +355,14 @@ export default function ProfilePage() {
                     <Gift className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                     Пригласи друга - получи бонус!
                   </h3>
-                  <p className="text-sm text-neutral-600 dark:text-neutral-400 max-w-md">
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400 max-w-md">
                     Поделись своим кодом с другими мастерами. Когда их профиль одобрят, ты получишь 1 скидочный токен (скидка 50% на любую заявку).
                   </p>
                 </div>
                 
                 {profile.own_referral_code && (
                   <div className="flex flex-col items-center md:items-end">
-                    <div className="bg-white dark:bg-neutral-900 shadow-sm border border-purple-200 dark:border-purple-800 rounded-lg px-4 py-2 flex items-center gap-3">
+                    <div className="bg-white/60 dark:bg-neutral-900/60 backdrop-blur-md shadow-sm border border-purple-200 dark:border-purple-900/30 rounded-xl px-4 py-2 flex items-center gap-3">
                       <span className="font-mono font-bold text-lg text-purple-700 dark:text-purple-400">
                         {profile.own_referral_code}
                       </span>
@@ -376,7 +382,7 @@ export default function ProfilePage() {
             {!isEditing && (
               <button
                 onClick={() => setIsEditing(true)}
-                className="mt-6 flex items-center gap-2 px-4 py-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700 text-neutral-900 dark:text-white rounded-lg transition-colors"
+                className="mt-6 flex items-center gap-2 px-5 py-3 bg-neutral-900 dark:bg-neutral-800 hover:bg-neutral-800 dark:hover:bg-neutral-700 text-white rounded-xl transition-all shadow-md hover:scale-[1.02]"
               >
                 <Edit2 className="w-4 h-4" />
                 {t('editProfile')}
@@ -386,54 +392,54 @@ export default function ProfilePage() {
 
           {/* Edit Form */}
           {isEditing && (
-            <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-6">
-              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-6">{t('editProfile')}</h3>
+            <div className="bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 shadow-xl rounded-3xl p-6">
+              <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-6">{t('editProfile')}</h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">
+                  <label className="block text-sm font-semibold text-neutral-600 dark:text-neutral-400 mb-2">
                     {t('displayName')}
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 dark:text-neutral-400" />
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 dark:text-neutral-400" />
                     <input
                       type="text"
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
                       placeholder={t('displayName')}
-                      className="w-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-lg pl-10 pr-4 py-2.5 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-600"
+                      className="w-full bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl pl-11 pr-4 py-3 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all shadow-inner"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">
+                  <label className="block text-sm font-semibold text-neutral-600 dark:text-neutral-400 mb-2">
                     {t('phone')}
                   </label>
                   <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 dark:text-neutral-400" />
+                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 dark:text-neutral-400" />
                     <input
                       type="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="+420 123 456 789"
-                      className="w-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-lg pl-10 pr-4 py-2.5 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-600"
+                      className="w-full bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl pl-11 pr-4 py-3 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all shadow-inner"
                     />
                   </div>
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">
+                  <label className="block text-sm font-semibold text-neutral-600 dark:text-neutral-400 mb-2">
                     {t('bio')}
                   </label>
                   <div className="relative">
-                    <FileText className="absolute left-3 top-3 w-5 h-5 text-neutral-500 dark:text-neutral-400" />
+                    <FileText className="absolute left-3.5 top-3.5 w-5 h-5 text-neutral-500 dark:text-neutral-400" />
                     <textarea
                       value={bio}
                       onChange={(e) => setBio(e.target.value)}
                       placeholder={t('aboutMe')}
                       rows={3}
-                      className="w-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-lg pl-10 pr-4 py-2.5 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-600 resize-none"
+                      className="w-full bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all resize-none shadow-inner"
                     />
                   </div>
                 </div>
@@ -443,7 +449,7 @@ export default function ProfilePage() {
                 <button
                   onClick={handleSave}
                   disabled={isSaving}
-                  className="flex items-center gap-2 px-4 py-2 bg-neutral-900 dark:bg-neutral-50 text-white dark:text-neutral-950 rounded-lg font-medium hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 px-5 py-3 bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 rounded-xl font-bold hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-all disabled:opacity-50"
                 >
                   <Save className="w-4 h-4" />
                   {isSaving ? t('loading') : t('saveChanges')}
@@ -451,7 +457,7 @@ export default function ProfilePage() {
                 <button
                   onClick={handleCancel}
                   disabled={isSaving}
-                  className="flex items-center gap-2 px-4 py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-lg hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 px-5 py-3 bg-neutral-200/50 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-xl hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-all disabled:opacity-50 font-semibold"
                 >
                   <X className="w-4 h-4" />
                   {t('cancel')}
@@ -461,28 +467,28 @@ export default function ProfilePage() {
           )}
 
           {/* Settings */}
-          <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800">
-            <div className="p-6 border-b border-neutral-200 dark:border-neutral-800">
-              <h2 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
+          <div className="bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 shadow-xl rounded-3xl overflow-hidden">
+            <div className="p-6 border-b border-neutral-200/50 dark:border-white/5">
+              <h2 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
                 <Settings className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
                 {t('settings')}
               </h2>
             </div>
 
             {/* Language */}
-            <div className="p-6 border-b border-neutral-200 dark:border-neutral-800">
+            <div className="p-6 border-b border-neutral-200/50 dark:border-white/5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Globe className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
                   <div>
-                    <p className="text-neutral-900 dark:text-white font-medium">{t('language')}</p>
-                    <p className="text-neutral-600 dark:text-neutral-400 text-sm">{t('languageDescription')}</p>
+                    <p className="text-neutral-900 dark:text-white font-semibold">{t('language')}</p>
+                    <p className="text-neutral-500 dark:text-neutral-400 text-sm">{t('languageDescription')}</p>
                   </div>
                 </div>
                 <select
                   value={language}
                   onChange={(e) => handleLanguageChange(e.target.value)}
-                  className="bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-lg px-4 py-2 text-neutral-900 dark:text-white focus:outline-none focus:border-neutral-600"
+                  className="bg-white/60 dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/20 font-semibold cursor-pointer transition-all shadow-sm"
                 >
                   <option value="cs">Čeština</option>
                   <option value="ru">Русский</option>
@@ -492,26 +498,26 @@ export default function ProfilePage() {
             </div>
 
             {/* Theme */}
-            <div className="p-6 border-b border-neutral-200 dark:border-neutral-800">
+            <div className="p-6 border-b border-neutral-200/50 dark:border-white/5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   {theme === 'dark' ? <Moon className="w-5 h-5 text-neutral-600 dark:text-neutral-400" /> : <Sun className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />}
                   <div>
-                    <p className="text-neutral-900 dark:text-white font-medium">{t('theme')}</p>
-                    <p className="text-neutral-600 dark:text-neutral-400 text-sm">{t('themeDescription')}</p>
+                    <p className="text-neutral-900 dark:text-white font-semibold">{t('theme')}</p>
+                    <p className="text-neutral-500 dark:text-neutral-400 text-sm">{t('themeDescription')}</p>
                   </div>
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleThemeChange('dark')}
-                    className={`px-4 py-2 rounded-lg transition-colors ${theme === 'dark' ? 'bg-neutral-900 dark:bg-neutral-50 text-white dark:text-neutral-950' : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white hover:bg-neutral-300 dark:hover:bg-neutral-700'}`}
+                    className={`px-4 py-2.5 rounded-xl transition-all font-semibold flex items-center shadow-sm ${theme === 'dark' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 scale-[1.02]' : 'bg-neutral-200/50 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-300 dark:hover:bg-neutral-700'}`}
                   >
                     <Moon className="w-4 h-4 inline mr-2" />
                     {t('dark')}
                   </button>
                   <button
                     onClick={() => handleThemeChange('light')}
-                    className={`px-4 py-2 rounded-lg transition-colors ${theme === 'light' ? 'bg-neutral-900 dark:bg-neutral-50 text-white dark:text-neutral-950' : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white hover:bg-neutral-300 dark:hover:bg-neutral-700'}`}
+                    className={`px-4 py-2.5 rounded-xl transition-all font-semibold flex items-center shadow-sm ${theme === 'light' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 scale-[1.02]' : 'bg-neutral-200/50 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-300 dark:hover:bg-neutral-700'}`}
                   >
                     <Sun className="w-4 h-4 inline mr-2" />
                     {t('light')}
@@ -521,15 +527,15 @@ export default function ProfilePage() {
             </div>
 
             {/* Notifications */}
-            <div className="p-6 border-b border-neutral-200 dark:border-neutral-800">
+            <div className="p-6 border-b border-neutral-200/50 dark:border-white/5">
               <div className="flex items-center gap-2 mb-4">
                 <Bell className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
-                <p className="text-neutral-900 dark:text-white font-medium">{t('notifications')}</p>
+                <p className="text-neutral-900 dark:text-white font-bold">{t('notifications')}</p>
               </div>
 
               <div className="space-y-4 pl-7">
                 <div className="flex items-center justify-between">
-                  <p className="text-neutral-700 dark:text-neutral-300">{t('emailNotifications')}</p>
+                  <p className="text-neutral-700 dark:text-neutral-300 font-medium">{t('emailNotifications')}</p>
                   <Toggle 
                     checked={emailNotifications} 
                     onChange={() => {
@@ -540,7 +546,7 @@ export default function ProfilePage() {
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <p className="text-neutral-700 dark:text-neutral-300">{t('newLeadAlerts')}</p>
+                  <p className="text-neutral-700 dark:text-neutral-300 font-medium">{t('newLeadAlerts')}</p>
                   <Toggle 
                     checked={newLeadAlerts} 
                     onChange={() => {
@@ -552,7 +558,7 @@ export default function ProfilePage() {
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <p className="text-neutral-700 dark:text-neutral-300">{t('lowCreditAlerts')}</p>
+                  <p className="text-neutral-700 dark:text-neutral-300 font-medium">{t('lowCreditAlerts')}</p>
                   <Toggle 
                     checked={lowCreditAlerts} 
                     onChange={() => {
@@ -567,21 +573,21 @@ export default function ProfilePage() {
             </div>
 
             {/* Password Change */}
-            <div className="p-6 border-b border-neutral-200 dark:border-neutral-800">
+            <div className="p-6 border-b border-neutral-200/50 dark:border-white/5">
               <div className="flex items-center gap-2 mb-4">
                 <Lock className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
-                <p className="text-neutral-900 dark:text-white font-medium">{t('changePassword')}</p>
+                <p className="text-neutral-900 dark:text-white font-bold">{t('changePassword')}</p>
               </div>
 
               {passwordSuccess && (
-                <div className="bg-green-900/50 border border-green-500 text-green-200 p-3 rounded-lg mb-4 flex items-center gap-2">
+                <div className="bg-green-500/10 border border-green-500/20 text-green-600 dark:text-green-400 p-3.5 rounded-xl mb-4 flex items-center gap-2 font-medium">
                   <Check className="w-4 h-4" />
                   {t('passwordSuccess')}
                 </div>
               )}
 
               {passwordError && (
-                <div className="bg-red-900/50 border border-red-500 text-red-200 p-3 rounded-lg mb-4 text-sm">
+                <div className="bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 p-3.5 rounded-xl mb-4 text-sm font-medium">
                   {passwordError}
                 </div>
               )}
@@ -589,19 +595,19 @@ export default function ProfilePage() {
               {!showPasswordForm ? (
                 <button
                   onClick={() => setShowPasswordForm(true)}
-                  className="text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:text-white transition-colors text-sm"
+                  className="text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors text-sm font-semibold pl-7"
                 >
                   {t('changePassword')} →
                 </button>
               ) : (
-                <div className="space-y-3 pl-7">
+                <div className="space-y-4 pl-7">
                   <div>
                     <input
                       type={showNewPassword ? 'text' : 'password'}
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder={t('newPassword')}
-                      className="w-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-lg px-4 py-2 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-600"
+                      className="w-full bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all shadow-inner"
                     />
                   </div>
                   <div className="relative">
@@ -610,11 +616,11 @@ export default function ProfilePage() {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder={t('confirmPassword')}
-                      className="w-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-lg pr-12 pl-4 py-2 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-600"
+                      className="w-full bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl pr-12 pl-4 py-2.5 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all shadow-inner"
                     />
                     <button
                       onClick={() => setShowNewPassword(!showNewPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:text-neutral-300"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
                     >
                       {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -623,7 +629,7 @@ export default function ProfilePage() {
                     <button
                       onClick={handlePasswordChange}
                       disabled={isChangingPassword || !newPassword || !confirmPassword}
-                      className="px-4 py-2 bg-neutral-900 dark:bg-neutral-50 text-white dark:text-neutral-950 rounded-lg font-medium hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors disabled:opacity-50 text-sm"
+                      className="px-5 py-2.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 rounded-xl font-bold hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-all disabled:opacity-50 text-sm"
                     >
                       {isChangingPassword ? t('loading') : t('changePassword')}
                     </button>
@@ -634,7 +640,7 @@ export default function ProfilePage() {
                         setConfirmPassword('')
                         setPasswordError(null)
                       }}
-                      className="px-4 py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-lg hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-colors text-sm"
+                      className="px-5 py-2.5 bg-neutral-200/50 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-xl hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-all text-sm font-semibold"
                     >
                       {t('cancel')}
                     </button>
@@ -646,21 +652,21 @@ export default function ProfilePage() {
             {/* Danger Zone */}
             <div className="p-6">
               <div className="flex items-center gap-2 mb-4">
-                <AlertTriangle className="w-5 h-5 text-red-400" />
-                <p className="text-red-400 font-medium">{t('dangerZone')}</p>
+                <AlertTriangle className="w-5 h-5 text-red-500" />
+                <p className="text-red-500 font-bold">{t('dangerZone')}</p>
               </div>
 
               {!showDeleteConfirm ? (
                 <button
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="flex items-center gap-2 text-red-400 hover:text-red-300 transition-colors text-sm pl-7"
+                  className="flex items-center gap-2 text-red-500 hover:text-red-600 transition-colors text-sm font-bold pl-7"
                 >
                   <Trash2 className="w-4 h-4" />
                   {t('deleteAccount')}
                 </button>
               ) : (
                 <div className="pl-7 space-y-3">
-                  <p className="text-neutral-700 dark:text-neutral-300 text-sm">
+                  <p className="text-neutral-700 dark:text-neutral-300 text-sm font-medium">
                     {t('typeToConfirm')}:
                   </p>
                   <input
@@ -668,15 +674,15 @@ export default function ProfilePage() {
                     value={deleteConfirmText}
                     onChange={(e) => setDeleteConfirmText(e.target.value)}
                     placeholder={language === 'ru' ? 'УДАЛИТЬ' : language === 'cs' ? 'SMAZAT' : 'DELETE'}
-                    className="w-full bg-neutral-100 dark:bg-neutral-800 border border-red-900/50 rounded-lg px-4 py-2 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:border-red-500"
+                    className="w-full bg-white/40 dark:bg-neutral-950/40 border border-red-500/30 rounded-xl px-4 py-2.5 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all shadow-inner"
                   />
                   <div className="flex gap-2">
                     <button
                       onClick={handleDeleteAccount}
                       disabled={deleteConfirmText !== (language === 'ru' ? 'УДАЛИТЬ' : language === 'cs' ? 'SMAZAT' : 'DELETE')}
-                      className="px-4 py-2 bg-red-600 text-neutral-900 dark:text-white rounded-lg font-medium hover:bg-red-500 transition-colors disabled:opacity-50 text-sm"
+                      className="px-5 py-2.5 bg-red-600 text-white rounded-xl font-bold hover:bg-red-500 transition-all disabled:opacity-50 text-sm flex items-center gap-1.5 shadow-md"
                     >
-                      <Trash2 className="w-4 h-4 inline mr-1" />
+                      <Trash2 className="w-4 h-4" />
                       {t('deleteAccount')}
                     </button>
                     <button
@@ -684,7 +690,7 @@ export default function ProfilePage() {
                         setShowDeleteConfirm(false)
                         setDeleteConfirmText('')
                       }}
-                      className="px-4 py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-lg hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-colors text-sm"
+                      className="px-5 py-2.5 bg-neutral-200/50 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-xl hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-all text-sm font-semibold"
                     >
                       {t('cancel')}
                     </button>
@@ -695,7 +701,7 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <div className="mt-12 mb-8 border-t border-neutral-200 dark:border-neutral-800 pt-8 pb-4 text-center">
+        <div className="mt-12 mb-8 border-t border-neutral-200/50 dark:border-white/5 pt-8 pb-4 text-center">
           <div className="flex flex-wrap justify-center gap-6 text-sm font-medium text-neutral-500 dark:text-neutral-500">
             <a href="/terms" className="hover:text-neutral-900 dark:hover:text-white transition-colors">Terms of Service</a>
             <a href="/privacy" className="hover:text-neutral-900 dark:hover:text-white transition-colors">Privacy Policy</a>
@@ -709,3 +715,4 @@ export default function ProfilePage() {
     </div>
   )
 }
+

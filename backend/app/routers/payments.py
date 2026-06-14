@@ -219,3 +219,38 @@ async def request_withdrawal(
     }).execute()
     
     return {"success": True}
+
+class CheckoutConfirmRequest(BaseModel):
+    amount_credits: int
+    payment_method: str
+
+@router.post("/checkout/confirm")
+async def checkout_confirm(
+    req: CheckoutConfirmRequest,
+    current_user: AuthUser = Depends(get_current_user),
+    supabase = Depends(get_supabase_client)
+):
+    """Confirm a mock Stripe/sandbox payment and award credits."""
+    user_res = supabase.table("users").select("credits").eq("id", current_user.user_id).execute()
+    if not user_res.data:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    current_credits = user_res.data[0].get("credits", 0)
+    tx_id = f"mock_{uuid.uuid4().hex[:12]}"
+    
+    # Save transaction record
+    supabase.table("transactions").insert({
+        "user_id": current_user.user_id,
+        "amount": req.amount_credits / 10 if req.payment_method == 'revolut' else req.amount_credits * 4,
+        "currency": "EUR" if req.payment_method == 'revolut' else "UAH",
+        "credits_added": req.amount_credits,
+        "provider": req.payment_method,
+        "provider_tx_id": tx_id
+    }).execute()
+    
+    # Update user balance
+    new_credits = current_credits + req.amount_credits
+    supabase.table("users").update({"credits": new_credits}).eq("id", current_user.user_id).execute()
+    
+    return {"success": True, "credits": new_credits}
+

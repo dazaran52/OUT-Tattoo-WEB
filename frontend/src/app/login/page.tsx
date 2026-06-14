@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Mail, Lock, Loader2, ArrowRight, Link as LinkIcon, Tag, MapPin, Globe, X } from 'lucide-react'
+import { Mail, Lock, Loader2, ArrowRight, Link as LinkIcon, Tag, MapPin, Globe, X, Sun, Moon } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { getTranslation, Language } from '@/lib/i18n'
 import { Logo } from '@/components/Logo'
@@ -19,6 +19,7 @@ export default function LoginPage() {
   const [role, setRole] = useState<'master' | 'client'>('master')
   const [error, setError] = useState('')
   const [language, setLanguage] = useState<string>('cs')
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark')
   const [tilt, setTilt] = useState({ x: 0, y: 0 })
 
   useEffect(() => {
@@ -68,6 +69,9 @@ export default function LoginPage() {
       else if (sysLang.startsWith('en')) setLanguage('en')
       else setLanguage('cs')
     }
+
+    const savedTheme = localStorage.getItem('theme') || 'dark'
+    setTheme(savedTheme as 'dark' | 'light')
   }, [])
 
   const toggleLanguage = () => {
@@ -76,6 +80,18 @@ export default function LoginPage() {
     const newLang = langs[(currentIndex + 1) % langs.length] || 'cs'
     setLanguage(newLang)
     localStorage.setItem('language', newLang)
+  }
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark'
+    setTheme(newTheme)
+    localStorage.setItem('theme', newTheme)
+    const root = document.documentElement
+    if (newTheme === 'light') {
+      root.classList.remove('dark')
+    } else {
+      root.classList.add('dark')
+    }
   }
 
   const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language as Language, key)
@@ -233,10 +249,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className={`min-h-[100dvh] flex flex-col md:flex-row overflow-hidden relative ${role === 'master' ? 'bg-[#0a0a0a]' : 'bg-neutral-950'} transition-colors duration-1000`}>
+    <div className="min-h-[100dvh] flex flex-col md:flex-row overflow-hidden relative bg-neutral-50 dark:bg-[#050505] transition-colors duration-300">
       
       {/* LEFT SIDE: Visuals & Branding (Hidden on small mobile, stacked on tablet, split on desktop) */}
-      <div className="relative w-full md:w-1/2 min-h-[30vh] md:min-h-screen flex flex-col items-center justify-center p-8 lg:p-16 overflow-hidden border-b md:border-b-0 md:border-r border-white/5 z-0">
+      <div className="relative w-full md:w-1/2 min-h-[30vh] md:min-h-screen flex flex-col items-center justify-center p-8 lg:p-16 overflow-hidden border-b md:border-b-0 md:border-r border-neutral-200/50 dark:border-white/5 bg-[#0a0a0a] text-white z-0">
         
         {/* Dynamic Abstract Background Orb */}
         <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center">
@@ -316,11 +332,18 @@ export default function LoginPage() {
       {/* RIGHT SIDE: Interactive Form */}
       <div className="relative w-full md:w-1/2 flex flex-col items-center justify-center p-4 sm:p-8 lg:p-16 z-10 pb-safe overflow-y-auto">
         
-        {/* Language Switcher */}
-        <div className="absolute top-6 right-6 z-50">
+        {/* Top bar with Language and Theme Switcher */}
+        <div className="absolute top-6 right-6 z-50 flex gap-2">
+          <button
+            onClick={toggleTheme}
+            className="flex items-center justify-center p-2.5 bg-neutral-900/5 dark:bg-neutral-900/50 backdrop-blur-md border border-neutral-200/50 dark:border-neutral-800 rounded-full text-neutral-600 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all shadow-sm"
+            title="Переключить тему"
+          >
+            {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </button>
           <button
             onClick={toggleLanguage}
-            className="flex items-center gap-2 px-3 py-2 bg-neutral-900/50 backdrop-blur-md border border-neutral-800 rounded-full text-neutral-400 hover:text-white transition-colors"
+            className="flex items-center gap-2 px-3.5 py-2.5 bg-neutral-900/5 dark:bg-neutral-900/50 backdrop-blur-md border border-neutral-200/50 dark:border-neutral-800 rounded-full text-neutral-600 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all shadow-sm"
           >
             <Globe className="w-4 h-4" />
             <span className="uppercase text-sm font-semibold tracking-wider">{language === 'cs' ? 'cz' : language}</span>
@@ -335,7 +358,7 @@ export default function LoginPage() {
               initial={{ opacity: 0, height: 0, y: -20 }}
               animate={{ opacity: 1, height: 'auto', y: 0 }}
               exit={{ opacity: 0, height: 0, y: -20 }}
-              className="relative flex p-1.5 bg-neutral-900/80 backdrop-blur-xl rounded-full border border-neutral-800/60 shadow-inner overflow-hidden"
+              className="relative flex p-1.5 bg-neutral-200/50 dark:bg-neutral-900/80 backdrop-blur-xl rounded-full border border-neutral-300/50 dark:border-neutral-800/60 shadow-inner overflow-hidden"
             >
               <motion.div
                 className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] rounded-full shadow-lg ${role === 'master' ? 'bg-gradient-to-r from-orange-600 to-amber-500' : 'bg-gradient-to-r from-indigo-600 to-purple-500'}`}
@@ -350,7 +373,7 @@ export default function LoginPage() {
                   setRole('master');
                   setIsSignUp(true); 
                 }}
-                className={`relative z-10 flex-1 py-3 text-sm font-bold tracking-wide transition-colors duration-300 flex items-center justify-center gap-2 ${role === 'master' ? 'text-white' : 'text-neutral-500 hover:text-neutral-300'}`}
+                className={`relative z-10 flex-1 py-3 text-sm font-bold tracking-wide transition-colors duration-300 flex items-center justify-center gap-2 ${role === 'master' ? 'text-white' : 'text-neutral-500 dark:text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300'}`}
               >
                 🔥 Мастер
               </button>
@@ -359,7 +382,7 @@ export default function LoginPage() {
                   setRole('client');
                   setIsSignUp(true);
                 }}
-                className={`relative z-10 flex-1 py-3 text-sm font-bold tracking-wide transition-colors duration-300 flex items-center justify-center gap-2 ${role === 'client' ? 'text-white' : 'text-neutral-500 hover:text-neutral-300'}`}
+                className={`relative z-10 flex-1 py-3 text-sm font-bold tracking-wide transition-colors duration-300 flex items-center justify-center gap-2 ${role === 'client' ? 'text-white' : 'text-neutral-500 dark:text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300'}`}
               >
                 ✨ Клиент
               </button>
@@ -367,21 +390,21 @@ export default function LoginPage() {
           )}
 
           {/* Glassmorphism Form Container */}
-          <div className="bg-neutral-900/40 backdrop-blur-2xl border border-white/5 shadow-[0_8px_32px_rgba(0,0,0,0.4)] rounded-3xl overflow-hidden">
+          <div className="bg-white/40 dark:bg-neutral-900/40 backdrop-blur-2xl border border-neutral-200/50 dark:border-white/5 shadow-2xl rounded-3xl overflow-hidden">
             
             {/* Mode Switcher (Login / Register) */}
-            <div className="flex border-b border-white/5">
+            <div className="flex border-b border-neutral-200/50 dark:border-white/5">
               <button
                 type="button"
                 onClick={() => setIsSignUp(false)}
-                className={`flex-1 py-5 text-sm font-bold uppercase tracking-widest transition-all ${!isSignUp ? `text-white bg-white/5 border-b-2 ${role === 'master' ? 'border-orange-500' : 'border-indigo-500'}` : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'}`}
+                className={`flex-1 py-5 text-sm font-bold uppercase tracking-widest transition-all ${!isSignUp ? `text-neutral-900 dark:text-white bg-neutral-900/5 dark:bg-white/5 border-b-2 ${role === 'master' ? 'border-orange-500' : 'border-indigo-500'}` : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300 hover:bg-neutral-900/5 dark:hover:bg-white/5'}`}
               >
                 {t('loginTab')}
               </button>
               <button
                 type="button"
                 onClick={() => setIsSignUp(true)}
-                className={`flex-1 py-5 text-sm font-bold uppercase tracking-widest transition-all ${isSignUp ? `text-white bg-white/5 border-b-2 ${role === 'master' ? 'border-orange-500' : 'border-indigo-500'}` : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'}`}
+                className={`flex-1 py-5 text-sm font-bold uppercase tracking-widest transition-all ${isSignUp ? `text-neutral-900 dark:text-white bg-neutral-900/5 dark:bg-white/5 border-b-2 ${role === 'master' ? 'border-orange-500' : 'border-indigo-500'}` : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300 hover:bg-neutral-900/5 dark:hover:bg-white/5'}`}
               >
                 {t('registerTab')}
               </button>
@@ -413,7 +436,7 @@ export default function LoginPage() {
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className={`block w-full pl-12 pr-4 py-4 bg-neutral-950/40 border border-white/10 rounded-2xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all backdrop-blur-md shadow-inner ${role === 'master' ? 'focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10' : 'focus:border-indigo-500 focus:ring-indigo-500/20 focus:bg-indigo-950/10'}`}
+                        className={`block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all backdrop-blur-md shadow-inner ${role === 'master' ? 'focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10' : 'focus:border-indigo-500 focus:ring-indigo-500/20 focus:bg-indigo-950/10'}`}
                         placeholder="E-mail"
                       />
                     </div>
@@ -428,7 +451,7 @@ export default function LoginPage() {
                         required
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className={`block w-full pl-12 pr-4 py-4 bg-neutral-950/40 border border-white/10 rounded-2xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all backdrop-blur-md shadow-inner ${role === 'master' ? 'focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10' : 'focus:border-indigo-500 focus:ring-indigo-500/20 focus:bg-indigo-950/10'}`}
+                        className={`block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all backdrop-blur-md shadow-inner ${role === 'master' ? 'focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10' : 'focus:border-indigo-500 focus:ring-indigo-500/20 focus:bg-indigo-950/10'}`}
                         placeholder={t('passwordAuth')}
                       />
                     </div>
@@ -451,7 +474,7 @@ export default function LoginPage() {
                             required={isSignUp && role === 'master'}
                             value={portfolioUrl}
                             onChange={(e) => setPortfolioUrl(e.target.value)}
-                            className="block w-full pl-12 pr-4 py-4 bg-neutral-950/40 border border-white/10 rounded-2xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10 transition-all backdrop-blur-md shadow-inner"
+                            className="block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10 transition-all backdrop-blur-md shadow-inner"
                             placeholder="Instagram / Portfolio URL"
                           />
                         </div>
@@ -463,7 +486,7 @@ export default function LoginPage() {
                             type="text"
                             value={referralCode}
                             onChange={(e) => setReferralCode(e.target.value)}
-                            className="block w-full pl-12 pr-4 py-4 bg-neutral-950/40 border border-white/10 rounded-2xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10 transition-all backdrop-blur-md shadow-inner"
+                            className="block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10 transition-all backdrop-blur-md shadow-inner"
                             placeholder="Referral Code (Optional)"
                           />
                         </div>
@@ -474,11 +497,11 @@ export default function LoginPage() {
                             required={isSignUp}
                             value={selectedCountry}
                             onChange={(e) => setSelectedCountry(e.target.value)}
-                            className="block w-full pl-12 pr-4 py-4 bg-neutral-950/40 border border-white/10 rounded-2xl text-white focus:outline-none focus:ring-2 focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10 transition-all backdrop-blur-md appearance-none shadow-inner cursor-pointer"
+                            className="block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10 transition-all backdrop-blur-md appearance-none shadow-inner cursor-pointer"
                           >
-                            <option value="" disabled className="bg-neutral-900">{t('selectCountry')}</option>
+                            <option value="" disabled className="bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white">{t('selectCountry')}</option>
                             {countries.map(c => (
-                              <option key={c.id} value={c.id} className="bg-neutral-900">{c.name_ru}</option>
+                              <option key={c.id} value={c.id} className="bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white">{c.name_ru}</option>
                             ))}
                           </select>
                         </div>
@@ -492,7 +515,7 @@ export default function LoginPage() {
                               className="relative group overflow-hidden"
                             >
                               <div 
-                                className="w-full flex items-center min-h-[56px] pl-12 pr-4 py-3 bg-neutral-950/40 border border-white/10 rounded-2xl cursor-pointer backdrop-blur-md shadow-inner hover:border-orange-500/50 transition-colors"
+                                className="w-full flex items-center min-h-[56px] pl-12 pr-4 py-3 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl cursor-pointer backdrop-blur-md shadow-inner hover:border-orange-500/50 transition-colors"
                                 onClick={() => setIsCityDropdownOpen(!isCityDropdownOpen)}
                               >
                                 <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-colors group-focus-within:text-orange-400" />
@@ -503,11 +526,11 @@ export default function LoginPage() {
                                     selectedCities.map(cityId => {
                                       const city = cities.find(c => c.id === cityId)
                                       return city ? (
-                                        <span key={city.id} className="text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 bg-orange-500/20 text-orange-300 border border-orange-500/30">
+                                        <span key={city.id} className="text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 bg-orange-500/20 text-orange-600 dark:text-orange-300 border border-orange-500/30">
                                           {city.name_ru}
                                           <button 
                                             type="button" 
-                                            className="hover:text-white rounded-full transition-colors hover:bg-orange-500/50 p-0.5"
+                                            className="hover:text-neutral-950 dark:hover:text-white rounded-full transition-colors hover:bg-orange-500/50 p-0.5"
                                             onClick={(e) => {
                                               e.stopPropagation()
                                               setSelectedCities(prev => prev.filter(id => id !== city.id))
@@ -528,14 +551,14 @@ export default function LoginPage() {
                                     initial={{ opacity: 0, y: -10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -10 }}
-                                    className="absolute z-50 w-full mt-2 max-h-60 overflow-y-auto bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl p-2"
+                                    className="absolute z-50 w-full mt-2 max-h-60 overflow-y-auto bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl p-2"
                                   >
                                     {cities.map(c => (
-                                      <label key={c.id} className="flex items-center gap-3 px-3 py-3 hover:bg-neutral-800 rounded-xl cursor-pointer transition-colors">
+                                      <label key={c.id} className="flex items-center gap-3 px-3 py-3 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-xl cursor-pointer transition-colors">
                                         <div className="relative flex items-center justify-center w-5 h-5">
                                           <input 
                                             type="checkbox" 
-                                            className="peer appearance-none w-5 h-5 border-2 border-neutral-700 rounded-md checked:bg-orange-500 checked:border-orange-500 focus:ring-0 focus:ring-offset-0 bg-neutral-950 transition-all cursor-pointer"
+                                            className="peer appearance-none w-5 h-5 border-2 border-neutral-300 dark:border-neutral-700 rounded-md checked:bg-orange-500 checked:border-orange-500 focus:ring-0 focus:ring-offset-0 bg-white dark:bg-neutral-950 transition-all cursor-pointer"
                                             checked={selectedCities.includes(c.id)}
                                             onChange={(e) => {
                                               if (e.target.checked) {
@@ -549,7 +572,7 @@ export default function LoginPage() {
                                             <path d="M1 5L5 9L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                                           </svg>
                                         </div>
-                                        <span className="text-sm font-medium text-neutral-300">{c.name_ru}</span>
+                                        <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{c.name_ru}</span>
                                       </label>
                                     ))}
                                   </motion.div>

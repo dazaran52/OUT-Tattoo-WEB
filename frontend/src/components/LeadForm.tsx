@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Upload, ChevronRight, ChevronLeft, Check, AlertCircle, Sparkles, Image as ImageIcon, MapPin, Send } from 'lucide-react'
+import { Upload, ChevronRight, ChevronLeft, Check, AlertCircle, Sparkles, Image as ImageIcon, MapPin, Send, X, Loader2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 export function LeadForm() {
@@ -13,22 +13,96 @@ export function LeadForm() {
   const [formData, setFormData] = useState({
     description: '',
     style: '',
-    location: '',
+    location: '', // country
     size: '',
-    budget: '',
+    budget: '5000 CZK',
     city: '',
     name: '',
     contact: '', // email or phone
     images: [] as File[]
   })
 
+  // Theme support
+  const [currency, setCurrency] = useState('CZK')
+  const [budgetVal, setBudgetVal] = useState(5000)
+  const [isDragActive, setIsDragActive] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null)
+
+  // Countries and Cities
+  const [countries, setCountries] = useState<any[]>([])
+  const [cities, setCities] = useState<any[]>([])
+  const [selectedCountry, setSelectedCountry] = useState('')
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/locations/countries`)
+      .then(res => res.json())
+      .then(data => setCountries(data))
+      .catch(err => console.error(err))
+  }, [])
+
+  useEffect(() => {
+    if (selectedCountry) {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/locations/countries/${selectedCountry}/cities`)
+        .then(res => res.json())
+        .then(data => {
+          setCities(data)
+          if (data.length > 0) {
+            const defaultCity = data[0].name_ru || data[0].name
+            setFormData(prev => ({ 
+              ...prev, 
+              city: defaultCity, 
+              location: countries.find(c => c.id === selectedCountry)?.name_ru || selectedCountry 
+            }))
+          }
+        })
+        .catch(err => console.error(err))
+    } else {
+      setCities([])
+    }
+  }, [selectedCountry, countries])
+
   const nextStep = () => setStep(s => Math.min(s + 1, 4))
   const prevStep = () => setStep(s => Math.max(s - 1, 1))
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setFormData({ ...formData, images: [...formData.images, ...Array.from(e.target.files)] })
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setIsDragActive(true)
+    } else if (e.type === "dragleave") {
+      setIsDragActive(false)
     }
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragActive(false)
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      simulateUploadProgress(Array.from(e.dataTransfer.files))
+    }
+  }
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      simulateUploadProgress(Array.from(e.target.files))
+    }
+  }
+
+  const simulateUploadProgress = (files: File[]) => {
+    setUploadProgress(0)
+    const interval = setInterval(() => {
+      setUploadProgress(prev => {
+        if (prev === null) return null
+        if (prev >= 100) {
+          clearInterval(interval)
+          setFormData(prevForm => ({ ...prevForm, images: [...prevForm.images, ...files] }))
+          toast.success('Изображения прикреплены')
+          return null
+        }
+        return prev + 20
+      })
+    }, 80)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -82,8 +156,8 @@ export function LeadForm() {
     "Твои контакты"
   ]
 
-  const inputClasses = "w-full bg-white/40 dark:bg-neutral-900/40 backdrop-blur-xl border border-white/60 dark:border-white/10 rounded-2xl p-4 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 focus:bg-white/60 dark:focus:bg-neutral-800/60 transition-all duration-300 shadow-sm"
-  const labelClasses = "block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2 ml-1"
+  const inputClasses = "w-full bg-white/40 dark:bg-neutral-900/40 backdrop-blur-xl border border-neutral-200 dark:border-white/10 rounded-2xl p-4 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-500/50 transition-all duration-300 shadow-sm"
+  const labelClasses = "block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2 ml-1"
 
   if (isSuccess) {
     return (
@@ -91,7 +165,7 @@ export function LeadForm() {
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ type: "spring", duration: 0.6 }}
-        className="relative bg-white/40 dark:bg-neutral-900/40 backdrop-blur-3xl border border-white/60 dark:border-white/10 rounded-[2rem] p-8 md:p-12 text-center shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] overflow-hidden"
+        className="relative bg-white/40 dark:bg-neutral-900/40 backdrop-blur-3xl border border-neutral-200/50 dark:border-white/5 rounded-[2rem] p-8 md:p-12 text-center shadow-2xl overflow-hidden"
       >
         <div className="absolute inset-0 bg-gradient-to-br from-violet-500/10 via-transparent to-fuchsia-500/10 pointer-events-none" />
         
@@ -101,53 +175,38 @@ export function LeadForm() {
           transition={{ type: "spring", delay: 0.2, bounce: 0.5 }}
           className="w-24 h-24 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-8 shadow-lg shadow-emerald-500/30"
         >
-          <motion.div
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            <Check className="w-12 h-12 text-white stroke-[3]" />
-          </motion.div>
+          <Check className="w-12 h-12 text-white stroke-[3]" />
         </motion.div>
         <motion.h3 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-neutral-900 to-neutral-600 dark:from-white dark:to-neutral-400 mb-4"
+          className="text-3xl md:text-4xl font-extrabold text-neutral-900 dark:text-white mb-4"
         >
           Заявка отправлена!
         </motion.h3>
         <motion.p 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="text-neutral-600 dark:text-neutral-300 text-lg max-w-md mx-auto mb-10 leading-relaxed"
+          className="text-neutral-600 dark:text-neutral-300 text-lg max-w-md mx-auto mb-10 leading-relaxed font-medium"
         >
           Лучшие мастера твоего города скоро увидят твою идею и свяжутся с тобой, чтобы обсудить детали и предложить свои эскизы.
         </motion.p>
         <motion.button 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          onClick={() => { setStep(1); setIsSuccess(false); setFormData({description: '', style: '', location: '', size: '', budget: '', city: '', name: '', contact: '', images: []}) }}
-          className="group relative inline-flex items-center justify-center bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-8 py-4 rounded-2xl font-bold transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-neutral-900/20 dark:hover:shadow-white/20"
+          onClick={() => { 
+            setStep(1)
+            setIsSuccess(false)
+            setFormData({description: '', style: '', location: '', size: '', budget: '5000 CZK', city: '', name: '', contact: '', images: []}) 
+            setCurrency('CZK')
+            setBudgetVal(5000)
+            setSelectedCountry('')
+          }}
+          className="group relative inline-flex items-center justify-center bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-8 py-4 rounded-2xl font-bold transition-all duration-300 hover:scale-105 shadow-md"
         >
           <span className="relative z-10">Новая заявка</span>
-          <div className="absolute inset-0 bg-white/20 dark:bg-black/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
         </motion.button>
       </motion.div>
     )
   }
 
   return (
-    <div className="relative bg-white/40 dark:bg-neutral-900/40 backdrop-blur-3xl border border-white/60 dark:border-white/10 rounded-[2rem] shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] overflow-hidden">
+    <div className="relative bg-white/40 dark:bg-neutral-900/40 backdrop-blur-3xl border border-neutral-200/50 dark:border-white/5 rounded-[2rem] shadow-2xl overflow-hidden">
       
-      {/* Background ambient glow */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none -z-10">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-violet-500/20 blur-[100px] rounded-full" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-fuchsia-500/20 blur-[100px] rounded-full" />
-      </div>
-
       {/* Progress Bar Container */}
       <div className="absolute top-0 left-0 w-full h-1.5 bg-neutral-200/50 dark:bg-neutral-800/50">
         <motion.div 
@@ -171,7 +230,7 @@ export function LeadForm() {
             >
               {stepIcons[step - 1]}
             </motion.div>
-            <h3 className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-neutral-900 to-neutral-600 dark:from-white dark:to-neutral-400">
+            <h3 className="text-2xl md:text-3xl font-extrabold text-neutral-900 dark:text-white">
               {stepTitles[step - 1]}
             </h3>
           </div>
@@ -189,7 +248,7 @@ export function LeadForm() {
               </div>
             ))}
           </div>
-          <p className="text-neutral-500 dark:text-neutral-400 mt-3 text-sm font-medium">Шаг {step} из 4</p>
+          <p className="text-neutral-500 dark:text-neutral-400 mt-3 text-sm font-semibold">Шаг {step} из 4</p>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -215,22 +274,29 @@ export function LeadForm() {
                 </div>
                 <div>
                   <label className={labelClasses}>Стиль (опционально)</label>
-                  <div className="relative">
-                    <select 
-                      value={formData.style}
-                      onChange={e => setFormData({...formData, style: e.target.value})}
-                      className={`${inputClasses} appearance-none cursor-pointer`}
-                    >
-                      <option value="">Не знаю / Жду предложений</option>
-                      <option value="realism">Реализм</option>
-                      <option value="traditional">Олдскул (Traditional)</option>
-                      <option value="minimalism">Минимализм / Лайнворк</option>
-                      <option value="japanese">Япония (Irezumi)</option>
-                      <option value="blackwork">Блэкворк</option>
-                    </select>
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                      <ChevronRight className="w-5 h-5 text-neutral-400 rotate-90" />
-                    </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {[
+                      { id: '', name: 'Жду предложений', emoji: '✨' },
+                      { id: 'realism', name: 'Реализм', emoji: '👁️' },
+                      { id: 'traditional', name: 'Олдскул', emoji: '⚓' },
+                      { id: 'minimalism', name: 'Минимализм', emoji: '🖋️' },
+                      { id: 'japanese', name: 'Япония', emoji: '🐉' },
+                      { id: 'blackwork', name: 'Блэкворк', emoji: '💀' },
+                    ].map(style => (
+                      <button
+                        key={style.id}
+                        type="button"
+                        onClick={() => setFormData({...formData, style: style.id})}
+                        className={`p-4 rounded-2xl border flex flex-col items-center justify-center gap-2 transition-all backdrop-blur-md font-semibold ${
+                          formData.style === style.id
+                            ? 'bg-violet-500/20 border-violet-500 text-violet-700 dark:text-violet-300 scale-[1.02] shadow-md'
+                            : 'bg-white/20 dark:bg-neutral-900/20 border-neutral-200 dark:border-white/5 text-neutral-700 dark:text-neutral-300 hover:bg-white/40 dark:hover:bg-neutral-800/40'
+                        }`}
+                      >
+                        <span className="text-2xl">{style.emoji}</span>
+                        <span className="text-sm">{style.name}</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
               </motion.div>
@@ -280,21 +346,59 @@ export function LeadForm() {
                 className="space-y-6"
               >
                 <div>
-                  <label className={labelClasses}>Ваш бюджет (опционально)</label>
-                  <input 
-                    type="text"
-                    value={formData.budget}
-                    onChange={e => setFormData({...formData, budget: e.target.value})}
-                    placeholder="Например: До 5000 Kč"
-                    className={inputClasses}
+                  <label className={labelClasses}>Ваш бюджет: {budgetVal} {currency}</label>
+                  <div className="flex gap-2 mb-4 p-1.5 bg-white/20 dark:bg-neutral-900/20 backdrop-blur-md border border-neutral-200 dark:border-white/5 rounded-2xl w-fit">
+                    {['CZK', 'EUR', 'PLN'].map(curr => (
+                      <button
+                        key={curr}
+                        type="button"
+                        onClick={() => {
+                          setCurrency(curr)
+                          const defaults: Record<string, number> = { CZK: 5000, EUR: 200, PLN: 1000 }
+                          setBudgetVal(defaults[curr])
+                          setFormData({ ...formData, budget: `${defaults[curr]} ${curr}` })
+                        }}
+                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                          currency === curr
+                            ? 'bg-violet-500 text-white shadow-md'
+                            : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-white'
+                        }`}
+                      >
+                        {curr}
+                      </button>
+                    ))}
+                  </div>
+                  <input
+                    type="range"
+                    min={currency === 'EUR' ? '50' : currency === 'PLN' ? '200' : '1000'}
+                    max={currency === 'EUR' ? '2000' : currency === 'PLN' ? '10000' : '50000'}
+                    step={currency === 'EUR' ? '50' : currency === 'PLN' ? '100' : '500'}
+                    value={budgetVal}
+                    onChange={e => {
+                      const val = parseInt(e.target.value)
+                      setBudgetVal(val)
+                      setFormData({ ...formData, budget: `${val} {currency}` })
+                    }}
+                    className="w-full accent-violet-500 cursor-pointer h-2 bg-neutral-200 dark:bg-neutral-800 rounded-lg appearance-none"
                   />
+                  <div className="flex justify-between text-xs text-neutral-400 mt-2 font-semibold">
+                    <span>{currency === 'EUR' ? '50' : currency === 'PLN' ? '200' : '1000'} {currency}</span>
+                    <span>{currency === 'EUR' ? '2000' : currency === 'PLN' ? '10000' : '50000'} {currency}</span>
+                  </div>
                 </div>
+
                 <div>
                   <label className={labelClasses}>Примеры и референсы</label>
-                  <motion.div 
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                    className="border-2 border-dashed border-violet-300/50 dark:border-violet-700/50 rounded-2xl p-8 text-center bg-white/20 dark:bg-neutral-900/20 hover:bg-violet-50/50 dark:hover:bg-violet-900/10 transition-colors relative cursor-pointer group"
+                  <div 
+                    onDragEnter={handleDrag}
+                    onDragOver={handleDrag}
+                    onDragLeave={handleDrag}
+                    onDrop={handleDrop}
+                    className={`border-2 border-dashed rounded-3xl p-8 text-center transition-all relative cursor-pointer group ${
+                      isDragActive 
+                        ? 'border-violet-500 bg-violet-500/10' 
+                        : 'border-neutral-200 dark:border-white/10 bg-white/20 dark:bg-neutral-900/20 hover:bg-white/40 dark:hover:bg-neutral-800/40'
+                    }`}
                   >
                     <input 
                       type="file" 
@@ -306,24 +410,41 @@ export function LeadForm() {
                     <div className="w-16 h-16 bg-white/50 dark:bg-neutral-800/50 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 shadow-sm">
                       <Upload className="w-8 h-8 text-violet-500" />
                     </div>
-                    <p className="text-neutral-700 dark:text-neutral-300 font-medium">Нажмите или перетащите фото сюда</p>
+                    <p className="text-neutral-700 dark:text-neutral-300 font-bold">Нажмите или перетащите фото сюда</p>
                     <p className="text-neutral-400 text-sm mt-1">PNG, JPG до 5MB</p>
+
+                    {uploadProgress !== null && (
+                      <div className="mt-4 w-full max-w-xs mx-auto">
+                        <div className="h-1.5 w-full bg-neutral-200/50 dark:bg-neutral-800/50 rounded-full overflow-hidden">
+                          <motion.div 
+                            className="h-full bg-violet-500" 
+                            initial={{ width: 0 }}
+                            animate={{ width: `${uploadProgress}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+
                     {formData.images.length > 0 && (
-                      <div className="mt-6 flex flex-wrap gap-2 justify-center">
+                      <div className="mt-6 flex flex-wrap gap-3 justify-center">
                         {formData.images.map((img, i) => (
-                          <motion.span 
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            key={i} 
-                            className="bg-white/60 dark:bg-neutral-800/60 backdrop-blur-sm border border-violet-200 dark:border-violet-800 text-violet-700 dark:text-violet-300 text-xs px-3 py-1.5 rounded-lg shadow-sm flex items-center gap-1"
-                          >
-                            <ImageIcon className="w-3 h-3" />
-                            <span className="truncate max-w-[100px]">{img.name}</span>
-                          </motion.span>
+                          <div key={i} className="relative w-16 h-16 rounded-xl overflow-hidden border border-violet-500/30 group shadow-sm bg-white dark:bg-neutral-800 flex items-center justify-center">
+                            <img src={URL.createObjectURL(img)} alt="preview" className="w-full h-full object-cover" />
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setFormData({ ...formData, images: formData.images.filter((_, idx) => idx !== i) })
+                              }}
+                              className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
                         ))}
                       </div>
                     )}
-                  </motion.div>
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -337,17 +458,38 @@ export function LeadForm() {
                 transition={{ duration: 0.3 }}
                 className="space-y-6"
               >
-                <div>
-                  <label className={labelClasses}>Ваш Город</label>
-                  <input 
-                    type="text"
-                    value={formData.city}
-                    onChange={e => setFormData({...formData, city: e.target.value})}
-                    placeholder="Например: Прага"
-                    className={inputClasses}
-                    required
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className={labelClasses}>Страна</label>
+                    <select
+                      value={selectedCountry}
+                      onChange={e => setSelectedCountry(e.target.value)}
+                      className="w-full bg-white/40 dark:bg-neutral-900/40 backdrop-blur-xl border border-neutral-200 dark:border-white/10 rounded-2xl p-4 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-500/50 appearance-none font-semibold cursor-pointer"
+                      required
+                    >
+                      <option value="" disabled className="bg-white dark:bg-neutral-900">Выбери страну</option>
+                      {countries.map(c => (
+                        <option key={c.id} value={c.id} className="bg-white dark:bg-neutral-900">{c.name_ru || c.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelClasses}>Город</label>
+                    <select
+                      value={formData.city}
+                      onChange={e => setFormData({ ...formData, city: e.target.value })}
+                      className="w-full bg-white/40 dark:bg-neutral-900/40 backdrop-blur-xl border border-neutral-200 dark:border-white/10 rounded-2xl p-4 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-500/50 appearance-none font-semibold cursor-pointer"
+                      disabled={!selectedCountry}
+                      required
+                    >
+                      <option value="" disabled className="bg-white dark:bg-neutral-900">Выбери город</option>
+                      {cities.map(c => (
+                        <option key={c.id} value={c.name_ru || c.name} className="bg-white dark:bg-neutral-900">{c.name_ru || c.name}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className={labelClasses}>Как к вам обращаться?</label>

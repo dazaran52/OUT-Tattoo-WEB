@@ -148,34 +148,40 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 transition-colors duration-200">
+    <div className="min-h-screen bg-neutral-50 dark:bg-[#050505] text-neutral-900 dark:text-white transition-colors duration-300 relative overflow-hidden">
+      {/* Premium ambient glows */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-cyan-500/5 dark:bg-cyan-500/10 blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-500/5 dark:bg-purple-500/10 blur-[120px]" />
+      </div>
+
       <Header profile={profile} onLogout={handleLogout} />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
         {profile.role === 'client' ? (
           <ClientDashboard profile={profile} />
         ) : (
           <>
             {/* Welcome Section */}
-            <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center">
+            <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
-                <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-50">
+                <h2 className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
                   {t('welcome')}, {profile.email.split('@')[0]}
                 </h2>
-                <p className="mt-1 text-neutral-500 dark:text-neutral-400">
+                <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400 font-medium">
                   {t('availableLeads')}
                 </p>
               </div>
               
               {/* Tabs */}
               {profile.status === 'approved' && (
-                <div className="mt-4 md:mt-0 flex p-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg">
+                <div className="mt-4 md:mt-0 flex p-1 bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 rounded-xl shadow-sm">
                   <button
                     id="tour-leads"
                     onClick={() => setActiveTab('feed')}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
                       activeTab === 'feed'
-                        ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm'
+                        ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]'
                         : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
                     }`}
                   >
@@ -183,9 +189,9 @@ export default function DashboardPage() {
                   </button>
                   <button
                     onClick={() => setActiveTab('my-leads')}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
                       activeTab === 'my-leads'
-                        ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm'
+                        ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]'
                         : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
                     }`}
                   >
@@ -194,9 +200,9 @@ export default function DashboardPage() {
                   <button
                     id="tour-auctions"
                     onClick={() => setActiveTab('auctions')}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
                       activeTab === 'auctions'
-                        ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm'
+                        ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]'
                         : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
                     }`}
                   >
@@ -208,41 +214,41 @@ export default function DashboardPage() {
 
             {/* Leads Feed or Status Message */}
             {profile.role === 'master' && !profile.is_verified_master ? (
-              <div className="text-center p-12 bg-white dark:bg-neutral-900 rounded-2xl border border-indigo-200 dark:border-indigo-900/50 shadow-2xl relative overflow-hidden mt-8">
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(79,70,229,0.15)_0%,transparent_70%)] pointer-events-none" />
+              <div className="text-center p-12 bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xl rounded-3xl border border-indigo-200 dark:border-indigo-900/30 shadow-2xl relative overflow-hidden mt-8">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(79,70,229,0.1)_0%,transparent_70%)] pointer-events-none" />
                 <div className="relative z-10">
-                  <div className="w-24 h-24 bg-indigo-100 dark:bg-indigo-950 rounded-full mx-auto mb-6 flex items-center justify-center border border-indigo-500/30 shadow-[0_0_30px_rgba(79,70,229,0.2)]">
+                  <div className="w-24 h-24 bg-indigo-100/50 dark:bg-indigo-950/50 rounded-full mx-auto mb-6 flex items-center justify-center border border-indigo-500/20 shadow-[0_0_30px_rgba(79,70,229,0.15)]">
                     <span className="text-4xl">🔒</span>
                   </div>
                   <h3 className="text-3xl font-extrabold text-neutral-900 dark:text-white mb-4 tracking-tight">Кабинет заблокирован</h3>
-                  <p className="text-neutral-600 dark:text-neutral-400 max-w-lg mx-auto mb-10 text-lg leading-relaxed">
+                  <p className="text-neutral-600 dark:text-neutral-400 max-w-lg mx-auto mb-10 text-lg leading-relaxed font-medium">
                     Мы создаем премиальный продукт и заботимся о качестве. Пожалуйста, перейдите в настройки профиля, загрузите портфолио и сертификаты, чтобы получить статус верифицированного мастера и доступ к горячим заявкам.
                   </p>
                   <button
                     onClick={() => router.push('/profile')}
-                    className="px-10 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-full font-bold text-lg transition-all hover:scale-105 shadow-xl shadow-indigo-600/25"
+                    className="px-10 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-full font-extrabold text-lg transition-all hover:scale-105 shadow-xl shadow-indigo-600/25"
                   >
                     Заполнить профиль
                   </button>
                 </div>
               </div>
             ) : profile.status === 'pending' ? (
-              <div className="text-center p-12 bg-white dark:bg-neutral-900 rounded-xl border border-amber-200 dark:border-amber-900 shadow-sm">
-                <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/50 rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <span className="text-2xl">⏳</span>
+              <div className="text-center p-12 bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xl rounded-3xl border border-amber-200 dark:border-amber-900/30 shadow-xl max-w-2xl mx-auto mt-8">
+                <div className="w-20 h-20 bg-amber-100/50 dark:bg-amber-900/30 rounded-full mx-auto mb-6 flex items-center justify-center border border-amber-500/20">
+                  <span className="text-3xl">⏳</span>
                 </div>
-                <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">{t('pendingReviewTitle')}</h3>
-                <p className="text-neutral-600 dark:text-neutral-400 max-w-md mx-auto">
+                <h3 className="text-2xl font-bold text-neutral-900 dark:text-white mb-3 tracking-tight">{t('pendingReviewTitle')}</h3>
+                <p className="text-neutral-600 dark:text-neutral-400 max-w-md mx-auto font-medium">
                   {t('pendingReviewDesc')}
                 </p>
               </div>
             ) : profile.status === 'rejected' ? (
-              <div className="text-center p-12 bg-white dark:bg-neutral-900 rounded-xl border border-red-200 dark:border-red-900 shadow-sm">
-                <div className="w-16 h-16 bg-red-100 dark:bg-red-900/50 rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <span className="text-2xl text-red-600">❌</span>
+              <div className="text-center p-12 bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xl rounded-3xl border border-red-200 dark:border-red-900/30 shadow-xl max-w-2xl mx-auto mt-8">
+                <div className="w-20 h-20 bg-red-100/50 dark:bg-red-900/30 rounded-full mx-auto mb-6 flex items-center justify-center border border-red-500/20">
+                  <span className="text-3xl text-red-600">❌</span>
                 </div>
-                <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">{t('rejectedTitle')}</h3>
-                <p className="text-neutral-600 dark:text-neutral-400 max-w-md mx-auto">
+                <h3 className="text-2xl font-bold text-neutral-900 dark:text-white mb-3 tracking-tight">{t('rejectedTitle')}</h3>
+                <p className="text-neutral-600 dark:text-neutral-400 max-w-md mx-auto font-medium">
                   {t('rejectedDesc')}
                 </p>
               </div>

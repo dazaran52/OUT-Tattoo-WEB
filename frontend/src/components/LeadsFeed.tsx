@@ -29,6 +29,8 @@ export interface Lead {
   city_id?: string
   trust_score?: number
   unlock_status?: string
+  unlock_count?: number
+  max_unlocks?: number
 }
 
 interface LeadsFeedProps {
@@ -96,6 +98,70 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
   const [selectedDisputeLead, setSelectedDisputeLead] = useState<Lead | null>(null)
   const [selectedAuctionLead, setSelectedAuctionLead] = useState<Lead | null>(null)
   const [isMasterModalOpen, setIsMasterModalOpen] = useState(false)
+  const [pushEnabled, setPushEnabled] = useState(false)
+
+  const togglePushNotifications = async () => {
+    if (!('Notification' in window)) {
+      toast.error('Браузер не поддерживает уведомления')
+      return
+    }
+    if (Notification.permission === 'denied') {
+      toast.error('Уведомления заблокированы в настройках браузера')
+      return
+    }
+    if (pushEnabled) {
+      setPushEnabled(false)
+      toast.success('Уведомления отключены')
+    } else {
+      const permission = await Notification.requestPermission()
+      if (permission === 'granted') {
+        setPushEnabled(true)
+        toast.success('Уведомления о новых лидах включены! 🔔')
+      } else {
+        toast.error('Доступ к уведомлениям отклонен')
+      }
+    }
+  }
+
+  const getContactActions = (contacts: string) => {
+    const actions = []
+    const phoneRegex = /(?:\+?([\d-\s]{8,16}))/g
+    const phones = contacts.match(phoneRegex)
+    if (phones && phones.length > 0) {
+      const cleanPhone = phones[0].replace(/[-\s]/g, '')
+      actions.push({
+        name: 'WhatsApp',
+        href: `https://wa.me/${cleanPhone.replace('+', '')}`,
+        color: 'bg-emerald-500 hover:bg-emerald-600 text-white',
+        icon: '💬'
+      })
+      actions.push({
+        name: 'Позвонить',
+        href: `tel:${cleanPhone}`,
+        color: 'bg-blue-500 hover:bg-blue-600 text-white',
+        icon: '📞'
+      })
+    }
+    const tgRegex = /(?:t\.me\/|@)([a-zA-Z0-9_]{5,32})/i
+    const tgMatch = contacts.match(tgRegex)
+    if (tgMatch) {
+      actions.push({
+        name: 'Telegram',
+        href: `https://t.me/${tgMatch[1]}`,
+        color: 'bg-sky-500 hover:bg-sky-600 text-white',
+        icon: '✈️'
+      })
+    }
+    if (contacts.includes('@') && !contacts.includes('t.me')) {
+      actions.push({
+        name: 'Email',
+        href: `mailto:${contacts.trim()}`,
+        color: 'bg-rose-500 hover:bg-rose-600 text-white',
+        icon: '✉️'
+      })
+    }
+    return actions
+  }
 
   const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language as Language, key)
 
@@ -524,6 +590,16 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
             </button>
           )}
           <button
+            onClick={togglePushNotifications}
+            className={`flex items-center gap-2 px-4 py-2 border rounded-lg text-sm transition-colors ${
+              pushEnabled 
+                ? 'bg-violet-500/10 border-violet-500/30 text-violet-700 dark:text-violet-400' 
+                : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:border-neutral-400'
+            }`}
+          >
+            {pushEnabled ? '🔔 Вкл' : '🔕 Уведомления'}
+          </button>
+          <button
             onClick={() => fetchLeads()}
             disabled={isLoading}
             className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:border-neutral-600 transition-colors disabled:opacity-50"
@@ -655,6 +731,17 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
                           {lead.city_id && cities.find(c => c.id === lead.city_id) ? `, ${cities.find(c => c.id === lead.city_id)?.name_ru}` : ''}
                         </span>
                       )}
+                      {lead.trust_score !== undefined && (
+                        <span className={`text-[10px] uppercase font-bold px-2 py-1 rounded-md border flex items-center gap-1 ${
+                          lead.trust_score >= 80
+                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+                            : lead.trust_score >= 50
+                            ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
+                            : 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20'
+                        }`}>
+                          🛡️ Trust: {lead.trust_score}%
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -664,8 +751,28 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
                     </span>
                   </div>
                 </div>
-                <p className="text-neutral-600 dark:text-neutral-400 text-sm mb-6 leading-relaxed line-clamp-3 group-hover:line-clamp-none transition-all">{lead.description}</p>
+                <p className="text-neutral-600 dark:text-neutral-400 text-sm mb-4 leading-relaxed line-clamp-3 group-hover:line-clamp-none transition-all">{lead.description}</p>
                 
+                {/* Competition meter status bar */}
+                <div className="mt-2 mb-4">
+                  <div className="flex justify-between text-xs font-bold text-neutral-500 mb-1">
+                    <span>Конкуренция</span>
+                    <span>{lead.unlock_count || 0} / {lead.max_unlocks || 3} unlocked</span>
+                  </div>
+                  <div className="h-2 w-full bg-neutral-200/50 dark:bg-neutral-800/50 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full transition-all duration-500 ${
+                        (lead.unlock_count || 0) >= (lead.max_unlocks || 3)
+                          ? 'bg-red-500'
+                          : (lead.unlock_count || 0) === 2
+                          ? 'bg-amber-500'
+                          : 'bg-green-500'
+                      }`}
+                      style={{ width: `${((lead.unlock_count || 0) / (lead.max_unlocks || 3)) * 100}%` }}
+                    />
+                  </div>
+                </div>
+
                 <div className="bg-neutral-50 dark:bg-neutral-950 p-4 rounded-xl border border-neutral-200/50 dark:border-neutral-800/50 relative overflow-hidden">
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-neutral-300 to-neutral-400 dark:from-neutral-700 dark:to-neutral-600"></div>
                   <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1 ml-2 font-medium">{t('contacts')}:</p>
@@ -673,6 +780,23 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
                     {lead.is_unlocked || isAdmin ? lead.contacts : 'HIDDEN_CONTACT_DATA'}
                   </p>
                 </div>
+
+                {(lead.is_unlocked || isAdmin) && (
+                  <div className="flex flex-wrap gap-2 mt-4 justify-start">
+                    {getContactActions(lead.contacts).map((act, idx) => (
+                      <a
+                        key={idx}
+                        href={act.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm ${act.color}`}
+                      >
+                        <span>{act.icon}</span>
+                        <span>{act.name}</span>
+                      </a>
+                    ))}
+                  </div>
+                )}
               </div>
               
               <div className="p-5 border-t border-neutral-100 dark:border-neutral-800/80 bg-neutral-50/50 dark:bg-neutral-900/50 backdrop-blur-sm">
@@ -703,11 +827,13 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
                 ) : (
                   <button 
                     onClick={() => handleUnlock(lead.id)}
-                    disabled={unlockingId === lead.id}
+                    disabled={unlockingId === lead.id || ((lead.unlock_count || 0) >= (lead.max_unlocks || 3) && !lead.is_unlocked)}
                     className="w-full py-3 px-4 bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 hover:bg-neutral-800 dark:hover:bg-neutral-200 rounded-xl text-sm font-bold transition-all shadow-md hover:shadow-lg disabled:opacity-50 flex items-center justify-center gap-2 group-hover:scale-[1.02]"
                   >
                     {unlockingId === lead.id ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (lead.unlock_count || 0) >= (lead.max_unlocks || 3) ? (
+                      <span>🔒 Лимит разблокировок исчерпан</span>
                     ) : (
                       <>
                         🔓 {t('unlock')} — 💎 {lead.price_credits}

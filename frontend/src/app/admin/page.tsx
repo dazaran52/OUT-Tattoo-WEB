@@ -230,71 +230,77 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 transition-colors duration-200">
+    <div className="min-h-screen bg-neutral-50 dark:bg-[#050505] text-neutral-900 dark:text-white transition-colors duration-300 relative overflow-hidden">
+      {/* Premium ambient glows */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-cyan-500/5 dark:bg-cyan-500/10 blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-500/5 dark:bg-purple-500/10 blur-[120px]" />
+      </div>
+
       <Header profile={profile} onLogout={handleLogout} />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
         <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Admin Panel</h2>
-            <p className="mt-1 text-neutral-500 dark:text-neutral-400">Manage users and leads</p>
+            <h2 className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">Admin Panel</h2>
+            <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400 font-medium">Manage users and leads</p>
           </div>
-          <div className="bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-400 px-4 py-2 rounded-lg font-medium text-sm border border-purple-200 dark:border-purple-800/50">
+          <div className="bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-400 px-4 py-2 rounded-xl font-bold text-sm border border-purple-200 dark:border-purple-800/50 shadow-sm">
             Admin Access
           </div>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 rounded-xl">
+          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 rounded-2xl backdrop-blur-md">
             {error}
           </div>
         )}
 
-        <div className="flex bg-neutral-100 dark:bg-neutral-800 p-1 rounded-xl w-fit mb-6">
+        <div className="flex bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 p-1.5 rounded-2xl w-fit mb-6 shadow-sm">
           <button
             onClick={() => setActiveTab('users')}
-            className={`px-6 py-2.5 rounded-lg font-bold text-sm transition-all ${
-              activeTab === 'users' ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+            className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${
+              activeTab === 'users' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
             }`}
           >
             {t('usersManagement')}
           </button>
           <button
             onClick={() => setActiveTab('chats')}
-            className={`px-6 py-2.5 rounded-lg font-bold text-sm transition-all ${
-              activeTab === 'chats' ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+            className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${
+              activeTab === 'chats' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
             }`}
           >
             Поддержка
           </button>
           <button
             onClick={() => setActiveTab('ai-chats')}
-            className={`px-6 py-2.5 rounded-lg font-bold text-sm transition-all ${
-              activeTab === 'ai-chats' ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+            className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${
+              activeTab === 'ai-chats' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
             }`}
           >
             ИИ Диалоги
           </button>
           <button
             onClick={() => setActiveTab('disputes')}
-            className={`px-6 py-2.5 rounded-lg font-bold text-sm transition-all ${
-              activeTab === 'disputes' ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+            className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${
+              activeTab === 'disputes' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
             }`}
           >
             Жалобы
           </button>
           <button
             onClick={() => setActiveTab('locations')}
-            className={`px-6 py-2.5 rounded-lg font-bold text-sm transition-all ${
-              activeTab === 'locations' ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+            className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${
+              activeTab === 'locations' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
             }`}
           >
             Локации
           </button>
           <button
             onClick={() => setActiveTab('withdrawals')}
-            className={`px-6 py-2.5 rounded-lg font-bold text-sm transition-all ${
-              activeTab === 'withdrawals' ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+            className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${
+              activeTab === 'withdrawals' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
             }`}
           >
             Выводы
@@ -308,23 +314,23 @@ export default function AdminPage() {
         {activeTab === 'withdrawals' && <AdminWithdrawals />}
         
         {activeTab === 'users' && (
-          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-sm animate-fade-in-up">
-            <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 flex flex-col sm:flex-row gap-4 items-center justify-between">
+          <div className="bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 rounded-3xl overflow-hidden shadow-xl animate-fade-in-up">
+            <div className="p-4 border-b border-neutral-200/50 dark:border-white/5 bg-neutral-50/50 dark:bg-neutral-900/30 flex flex-col sm:flex-row gap-4 items-center justify-between">
               <div className="relative w-full sm:w-96">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                 <input
                   type="text"
                   placeholder="Поиск по email или имени..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl text-sm focus:ring-1 focus:ring-cyan-500 outline-none"
+                  className="w-full pl-10 pr-4 py-2.5 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl text-sm text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all shadow-inner"
                 />
               </div>
               <div className="w-full sm:w-auto">
                 <select
                   value={sortOrder}
                   onChange={(e: any) => setSortOrder(e.target.value)}
-                  className="w-full sm:w-auto px-4 py-2 bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl text-sm focus:ring-1 focus:ring-cyan-500 outline-none"
+                  className="w-full sm:w-auto px-4 py-2.5 bg-white/60 dark:bg-neutral-950/80 border border-neutral-200 dark:border-white/10 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/20 font-semibold cursor-pointer transition-all shadow-sm"
                 >
                   <option value="newest">Сначала новые</option>
                   <option value="oldest">Сначала старые</option>
@@ -335,25 +341,25 @@ export default function AdminPage() {
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
-                <thead className="bg-neutral-50 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400">
+                <thead className="bg-neutral-50/50 dark:bg-neutral-900/30 border-b border-neutral-200/50 dark:border-white/5 text-neutral-600 dark:text-neutral-400">
                   <tr>
-                    <th className="px-6 py-4 font-medium">{t('user')}</th>
-                    <th className="px-6 py-4 font-medium">Баланс</th>
-                    <th className="px-6 py-4 font-medium">{t('created')}</th>
-                    <th className="px-6 py-4 font-medium">Status</th>
-                    <th className="px-6 py-4 font-medium text-right">{t('actions')}</th>
+                    <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">{t('user')}</th>
+                    <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Баланс</th>
+                    <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">{t('created')}</th>
+                    <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Status</th>
+                    <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs text-right">{t('actions')}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
+                <tbody className="divide-y divide-neutral-200/50 dark:divide-white/5">
                   {filteredAndSortedUsers.map(user => (
-                    <tr key={user.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
+                    <tr key={user.id} className="hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30 transition-colors">
                       <td className="px-6 py-4">
-                        <div className="font-medium text-neutral-900 dark:text-white">{user.email}</div>
+                        <div className="font-bold text-neutral-900 dark:text-white">{user.email}</div>
                         <div className="text-neutral-500 dark:text-neutral-400 text-xs mt-1">
                           {user.display_name ? `${user.display_name}` : 'No Name'} 
                           {user.phone && ` • ${user.phone}`}
                           {user.portfolio_url && (
-                            <a href={user.portfolio_url} target="_blank" rel="noopener noreferrer" className="ml-2 inline-flex items-center text-purple-600 dark:text-purple-400 hover:underline">
+                            <a href={user.portfolio_url} target="_blank" rel="noopener noreferrer" className="ml-2 inline-flex items-center text-purple-600 dark:text-purple-400 hover:underline font-semibold">
                               <LinkIcon className="w-3 h-3 mr-1" /> Портфолио
                             </a>
                           )}
@@ -364,28 +370,28 @@ export default function AdminPage() {
                           </div>
                         )}
                       </td>
-                      <td className="px-6 py-4 font-medium text-neutral-900 dark:text-white">
-                        <div className="flex items-center gap-1.5">
-                          <Coins className="w-4 h-4 text-cyan-500" />
+                      <td className="px-6 py-4 font-semibold text-neutral-900 dark:text-white">
+                        <div className="flex items-center gap-1.5 text-cyan-600 dark:text-cyan-400">
+                          <Coins className="w-4 h-4" />
                           {user.credits}
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-neutral-600 dark:text-neutral-400 text-sm">
+                      <td className="px-6 py-4 text-neutral-500 dark:text-neutral-400">
                         {new Date(user.created_at).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4">
                         {user.status === 'pending' && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100/50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-amber-200/50 dark:border-amber-500/20">
                             <Clock className="w-3.5 h-3.5" /> Pending
                           </span>
                         )}
                         {user.status === 'approved' && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-green-100/50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200/50 dark:border-green-500/20">
                             <CheckCircle className="w-3.5 h-3.5" /> Approved
                           </span>
                         )}
                         {user.status === 'rejected' && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-100/50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200/50 dark:border-red-500/20">
                             <XCircle className="w-3.5 h-3.5" /> Rejected
                           </span>
                         )}
@@ -399,7 +405,7 @@ export default function AdminPage() {
                           <div className="flex justify-end gap-2">
                             <button
                               onClick={() => handleUpdateCredits(user.id, user.credits, user.email)}
-                              className="px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-lg text-xs font-medium transition-colors"
+                              className="px-3.5 py-2 bg-neutral-200/50 hover:bg-neutral-300 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-xl text-xs font-bold transition-all shadow-sm"
                               title="Изменить баланс"
                             >
                               Баланс
@@ -407,7 +413,7 @@ export default function AdminPage() {
                             {user.status !== 'approved' && (
                               <button
                                 onClick={() => updateUserStatus(user.id, 'approved')}
-                                className="px-3 py-1.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800 rounded-lg text-xs font-medium hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors"
+                                className="px-3.5 py-2 bg-green-500/10 dark:bg-green-900/20 text-green-600 dark:text-green-400 border border-green-500/20 rounded-xl text-xs font-bold hover:bg-green-500/20 transition-all"
                               >
                                 Одобрить
                               </button>
@@ -415,7 +421,7 @@ export default function AdminPage() {
                             {user.status !== 'rejected' && (
                               <button
                                 onClick={() => updateUserStatus(user.id, 'rejected')}
-                                className="px-3 py-1.5 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800 rounded-lg text-xs font-medium hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors flex items-center gap-1"
+                                className="px-3.5 py-2 bg-red-500/10 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-500/20 rounded-xl text-xs font-bold hover:bg-red-500/20 transition-all flex items-center gap-1"
                               >
                                 Забанить
                               </button>
@@ -427,7 +433,7 @@ export default function AdminPage() {
                   ))}
                   {users.length === 0 && (
                     <tr>
-                      <td colSpan={4} className="px-6 py-8 text-center text-neutral-500 dark:text-neutral-400">
+                      <td colSpan={5} className="px-6 py-8 text-center text-neutral-500 dark:text-neutral-400 font-medium">
                         No users found
                       </td>
                     </tr>
@@ -440,17 +446,17 @@ export default function AdminPage() {
       </main>
 
       {creditsModalUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-neutral-900 w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 p-6 border border-neutral-200 dark:border-neutral-800">
-            <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">Изменить баланс пользователя</h3>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">{creditsModalUser.email}</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="bg-white/85 dark:bg-neutral-900/85 backdrop-blur-xl w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 p-6 border border-neutral-200/50 dark:border-white/5">
+            <h3 className="text-xl font-extrabold text-neutral-900 dark:text-white mb-1">Изменить баланс</h3>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-5 font-semibold">{creditsModalUser.email}</p>
             
             <div className="mb-6">
-              <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">Новый баланс (кредитов)</label>
+              <label className="block text-sm font-semibold text-neutral-600 dark:text-neutral-400 mb-2">Новый баланс (кредитов)</label>
               <input
                 type="number"
                 min="0"
-                className="w-full bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 outline-none"
+                className="w-full bg-white/40 dark:bg-neutral-950/40 text-neutral-900 dark:text-white border border-neutral-200 dark:border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all shadow-inner"
                 value={newCreditsValue}
                 onChange={(e) => setNewCreditsValue(e.target.value)}
               />
@@ -459,13 +465,13 @@ export default function AdminPage() {
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => setCreditsModalUser(null)}
-                className="px-4 py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                className="px-5 py-3 bg-neutral-200/50 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-xl hover:bg-neutral-300 dark:hover:bg-neutral-700 font-semibold transition-all"
               >
                 Отмена
               </button>
               <button
                 onClick={submitUpdateCredits}
-                className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded-lg transition-colors"
+                className="px-5 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-xl transition-all shadow-md shadow-cyan-600/20"
               >
                 Сохранить
               </button>
